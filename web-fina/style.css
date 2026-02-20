@@ -423,6 +423,33 @@ nav {
     font-weight: 600;
 }
 
+.badge.secondary {
+    background: rgba(255, 0, 200, 0.1);
+    color: var(--accent);
+}
+
+.plugin-card.highlighted {
+    background: linear-gradient(145deg, rgba(0, 210, 255, 0.1) 0%, rgba(15, 25, 45, 0.7) 100%);
+    border: 1px solid rgba(0, 210, 255, 0.3);
+}
+
+.btn-small {
+    background: var(--primary);
+    color: var(--bg-dark);
+    padding: 8px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 700;
+    display: inline-block;
+    transition: all 0.3s;
+}
+
+.btn-small:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--primary);
+}
+
 /* Donation Section */
 .donation-section {
     padding: 100px 0;
