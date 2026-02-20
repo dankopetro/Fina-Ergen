@@ -37,6 +37,7 @@ jobs:
       - uses: tauri-apps/tauri-action@v0.5.15
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LDAI_COMP: xz
         with:
           tagName: v__VERSION__ # Real version will be taken from package.json
           releaseName: "Fina Ergen v__VERSION__"

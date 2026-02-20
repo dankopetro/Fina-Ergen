@@ -12,7 +12,31 @@ fi
 # Ejecutar desde el directorio de Ergen
 cd "$(dirname "$ERGEN_MAIN")"
 
-# (Limpieza de duplicados: La orquestación ahora es externa vía lanzar_fina_simple.sh)
+# Asegurar que procesos antiguos mueran (importante para AppImage)
+pkill -f "fina_api.py"
+pkill -f "$ERGEN_MAIN"
+pkill -f "monitor_ergen.py"
+pkill -f "mem_watchdog.py"
+
+echo "🔌 [Brain Wrapper] Iniciando fina_api.py..." >&2
+/home/claudio/.venv/bin/python3 -u fina_api.py &
+API_PID=$!
+
+echo "🔌 [Brain Wrapper] Iniciando monitor_ergen.py..." >&2
+if [ -f "plugins/doorbell/monitor_ergen.py" ]; then
+    /home/claudio/.venv/bin/python3 -u plugins/doorbell/monitor_ergen.py &
+fi
+
+if [ -f "mem_watchdog.py" ]; then
+    /home/claudio/.venv/bin/python3 -u mem_watchdog.py &
+fi
+
+# Cleanup global at exit
+cleanup() {
+    echo "🛑 [Brain Wrapper] Deteniendo procesos..." >&2
+    pkill -P $$
+}
+trap cleanup EXIT INT TERM
 
 echo "🚀 [Brain Wrapper] Iniciando main.py con -u (Unbuffered)..." >&2
 exec /home/claudio/.venv/bin/python3 -u "$ERGEN_MAIN"
