@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-22.04]
+        platform: [ubuntu-24.04]
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -34,12 +34,12 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      - uses: tauri-apps/tauri-action@v0
+      - uses: tauri-apps/tauri-action@v0.5.15
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v__VERSION__ # Real version will be taken from package.json
           releaseName: "Fina Ergen v__VERSION__"
-          releaseBody: "Release automática de Fina Ergen. Incluye instaladores .deb y AppImage."
+          releaseBody: "Release automática de Fina Ergen. Compilado en Ubuntu 24.04 (Compatible con Linux Mint 22)."
           releaseDraft: true
           prerelease: false
