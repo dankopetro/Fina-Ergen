@@ -1,260 +1,53 @@
-# Contributing to Jarvis Voice Assistant
+# Contribuyendo a Fina Ergen 🧩
 
-Thank you for your interest in contributing to Jarvis Voice Assistant! This document provides guidelines and information for contributors.
+Primero que nada, **¡gracias por tu interés en hacer a Fina Ergen aún mejor!** 🎉 Fina es un proyecto de código abierto que se nutre del esfuerzo y las ideas de personas como tú.
 
-## 🤝 How to Contribute
+Este documento proporciona pautas para colaborar, ya sea creando un nuevo módulo (plugin), corrigiendo errores, mejorando la interfaz de usuario web o ayudando con la documentación.
 
-### Reporting Bugs
-- Use the GitHub issue tracker
-- Include detailed steps to reproduce the bug
-- Provide system information (OS, Python version, etc.)
-- Include error messages and logs
+---
 
-### Suggesting Features
-- Open a feature request issue
-- Describe the feature and its benefits
-- Consider implementation complexity
-- Check if similar features already exist
+## � ¿Cómo puedo colaborar?
 
-### Code Contributions
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+Existen muchísimas formas de ayudar al ecosistema de Fina Ergen:
 
-## 🛠️ Development Setup
+1. **Creando nuevos Plugins**: Fina Ergen está construida sobre una arquitectura modular. Si tienes una bombilla inteligente, un ventilador, una TV o cualquier dispositivo, ¡crea un plugin para él! Revisa el [repositorio oficial de Plugins Market](https://github.com/dankopetro/Fina-Plugins-Market) para ver la guía del SDK y agregar el tuyo.
+2. **Reportando Errores**: Si Fina se cierra sola, un comando no funciona o la interfaz tiene problemas, crea un [Issue](https://github.com/dankopetro/Fina-Ergen/issues) explicando qué ocurrió y, si es posible, mostrando el log de la terminal.
+3. **Proponiendo Mejoras**: ¿Una nueva función para el frontend en Vue? ¿Un módulo de IA distinto? Comparte tu idea.
+4. **Mejorando el Código (Pull Requests)**: Si ya has arreglado algo o añadido una función genial al núcleo (Fina Core) o al Frontend (Tauri/Vue).
 
-### Prerequisites
-- Python 3.8+
-- Git
-- All system dependencies (see README.md)
+---
 
-### Local Development
-```bash
-# Clone your fork
-git clone https://github.com/yourusername/jarvis-voice-assistant.git
-cd jarvis-voice-assistant
+## 🛠️ Entorno de Desarrollo
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+Para trabajar en el núcleo de Fina o en su interfaz gráfica, necesitarás instalar las herramientas base.
 
-# Install dependencies
-pip install -r requirements.txt
-pip install -e .[dev]
+### Requisitos Mínimos:
+- **Python 3.10+**: Para el motor de voz y los plugins (Fina Core).
+- **Node.js 20+** y **npm**: Para la interfaz gráfica que emplea Vue 3 y Vite.
+- **Rust (rustup)**: Para el backend del frontend usando la plataforma Tauri v2.
 
-# Copy config template
-cp config_template.py config.py
-# Edit config.py with your API keys
-```
+### Pasos Iniciales:
+1. Haz un **fork** de este repositorio.
+2. Clona tu fork localmente: `git clone https://github.com/tu-usuario/Fina-Ergen.git`
+3. Instala las dependencias de Python (si tocas el Core): `pip install -r requirements.txt`
+4. Instala las dependencias del frontend: `npm install`
+5. Levanta el entorno de prueba de Tauri: `npm run tauri dev`
 
-### Testing
-```bash
-# Run tests
-pytest
+---
 
-# Run with coverage
-pytest --cov=.
+## 🚦 Reglas para los Pull Requests (PRs)
 
-# Run linting
-flake8 .
-black --check .
-mypy .
-```
+Para mantener el código ordenado y seguro para todos:
 
-## 📝 Code Style
+*   **Paso 1: Sincroniza**. Asegúrate de estar trabajando sobre la última versión de la rama `master`.
+*   **Paso 2: Describe bien tu código**. Explica claramente en tu PR qué hace tu código y por qué es necesario.
+*   **Paso 3: Respeta la identidad visual**. Si trabajas en el frontend (`src/App.vue`), mantén la estética (colores cyan, neón, modo oscuro) establecida.
+*   **Paso 4: No subas credenciales**. **NUNCA** incluyas en tus PR tus tokens de OpenAI, ElevenLabs o llaves `.pem` privadas.
 
-### Python Code
-- Follow PEP 8 style guidelines
-- Use type hints where appropriate
-- Write docstrings for functions and classes
-- Keep functions focused and small
+## 🤝 Código de Conducta
 
-### Commit Messages
-- Use clear, descriptive commit messages
-- Start with a verb (Add, Fix, Update, etc.)
-- Reference issues when applicable
+Por favor, mantén siempre el respeto en los Issues y Pull Requests. Queremos que el ecosistema de Fina sea amigable para desarrolladores de todos los niveles. Todos hemos sido principiantes alguna vez.
 
-Example:
-```
-Add weather forecast functionality
+---
 
-- Implement 3-day weather forecast
-- Add temperature and humidity data
-- Update README with new features
-
-Fixes #123
-```
-
-### Pull Request Guidelines
-- Provide a clear description of changes
-- Include tests for new features
-- Update documentation if needed
-- Ensure all tests pass
-- Follow the existing code style
-
-## 🏗️ Project Structure
-
-### Core Files
-- `main.py` - Main application entry point
-- `intent_classifier.py` - Intent detection and classification
-- `utils.py` - Utility functions and API integrations
-- `config.py` - Configuration (not in repo)
-
-### Adding New Features
-
-#### 1. Intent Classification
-Add new intents to `intent_classifier.py`:
-```python
-"new_intent": [
-    "phrase 1", "phrase 2", "phrase 3"
-]
-```
-
-#### 2. Intent Handling
-Add handling in `main.py`:
-```python
-elif intent == "new_intent":
-    result = handle_new_intent()
-    speak(result, selected_voice_model)
-```
-
-#### 3. Implementation
-Add the function to `utils.py`:
-```python
-def handle_new_intent():
-    """Handle the new intent functionality."""
-    # Implementation here
-    return "Success message"
-```
-
-#### 4. Testing
-Create tests in a `tests/` directory:
-```python
-def test_handle_new_intent():
-    result = handle_new_intent()
-    assert "Success" in result
-```
-
-## 🔧 Development Guidelines
-
-### Error Handling
-- Use try-catch blocks for external API calls
-- Provide meaningful error messages
-- Log errors appropriately
-- Graceful degradation when possible
-
-### Performance
-- Avoid blocking operations in the main loop
-- Use async/await for I/O operations
-- Cache expensive operations when possible
-- Profile code for bottlenecks
-
-### Security
-- Never commit API keys or sensitive data
-- Validate user input
-- Use secure defaults
-- Follow security best practices
-
-### Documentation
-- Update README.md for new features
-- Add docstrings to new functions
-- Include usage examples
-- Update configuration templates
-
-## 🧪 Testing
-
-### Unit Tests
-- Test individual functions
-- Mock external dependencies
-- Test edge cases and error conditions
-- Maintain good test coverage
-
-### Integration Tests
-- Test complete workflows
-- Test API integrations
-- Test system interactions
-- Test user scenarios
-
-### Manual Testing
-- Test voice recognition accuracy
-- Test TTS quality
-- Test face authorization
-- Test all major features
-
-## 📋 Issue Templates
-
-### Bug Report Template
-```markdown
-**Describe the bug**
-A clear description of what the bug is.
-
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. See error
-
-**Expected behavior**
-A clear description of what you expected to happen.
-
-**System Information**
-- OS: [e.g. Arch Linux]
-- Python Version: [e.g. 3.9.7]
-- Jarvis Version: [e.g. 1.0.0]
-
-**Additional context**
-Add any other context about the problem here.
-```
-
-### Feature Request Template
-```markdown
-**Is your feature request related to a problem?**
-A clear description of what the problem is.
-
-**Describe the solution you'd like**
-A clear description of what you want to happen.
-
-**Describe alternatives you've considered**
-A clear description of any alternative solutions.
-
-**Additional context**
-Add any other context or screenshots about the feature request.
-```
-
-## 🎯 Areas for Contribution
-
-### High Priority
-- Bug fixes and stability improvements
-- Performance optimizations
-- Better error handling
-- Enhanced documentation
-
-### Medium Priority
-- New voice commands
-- Additional API integrations
-- UI improvements
-- Testing improvements
-
-### Low Priority
-- Cosmetic changes
-- Minor optimizations
-- Additional voice models
-- Platform-specific features
-
-## 📞 Getting Help
-
-- Check existing issues and discussions
-- Join our community chat (if available)
-- Review the documentation
-- Ask questions in issues
-
-## 🙏 Recognition
-
-Contributors will be recognized in:
-- README.md contributors section
-- Release notes
-- Project documentation
-
-Thank you for contributing to Jarvis Voice Assistant! 🚀 
+¡Disfruta programando y gracias por hacer crecer a Fina Ergen! 🚀💻
