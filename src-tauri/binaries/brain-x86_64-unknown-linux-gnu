@@ -1,0 +1,18 @@
+#!/bin/bash
+# Brain Sidecar - Fina Ergen
+# FORZAR EJECUCIÓN DEL MAIN.PY DE ERGEN
+
+ERGEN_MAIN="/home/claudio/Descargas/Fina-Ergen/main.py"
+
+if [ ! -f "$ERGEN_MAIN" ]; then
+  echo "Error: No se encontró main.py de Ergen en $ERGEN_MAIN" >&2
+  exit 1
+fi
+
+# Ejecutar desde el directorio de Ergen
+cd "$(dirname "$ERGEN_MAIN")"
+
+# (Limpieza de duplicados: La orquestación ahora es externa vía lanzar_fina_simple.sh)
+
+echo "🚀 [Brain Wrapper] Iniciando main.py con -u (Unbuffered)..." >&2
+exec /home/claudio/.venv/bin/python3 -u "$ERGEN_MAIN"

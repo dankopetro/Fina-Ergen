@@ -1,0 +1,28 @@
+{
+    "plugins": {
+        "whatsapp": {
+            "label": "WhatsApp Web",
+            "url": "https://web.whatsapp.com"
+        },
+        "telegram": {
+            "label": "Telegram Web",
+            "url": "https://web.telegram.org/a/"
+        },
+        "messenger": {
+            "label": "Messenger",
+            "url": "https://www.messenger.com"
+        },
+        "instagram": {
+            "label": "Instagram",
+            "url": "https://www.instagram.com/direct/inbox/"
+        },
+        "discord": {
+            "label": "Discord",
+            "url": "https://discord.com/app"
+        },
+        "signal": {
+            "label": "Signal",
+            "url": "https://signal.org"
+        }
+    }
+}

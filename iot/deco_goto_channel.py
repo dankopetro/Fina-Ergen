@@ -1,0 +1,50 @@
+
+import asyncio
+from androidtvremote2 import AndroidTVRemote
+
+async def open_live_tv_and_channel(ip):
+    print(f"Conectando al Deco en {ip}...")
+    
+    client = AndroidTVRemote(
+        client_name="Fina Ergen", 
+        certfile="./iot/cert.pem",
+        keyfile="./iot/key.pem",
+        host=ip
+    )
+
+    try:
+        await client.async_connect()
+        print("✅ CONECTADO.")
+        
+        # 1. Asegurar punto de partida en Inicio
+        print("🏠 Asegurando HOME...")
+        client.send_key_command("HOME")
+        await asyncio.sleep(3)
+
+        # 2. Navegar a TV en Vivo (Un paso a la derecha según el usuario)
+        print("👉 Moviendo a la derecha (TV en Vivo)...")
+        client.send_key_command("DPAD_RIGHT")
+        await asyncio.sleep(1)
+        
+        # 3. Entrar
+        print("🆗 Entrando a TV en Vivo...")
+        client.send_key_command("DPAD_CENTER")
+        await asyncio.sleep(5) # Esperar a que cargue el canal actual
+
+        # 4. Cambiar a Canal 26
+        print("🔢 Marcando canal 26...")
+        client.send_key_command(9) # 2
+        await asyncio.sleep(0.5)
+        client.send_key_command(13) # 6
+        await asyncio.sleep(1)
+        client.send_key_command(66) # ENTER
+        
+        print("📡 Canal 26 solicitado.")
+
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        client.disconnect()
+
+if __name__ == "__main__":
+    asyncio.run(open_live_tv_and_channel("192.168.0.9"))

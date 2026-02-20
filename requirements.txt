@@ -1,0 +1,62 @@
+# === NÚCLEO IA & PROCESAMIENTO DE LENGUAJE ===
+torch>=2.0.0            # Motor de Tensores (Base para Transformers/Vosk/Resemblyzer)
+sentence-transformers   # Clasificación de Intentos (Embeddings semánticos)
+transformers            # Modelos HuggingFace
+scikit-learn            # Algoritmos de ML (SVM/KNN para intents)
+numpy                   # Cálculo numérico
+vosk                    # Reconocimiento de Voz Offline (STT)
+openai-whisper          # Reconocimiento de Voz Avanzado (STT alternativo)
+deep-translator         # Traducción automática
+
+# === BIOMETRÍA & AUTENTICACIÓN ===
+resemblyzer             # Biometría de Voz (Voice Authentication)
+face-recognition        # Reconocimiento Facial (Opcional, requiere dlib)
+# dlib                  # Requisito de face-recognition (Compilación lenta, instalar manual si falla)
+
+# === AUDIO (GRABACIÓN Y REPRODUCCIÓN) ===
+sounddevice             # Grabación de micrófono en tiempo real
+soundfile               # Lectura/Escritura de archivos WAV
+pydub                   # Manipulación de audio (mp3, wav, efectos)
+gTTS                    # Google Text-to-Speech (TTS Cloud)
+pyttsx3                 # TTS Offline básico
+elevenlabs              # TTS Premium (Voz de Fina de alta calidad)
+
+# === IOT & DOMÓTICA MÓDULOS DE TERCEROS ===
+# Nota: La domótica ahora es modular. Los requerimientos de Tuya, TV, Clima, etc.
+# se encuentran dentro de sus respectivas carpetas en plugins/*/requirements.txt
+
+# === HERRAMIENTAS DEL SISTEMA & UTILIDADES ===
+psutil                  # Monitor del sistema (CPU, RAM, Procesos)
+pyautogui               # Control de Mouse/Teclado (Automatización)
+keyboard                # Hooks de teclado global
+screen-brightness-control # Control de brillo de pantalla
+python-dotenv           # Manejo de variables de entorno (.env)
+python-vlc              # Reproductor multimedia (VLC bindings)
+pyxdg                   # Estándares XDG (rutas de config en Linux)
+PyYAML                  # Parsing de archivos YAML (Plugins)
+pydantic                # Validación de datos (Modelos de IA y configuración)
+
+# === BÚSQUEDA & INFORMACIÓN WEB ===
+google                  # Búsqueda en Google
+googlesearch-python     # Alternativa de búsqueda
+duckduckgo-search       # Búsqueda privada
+wikipedia-api           # Consultas a Wikipedia
+newsapi-python          # Noticias
+geocoder                # Geolocalización IP
+speedtest-cli           # Test de velocidad de internet
+requests                # Peticiones HTTP
+aiohttp                 # Peticiones asíncronas
+beautifulsoup4          # Scraping Web
+openai                  # Cliente universal para LLMs (GitHub Models/OpenAI)
+
+# === INTERFACES & EXTRAS ===
+pyjokes                 # Chistes para Fina
+colorama                # Colores en terminal
+markdown                # Renderizado de respuestas MD
+pillow                  # Procesamiento de imágenes
+pymupdf                 # Lectura de PDFs (manuales)
+pypdf                   # Manipulación ligera de PDFs
+weasyprint              # Generación de PDFs y documentación a partir de HTML
+click                   # Interfaces de línea de comandos
+fastapi                 # Backend API (Fina Server)
+uvicorn                 # Servidor ASGI para FastAPI

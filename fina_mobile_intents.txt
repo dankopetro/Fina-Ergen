@@ -1,0 +1,94 @@
+
+            # --- MOBILE MESSAGING ---
+            elif intent == "send_message":
+                from utils import load_contacts, run_mobile_message
+                
+                # 1. Contacto
+                contacts = load_contacts()
+                target_name = None
+                target_number = None
+                
+                # Buscar contacto en el comando inicial
+                for name, num in contacts.items():
+                    if name.lower() in commandFinal:
+                        target_name = name
+                        target_number = num
+                        break
+                
+                if not target_number:
+                    speak("¿A quién le envío el mensaje?", selected_voice_model)
+                    target_name_raw = listen(model, language="es")
+                    if target_name_raw:
+                        target_name_raw = target_name_raw.lower()
+                        # Re-buscar
+                        for name, num in contacts.items():
+                            if name.lower() in target_name_raw:
+                                target_name = name
+                                target_number = num
+                                break
+                        if not target_number:
+                             speak(f"No encontré un contacto para {target_name_raw}. Verifica tu lista.", selected_voice_model)
+                             continue
+                    else: 
+                        speak("No te entendí el nombre.", selected_voice_model)
+                        continue
+
+                # 2. App
+                app_to_use = "whatsapp" # Default
+                if "telegram" in commandFinal: app_to_use = "telegram"
+                if "signal" in commandFinal: app_to_use = "signal"
+                if "sms" in commandFinal or "texto" in commandFinal: app_to_use = "sms"
+                
+                # 3. Mensaje
+                msg_body = ""
+                # Intentar extraer "dile que..."
+                markers = ["dile que ", "diciendo que ", "que diga ", "mensaje "]
+                for m in markers:
+                    if m in commandFinal:
+                        msg_body = commandFinal.split(m, 1)[1].strip()
+                        break
+                
+                if not msg_body or len(msg_body) < 2:
+                    speak(f"¿Qué le digo a {target_name}?", selected_voice_model)
+                    msg_body = listen(model, language="es")
+                
+                if msg_body:
+                    speak(f"Enviando mensaje a {target_name} por {app_to_use}...", selected_voice_model)
+                    # Ejecutar en segundo plano para no bloquear voz
+                    threading.Thread(target=run_mobile_message, args=(target_number, msg_body, app_to_use, selected_voice_model)).start()
+                else:
+                    speak("Cancelado.", selected_voice_model)
+
+            elif intent == "make_call":
+                from utils import load_contacts
+                
+                contacts = load_contacts()
+                target_name = None
+                target_number = None
+                
+                for name, num in contacts.items():
+                    if name.lower() in commandFinal:
+                        target_name = name
+                        target_number = num
+                        break
+                
+                if not target_number:
+                     speak("¿A quién llamo?", selected_voice_model)
+                     target_name_raw = listen(model, language="es")
+                     if target_name_raw:
+                        target_name_raw = target_name_raw.lower()
+                        for name, num in contacts.items():
+                            if name.lower() in target_name_raw:
+                                target_name = name
+                                target_number = num
+                                break
+                
+                if target_number:
+                    speak(f"Llamando a {target_name}...", selected_voice_model)
+                    # Usar intent de llamada
+                    adb_cmd = ["adb", "shell", "am", "start", "-a", "android.intent.action.CALL", "-d", f"tel:{target_number}"]
+                    # Nota: ACTION_CALL requiere permiso CALL_PHONE en el manifest de la app que lanza (que es shell), 
+                    # usualmente shell tiene permisos. Si falla, usar DIAL.
+                    subprocess.run(adb_cmd)
+                else:
+                    speak("No encontré el contacto.", selected_voice_model)

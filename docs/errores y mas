@@ -1,0 +1,31 @@
+antes de encender tv que detecte si esta prendida
+
+ejecuta lista en la television     pone lista en la tele
+
+
+
+
+2025-12-08 19:26:05,486 [INFO] FinaUtils: ✅ Vosk Final: adiós
+Batches: 100%|███████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 93.13it/s]
+Intent: exit
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/claudio/Descargas/Fina - Asistente de Voz para Linux/main.py", line 608, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+

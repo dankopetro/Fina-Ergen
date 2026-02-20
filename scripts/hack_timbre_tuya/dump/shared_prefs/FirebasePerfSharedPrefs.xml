@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="com.google.firebase.perf.SdkEnabled" value="true" />
+    <float name="com.google.firebase.perf.TraceSamplingRate" value="1.0" />
+    <long name="com.google.firebase.perf.TimeLimitSec" value="600" />
+    <string name="com.google.firebase.perf.LogSourceName">FIREPERF</string>
+    <boolean name="isEnabled" value="false" />
+    <string name="com.google.firebase.perf.SdkDisabledVersions"></string>
+    <long name="com.google.firebase.perf.TraceEventCountForeground" value="300" />
+    <long name="com.google.firebase.perf.TraceEventCountBackground" value="30" />
+</map>

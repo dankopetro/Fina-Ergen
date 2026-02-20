@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fina Messaging Center</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0f172a;
+            /* Slate 900 */
+            color: white;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        h1 {
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 2rem;
+            background-clip: text;
+            background: linear-gradient(to right, #22d3ee, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            max-width: 600px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(34, 211, 238, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .whatsapp .icon-box {
+            background: rgba(37, 211, 102, 0.1);
+            color: #25D366;
+        }
+
+        .telegram .icon-box {
+            background: rgba(0, 136, 204, 0.1);
+            color: #0088cc;
+        }
+
+        .messenger .icon-box {
+            background: rgba(0, 132, 255, 0.1);
+            color: #0084ff;
+        }
+
+        .signal .icon-box {
+            background: rgba(58, 118, 240, 0.1);
+            color: #3a76f0;
+        }
+
+        .label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .footer-note {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .alert-banner {
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            color: #fde047;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            animation: fadeIn 0.8s ease-out;
+            box-shadow: 0 0 20px rgba(234, 179, 8, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Centro de Mensajería Unificado</h1>
+
+        <div class="alert-banner">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Una vez vinculado tu dispositivo cierra esta ventana
+        </div>
+
+        <div class="grid">
+            <div class="card whatsapp" onclick="launchApp('https://web.whatsapp.com')">
+                <div class="icon-box"><i class="fa-brands fa-whatsapp"></i></div>
+                <span class="label">WhatsApp Web</span>
+            </div>
+            <div class="card telegram" onclick="launchApp('https://web.telegram.org/a/')">
+                <div class="icon-box"><i class="fa-brands fa-telegram"></i></div>
+                <span class="label">Telegram Web</span>
+            </div>
+            <div class="card messenger" onclick="launchApp('https://www.messenger.com')">
+                <div class="icon-box"><i class="fa-brands fa-facebook-messenger"></i></div>
+                <span class="label">Messenger</span>
+            </div>
+            <div class="card signal" onclick="launchApp('https://signal.org')">
+                <div class="icon-box"><i class="fa-solid fa-comment-dots"></i></div>
+                <span class="label">Signal</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        <i class="fa-solid fa-circle-info"></i>
+        Si estás vinculando un dispositivo, puedes cerrar esta ventana una vez completado el proceso.
+    </div>
+
+    <script>
+        function launchApp(url) {
+            console.log("Lanzando App:", url);
+            window.location.assign(url);
+        }
+    </script>
+</body>
+
+</html>

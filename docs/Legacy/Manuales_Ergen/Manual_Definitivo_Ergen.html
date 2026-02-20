@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Pro - Fina Ergen v2.5.0</title>
+    <!-- FontAwesome para Iconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Tipografía Outfit (Solicitada por el usuario) */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        :root {
+            --bg-body: #000000;
+            /* Dark completo solicitado */
+            --bg-card: #0c0c0c;
+            --primary: #3b82f6;
+            --accent: #22d3ee;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --gradient: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            font-size: 11pt;
+        }
+
+        /* Página de Portada */
+        .cover-page {
+            height: 297mm;
+            /* Tamaño A4 aprox */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(to bottom, #000 0%, #050505 100%);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .cover-logo {
+            width: 250px;
+            margin-bottom: 40px;
+            filter: drop-shadow(0 0 30px rgba(34, 211, 238, 0.5));
+        }
+
+        h1.main-title {
+            font-size: 80px;
+            font-weight: 800;
+            margin: 0;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -4px;
+        }
+
+        .subtitle {
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 15px;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin-top: -10px;
+        }
+
+        .version-badge {
+            margin-top: 40px;
+            padding: 10px 30px;
+            border: 2px solid var(--accent);
+            border-radius: 50px;
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+
+        .author-info {
+            position: absolute;
+            bottom: 50px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Contenido General */
+        .content-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        h2 {
+            font-size: 32px;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-top: 80px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h3 {
+            font-size: 22px;
+            color: var(--accent);
+            margin-top: 40px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        /* Tarjetas de Información */
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Imágenes */
+        .image-box {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .image-box img {
+            max-width: 100%;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .image-caption {
+            margin-top: 15px;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        /* Listas Modernas */
+        ul.modern-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul.modern-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        ul.modern-list li i {
+            color: var(--accent);
+            margin-top: 5px;
+        }
+
+        /* Bloques de Código */
+        code {
+            background: #1e1e1e;
+            color: #569cd6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+        }
+
+        pre {
+            background: #0d1117;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid var(--primary);
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            color: #e6edf3;
+        }
+
+        /* Tabla de Comandos */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: var(--bg-card);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 60px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Salto de Página para el PDF */
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PORTADA -->
+    <div class="cover-page page-break">
+        <img src="../manual_images/cover.png" class="cover-logo" alt="Fina Logo">
+        <h1 class="main-title">FINA</h1>
+        <div class="subtitle">Phoenix Edition</div>
+        <div class="version-badge">BETA 2.5.0</div>
+        <div class="author-info">Creado por Dankopetro & Antigravity AI | 2026</div>
+    </div>
+
+    <div class="content-container">
+
+        <!-- INTRODUCCIÓN -->
+        <section id="introduccion">
+            <h2><i class="fas fa-fingerprint"></i> El Renacimiento de Fina</h2>
+            <p>
+                <strong>Fina Ergen</strong> no es simplemente una actualización; es un salto evolutivo.
+                Inspirada en la necesidad de un control total, privado y estético del entorno digital y físico,
+                esta versión 2.5.0 redefine lo que un asistente local puede lograr en un sistema Linux.
+            </p>
+            <div class="info-card">
+                <h3>Filosofía Phoenix</h3>
+                <ul class="modern-list">
+                    <li><i class="fas fa-check"></i> <strong>Aislamiento Total:</strong> Todo el procesamiento de voz
+                        ocurre localmente.</li>
+                    <li><i class="fas fa-check"></i> <strong>Velocidad Extrema:</strong> Respuesta instantánea gracias a
+                        su arquitectura modular.</li>
+                    <li><i class="fas fa-check"></i> <strong>Estética Inmersiva:</strong> Una interfaz diseñada para ser
+                        el centro de tu escritorio.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ARQUITECTURA -->
+        <section id="arquitectura">
+            <h2><i class="fas fa-project-diagram"></i> Arquitectura Modular</h2>
+            <p>
+                El sistema se divide en un <strong>Cerebro (Python)</strong> y una <strong>Interfaz
+                    (Tauri/Vue)</strong>.
+                Esta separación permite que Fina siga escuchando y procesando incluso si la ventana está cerrada o
+                minimizada.
+            </p>
+            <div class="image-box">
+                <img src="../manual_images/arch.png" alt="Esquema Arquitectura">
+                <div class="image-caption">Diagrama de flujo de datos en tiempo real de Fina Ergen.</div>
+            </div>
+            <h3>Subsistemas Clave</h3>
+            <ul class="modern-list">
+                <li><strong>Oído (STT - Vosk/Piper):</strong> Escucha constante del comando de activación.</li>
+                <li><strong>Inteligencia (intent_classifier):</strong> Clasifica tus deseos en acciones concretas.</li>
+                <li><strong>Dashboard (Vue 3):</strong> Panel de control visual con feedback de animaciones reactivas.
+                </li>
+            </ul>
+        </section>
+
+        <div class="page-break"></div>
+
+        <!-- PALABRAS DE ACTIVACIÓN -->
+        <section id="activacion">
+            <h2><i class="fas fa-microphone-lines"></i> Palabras de Activación</h2>
+            <p>Fina es ahora más flexible. Podés despertarla usando varios términos según prefieras:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Término</th>
+                        <th>Variante Cariñosa</th>
+                        <th>Contexto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Fina</td>
+                        <td>Hola Fina</td>
+                        <td>Comando estándar</td>
+                    </tr>
+                    <tr>
+                        <td>Bebe / Bebé</td>
+                        <td>Hola bebe</td>
+                        <td>Uso informal</td>
+                    </tr>
+                    <tr>
+                        <td>Nena</td>
+                        <td>Nena, ¿estás ahí?</td>
+                        <td>Cerrano y ameno</td>
+                    </tr>
+                    <tr>
+                        <td>Loquita</td>
+                        <td>Loquita, ayudame</td>
+                        <td>Familiar / Divertido</td>
+                    </tr>
+                    <tr>
+                        <td>Compu</td>
+                        <td>Compu, despierta</td>
+                        <td>Técnico</td>
+                    </tr>
+                    <tr>
+                        <td>Dora</td>
+                        <td>Hola Dora</td>
+                        <td>Exploradora</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- INSTALACIÓN Y EJECUCIÓN -->
+        <section id="ejecucion">
+            <h2><i class="fas fa-bolt"></i> Cómo Lanzar el Sistema</h2>
+            <p>
+                Olvidate de comandos complicados. Phoenix se lanza de forma integrada para garantizar que todos los
+                puentes (UDP, Tauri, Sidecars) se inicien juntos.
+            </p>
+            <h3>Directo desde la Terminal</h3>
+            <pre>cd ~/Descargas/Fina - Asistente de Voz para Linux/Versiones
+./3_Phoenix.sh</pre>
+            <p>
+                Este script inteligente verifica dependencias, instala lo necesario y lanza el entorno gráfico.
+                Si tenés el archivo <code>.desktop</code> configurado, simplemente búscalo en tu menú de aplicaciones
+                Linux.
+            </p>
+        </section>
+
+        <div class="page-break"></div>
+
+        <!-- FUNCIONES PRO -->
+        <section id="funciones">
+            <h2><i class="fas fa-star"></i> Funcionalidades Avanzadas</h2>
+
+            <h3>🌡️ El Clima Perfecto</h3>
+            <p>
+                Phoenix no solo te dice la temperatura. Te informa sobre la <strong>Sensación Térmica</strong>,
+                humedad y hasta te avisa si va a llover en los próximos 5 días con precisión de horarios.
+            </p>
+
+            <h3>📺 Centro Multimedia Android</h3>
+            <p>
+                Fina controla tu TV vía ADB de forma nativa. Podés encenderla, apagarla, subir volumen, cambiar canales
+                específicos o abrir apps como YouTube y Netflix solo con tu voz.
+            </p>
+
+            <h3>🔐 Seguridad en tus Manos</h3>
+            <p>
+                Phoenix incluye soporte para <strong>Lector de Huellas dactilares</strong>. Cuando pidas algo crítico
+                (como borrar un archivo o ver cámaras), una ventana de escaneo aparecerá en tu escritorio pidiendo tu
+                biometría.
+            </p>
+
+            <div class="image-box">
+                <img src="../manual_images/ui_check.png" alt="Interfaz de Fina">
+                <div class="image-caption">Visualización del Dashboard moderno de Fina Ergen.</div>
+            </div>
+        </section>
+
+        <!-- ROADMAP -->
+        <section id="roadmap">
+            <h2><i class="fas fa-rocket"></i> El Futuro: Vuelo Phoenix</h2>
+            <ul class="modern-list">
+                <li><i class="fas fa-microchip"></i> <strong>Llama 3 Local:</strong> Integración de Ollama para chat
+                    100% offline.</li>
+                <li><i class="fas fa-eye"></i> <strong>Visión Artificial:</strong> Narrativa visual de lo que ve tu
+                    webcam (vía YOLOv8).</li>
+                <li><i class="fas fa-network-wired"></i> <strong>Fina Web:</strong> Monitorización remota de tu casa
+                    desde el celular.</li>
+            </ul>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>Este documento es parte del proyecto Fina Ergen Beta 2.5.0</p>
+        <p>Generado el 30 de Enero de 2026 | Dankopetro</p>
+    </footer>
+
+</body>
+
+</html>

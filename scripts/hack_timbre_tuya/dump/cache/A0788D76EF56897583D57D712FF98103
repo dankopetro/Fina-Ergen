@@ -1,0 +1,1 @@
+[{"dstUnits":["℃","C","°C"],"rules":[{"action":"-","value":32},{"action":"/","value":1.8}],"srcUnits":["F","°F","℉"],"upperRound":false},{"dstUnits":["F","°F","℉"],"rules":[{"action":"*","value":1.8},{"action":"+","value":32}],"srcUnits":["℃","C","°C"],"upperRound":true}]

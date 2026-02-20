@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Pro - Fina Ergen v2.8.7 RC</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            background-color: #000000;
+        }
+
+        :root {
+            --bg-body: #000000;
+            --bg-card: #0c0c0c;
+            --primary: #3b82f6;
+            --accent: #22d3ee;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --gradient: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            font-size: 11pt;
+        }
+
+        .page {
+            padding: 60px 80px;
+            max-width: 900px;
+            margin: 0 auto;
+            min-height: 297mm;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Portada */
+        .cover {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #1e293b 0%, #000 70%);
+        }
+
+        .cover img {
+            width: 280px;
+            margin-bottom: 40px;
+            filter: drop-shadow(0 0 30px rgba(34, 211, 238, 0.4));
+        }
+
+        .cover h1 {
+            font-size: 90px;
+            font-weight: 800;
+            margin: 0;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -4px;
+        }
+
+        .cover .subtitle {
+            font-size: 26px;
+            font-weight: 300;
+            letter-spacing: 12px;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin-top: -10px;
+        }
+
+        .version-badge {
+            margin-top: 40px;
+            padding: 8px 25px;
+            border: 2px solid var(--accent);
+            border-radius: 50px;
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        /* Secciones */
+        h2 {
+            font-size: 36px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 5px;
+            margin-top: 60px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h3 {
+            font-size: 24px;
+            color: var(--accent);
+            margin-top: 40px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .highlight-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            border-left: 5px solid var(--primary);
+        }
+
+        .image-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .caption {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        ul.pro-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul.pro-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        ul.pro-list li i {
+            color: var(--accent);
+            margin-top: 5px;
+        }
+
+        pre {
+            background: #0d1117;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            color: #e6edf3;
+            font-family: 'Consolas', monospace;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PÁGINA 1: PORTADA -->
+    <div class="page cover page-break">
+        <img src="../../../manual_images/cover.png" alt="Fina Cover Logo">
+        <h1>FINA</h1>
+        <div class="subtitle">Phoenix Edition</div>
+        <div class="version-badge">RC 2.8.7 "PRO MIX"</div>
+        <div style="margin-top: 60px; font-weight: 300;">MANUAL COMPLETO DE USUARIO</div>
+        <div class="footer">Generado por Antigravity AI | Feb 2026 | Dankopetro</div>
+    </div>
+
+    <!-- PÁGINA 2: INTRODUCCIÓN Y FILOSOFÍA -->
+    <div class="page page-break">
+        <h2><i class="fas fa-info-circle"></i> 1. Introducción</h2>
+        <p>
+            <strong>Fina Ergen</strong> ha alcanzado su madurez en la versión 2.8.7 RC. Esta edición
+            representa la estabilidad definitiva antes del gran salto generacional, con un motor de voz
+            perfeccionado y un sistema de gestión de recursos atómico.
+        </p>
+
+        <div class="highlight-box">
+            <h3>Filosofía de Diseño "Local-First"</h3>
+            <ul class="pro-list">
+                <li><i class="fas fa-microchip"></i> <strong>Procesamiento Local:</strong> La voz se reconoce (Vosk) y
+                    se sintetiza (Piper) en tu propia máquina.</li>
+                <li><i class="fas fa-shield-halved"></i> <strong>Privacidad Absoluta:</strong> No enviamos tus clips de
+                    audio a servidores externos.</li>
+                <li><i class="fas fa-puzzle-piece"></i> <strong>Aislamiento de Plugins:</strong> Cada función (TV,
+                    Clima, Luces) es un plugin independiente.</li>
+            </ul>
+        </div>
+
+        <h3>1.1 Historia y Evolución</h3>
+        <p>
+            Fina nace como un fork avanzado de Jarvis, adaptado para el público hispanohablante. La serie Phoenix
+            consolida la integración con Tauri y Vue 3, ofreciendo una experiencia visual premium y fluida.
+        </p>
+
+        <div class="image-container">
+            <img src="../../../manual_images/arch.png" alt="Esquema Arquitectura">
+            <div class="caption">Figura 1: Diagrama de flujo de datos del núcleo Phoenix estable.</div>
+        </div>
+        <div class="footer">Página 1</div>
+    </div>
+
+    <!-- PÁGINA 3: INSTALACIÓN Y NUEVA FORMA DE LANZAMIENTO -->
+    <div class="page page-break">
+        <h2><i class="fas fa-rocket"></i> 2. Guía de Inicio Rápido</h2>
+
+        <h3>2.1 Instalación de Dependencias</h3>
+        <p>Asegúrate de tener las herramientas base instaladas en tu sistema:</p>
+        <pre>sudo pacman -S android-tools vlc ffmpeg espeak-ng nodejs npm</pre>
+        <p>Luego, instala las dependencias de Python dentro del entorno virtual:</p>
+        <pre>pip install -r requirements.txt</pre>
+
+        <div class="highlight-box" style="border-left-color: #f59e0b;">
+            <h3 style="color: #f59e0b;"><i class="fas fa-exclamation-triangle"></i> Arranque Oficial Phoenix
+            </h3>
+            <p>
+                Para garantizar la sincronización entre el Cerebro (Python) y la Interfaz (Tauri), usa siempre:
+            </p>
+            <pre>./lanzar_fina_simple.sh</pre>
+            <p>
+                Este script orquesta el Backend, la API y el Frontend, asegurando una carga limpia y monitorizada.
+            </p>
+        </div>
+
+        <h3>2.2 Configuración de Claves</h3>
+        <p>Edita el archivo <code>config.py</code> o utiliza el panel de ajustes en el Dashboard para gestionar
+            tus claves de Mistral, OpenWeather y Gmail.</p>
+
+        <div class="image-container">
+            <img src="../../../manual_images/ui_loading.png" alt="Pantalla de Carga">
+            <div class="caption">Figura 2: Secuencia de arranque con reporte proactivo de TV.</div>
+        </div>
+        <div class="footer">Página 2</div>
+    </div>
+
+    <!-- PÁGINA 4: FUNCIONALIDADES PRO -->
+    <div class="page page-break">
+        <h2><i class="fas fa-star"></i> 3. Funcionalidades Avanzadas</h2>
+
+        <h3>3.1 Palabras de Activación Flexibles</h3>
+        <p>Fina responde a múltiples nombres, permitiendo una interacción más natural:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Palabra</th>
+                    <th>Ejemplo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Fina</td>
+                    <td>"Fina, ¿qué hora es?"</td>
+                </tr>
+                <tr>
+                    <td>Bebe / Bebé</td>
+                    <td>"Hola bebé, pon música"</td>
+                </tr>
+                <tr>
+                    <td>Nena</td>
+                    <td>"Nena, ¿cómo está el clima?"</td>
+                </tr>
+                <tr>
+                    <td>Loquita</td>
+                    <td>"Loquita, abre YouTube"</td>
+                </tr>
+                <tr>
+                    <td>Compu</td>
+                    <td>"Compu, busca en Google..."</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>3.2 Control Total de Android TV</h3>
+        <p>Controla cualquier televisión Android conectada a tu red local vía ADB:</p>
+        <ul class="pro-list">
+            <li><i class="fas fa-tv"></i> "Pon Telefe en la tele" (Sintonización directa de canales)</li>
+            <li><i class="fas fa-volume-high"></i> "Sube el volumen de la tele 10 puntos"</li>
+            <li><i class="fas fa-play"></i> "Abre Netflix en la tele" (Lanzamiento de apps por paquete)</li>
+        </ul>
+
+        <div class="highlight-box">
+             <h3>🛡️ Sistema de Apagado Atómico (Janitor)</h3>
+             <p>La versión 2.8.7 introduce <code>scripts/janitor.py</code>. Al despedirte de Fina, el sistema ejecuta una purga quirúrgica de procesos huérfanos (Weston, Waydroid, WebKit), asegurando que tu terminal recupere el control instantáneamente sin procesos "zombis".</p>
+        </div>
+
+        <div class="image-container">
+            <img src="../../../manual_images/ui_check.png" alt="Dashboard Activo">
+            <div class="caption">Figura 3: Interfaz principal con monitor de intensidad y biometría activa.</div>
+        </div>
+        <div class="footer">Página 3</div>
+    </div>
+
+    <!-- PÁGINA 5: CLIMA, PLUGINS Y FUTURO -->
+    <div class="page">
+        <h2><i class="fas fa-cloud-sun"></i> 4. Clima e Inteligencia Contextual</h2>
+        <ul class="pro-list">
+            <li><i class="fas fa-temperature-half"></i> <strong>Sensación Térmica:</strong> Reporta la temperatura real percibida.</li>
+            <li><i class="fas fa-cloud-rain"></i> <strong>Detección de Lluvia:</strong> "Fina, ¿cuándo va a llover?"</li>
+            <li><i class="fas fa-calendar-day"></i> <strong>Pronóstico Mañana:</strong> Consulta detallada de la jornada.</li>
+        </ul>
+
+        <h3>4.1 Cortesía y Plugins</h3>
+        <p>
+            Fina ahora es más atenta. Cualquier orden enviada a los plugins (Clima Surrey, TV TCL) es confirmada verbalmente de inmediato, brindando una experiencia más orgánica.
+        </p>
+
+        <h2><i class="fas fa-map-location-dot"></i> 5. El Futuro: Fina-Ergen</h2>
+        <p>Con la serie Phoenix alcanzando su estabilidad final, anunciamos el inicio del desarrollo de <strong>Fina-Ergen</strong>:</p>
+        <ul class="pro-list">
+            <li><i class="fas fa-brain"></i> <strong>IA Adolescente:</strong> Una inteligencia más madura, fluida y capaz de razonamientos complejos.</li>
+            <li><i class="fas fa-wand-magic-sparkles"></i> <strong>Hyper-UI:</strong> Una interfaz renovada con widgets avanzados y animaciones cinemáticas.</li>
+            <li><i class="fas fa-network-wired"></i> <strong>Ecosistema Extendido:</strong> Capacidad de autogestión de plugins y mayor integración domótica proactiva.</li>
+        </ul>
+
+        <div style="margin-top: 100px; text-align: center; border-top: 1px solid var(--border); padding-top: 20px;">
+            <p style="font-size: 14px; color: var(--text-muted);">Fina Ergen Project - Dankopetro 2026 | El renacimiento ha terminado. Empieza el crecimiento.</p>
+        </div>
+        <div class="footer">Página 4</div>
+    </div>
+
+</body>
+
+</html>

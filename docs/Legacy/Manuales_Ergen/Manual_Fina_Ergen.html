@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario - Fina Ergen</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --primary: #3b82f6;
+            /* Blue 500 */
+            --accent: #22d3ee;
+            /* Cyan 400 */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gradient: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header hero */
+        header {
+            text-align: center;
+            padding: 4rem 1rem;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -2px;
+            color: var(--accent);
+            text-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-top: 0.5rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            color: var(--accent);
+            padding: 0.25rem 1rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Sections */
+        section {
+            margin-bottom: 4rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        h2 {
+            font-size: 2rem;
+            border-left: 4px solid var(--primary);
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        h2 i {
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        p,
+        li {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--text-main);
+            font-size: 1.25rem;
+        }
+
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .icon-box i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        /* Code blocks */
+        pre {
+            background: #020617;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            color: #e2e8f0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        code {
+            color: var(--accent);
+            font-family: monospace;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Feature list */
+        ul.features {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul.features li {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+        }
+
+        ul.features li::before {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--accent);
+            margin-top: 0.3rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 5rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Warning box */
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>FINA</h1>
+        <div class="subtitle">Phoenix Edition</div>
+        <div class="version-badge">Beta v2.5.0</div>
+        <p style="margin-top: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+            El asistente de inteligencia artificial modular, diseñado para controlar tu entorno digital y físico con
+            privacidad y estilo.
+        </p>
+    </header>
+
+    <div class="container">
+
+        <!-- 1. INTRODUCCIÓN -->
+        <section>
+            <h2><i class="fas fa-rocket"></i> Bienvenido a la Nueva Era</h2>
+            <p>
+                Has descargado <strong>Fina Ergen</strong>, la evolución más potente de nuestro asistente.
+                Esta versión ha sido reescrita desde su núcleo para ser <strong>modular, rápida y adaptable</strong>.
+                Ya no es solo un script; es una plataforma extensible que conecta tu voz con tus dispositivos,
+                aplicaciones e información.
+            </p>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="icon-box"><i class="fas fa-brain"></i></div>
+                    <h3>Inteligencia Local</h3>
+                    <p>Procesamiento de voz y decisiones en tu equipo. Respetamos tu privacidad.</p>
+                </div>
+                <div class="card">
+                    <div class="icon-box"><i class="fas fa-puzzle-piece"></i></div>
+                    <h3>Arquitectura Modular</h3>
+                    <p>Nuevo sistema de plugins híbrido. Carga solo lo que necesitas (TV, Clima, Domótica).</p>
+                </div>
+                <div class="card">
+                    <div class="icon-box"><i class="fas fa-fingerprint"></i></div>
+                    <h3>Seguridad Biométrica</h3>
+                    <p>Protege comandos críticos con verificación de voz y huella dactilar.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. INSTALACIÓN -->
+        <section>
+            <h2><i class="fas fa-download"></i> Instalación y Puesta en Marcha</h2>
+            <p>Fina Ergen está diseñada actualmente para entornos <strong>Linux</strong> (testeada en Ubuntu/Debian
+                con Wayland/X11).</p>
+
+            <h3>Requisitos Previos</h3>
+            <ul class="features">
+                <li>Python 3.10 o superior</li>
+                <li>Conexión a Internet (para APIs de clima, noticias y updates)</li>
+                <li>Micrófono y Altavoces configurados</li>
+            </ul>
+
+            <h3>Pasos de Instalación</h3>
+            <div class="card">
+                <p>1. Clona el repositorio o descomprime el paquete en tu carpeta personal.</p>
+                <pre>cd Fina-Phoenix
+./install.sh</pre>
+                <p>2. Configura tus dispositivos y claves:</p>
+                <pre>cp config_template.py config.py
+nano config.py  # Añade tus API Keys (OpenAI, NewsAPI, etc)</pre>
+                <p>3. Inicia a Fina:</p>
+                <pre>python3 main.py</pre>
+            </div>
+        </section>
+
+        <!-- 3. USO DIARIO -->
+        <section>
+            <h2><i class="fas fa-microphone-lines"></i> Cómo Usar a Fina</h2>
+            <p>Interactuar es natural. Solo di su nombre o usa el panel visual.</p>
+
+            <div class="warning-box">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>Palabra Clave:</strong> Di "<strong>Fina</strong>" claro y fuerte para despertarla. El
+                    anillo visual cambiará a color verde.
+                </div>
+            </div>
+
+            <h3>Comandos Esenciales</h3>
+            <ul class="features">
+                <li><strong>Información:</strong> "¿Qué hora es?", "¿Qué tiempo hace?", "Cuéntame las noticias".</li>
+                <li><strong>Sistema:</strong> "Sube el volumen", "Abre Firefox", "Toma una captura".</li>
+                <li><strong>Identidad:</strong> "¿Quién eres?", "Acerca de ti".</li>
+                <li><strong>Productividad:</strong> "Recuérdame comprar leche a las 18:00", "Lee mi correo".</li>
+            </ul>
+        </section>
+
+        <!-- 4. PLUGINS (NUEVO) -->
+        <section>
+            <h2><i class="fas fa-bolt"></i> Poder Ilimitado: Plugins</h2>
+            <p>Phoenix v2.5 introduce un sistema de plugins revolucionario. Fina escanea la carpeta
+                <code>plugins/</code> y carga capacidades extras dinámicamente.
+            </p>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="icon-box"><i class="fas fa-tv"></i></div>
+                    <h3>Control de TV</h3>
+                    <p>Maneja tu Smart TV (Samsung, TCL, Android TV). <br><em>"Prende la tele", "Pon YouTube", "Sube el
+                            volumen"</em>.</p>
+                </div>
+                <div class="card">
+                    <div class="icon-box"><i class="fas fa-snowflake"></i></div>
+                    <h3>Climatización</h3>
+                    <p>Controla tu aire acondicionado (Compatible con Midea/Surrey). <br><em>"Pon el aire en 24 grados",
+                            "Activa el turbo"</em>.</p>
+                </div>
+                <div class="card">
+                    <div class="icon-box"><i class="fas fa-bell"></i></div>
+                    <h3>Timbre Inteligente</h3>
+                    <p>Se integra con vídeo-porteros Tuya. <br><em>"Corta el timbre", "Muéstrame quién es"</em>.</p>
+                </div>
+            </div>
+
+            <p style="margin-top: 1rem;">
+                <strong>¿Cómo conseguir más plugins?</strong><br>
+                Próximamente lanzaremos el <strong>Fina Plugin Store</strong>. Por ahora, puedes descargar módulos
+                oficiales desde nuestro repositorio y soltarlos en la carpeta <code>plugins/</code>. Fina los detectará
+                al reiniciar.
+            </p>
+        </section>
+
+        <!-- 5. FUTURO -->
+        <section>
+            <h2><i class="fas fa-eye"></i> Visión Futura</h2>
+            <p>Esto es solo el comienzo. El proyecto Phoenix tiene una hoja de ruta ambiciosa:</p>
+
+            <ul class="features">
+                <li><strong>Multiplataforma Real:</strong> Llevaremos Fina a Windows y macOS de forma nativa.</li>
+                <li><strong>Fina Web & Cloud:</strong> Controla tu hogar desde cualquier navegador mediante una interfaz
+                    web segura y encriptada.</li>
+                <li><strong>IA Generativa Local:</strong> Integración profunda con modelos Llama/Mistral corriendo 100%
+                    offline en tu GPU.</li>
+                <li><strong>Marketplace de Plugins:</strong> Una tienda comunitaria para compartir y descargar nuevas
+                    habilidades.</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>Creado con <i class="fas fa-heart" style="color:red"></i> por <strong>Dankopetro</strong></p>
+            <p>Fina Ergen Beta v2.5.0 &copy; 2026</p>
+        </footer>
+
+    </div>
+
+</body>
+
+</html>

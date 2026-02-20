@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boceto Conceptual 2 - Fina Ergen UI 3.0</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            background-color: #000000;
+        }
+
+        :root {
+            --bg-body: #000000;
+            --bg-card: #0c0c0c;
+            --primary: #8b5cf6;
+            /* Violeta Neón */
+            --accent: #ec4899;
+            /* Rosa Neón */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            font-size: 11pt;
+        }
+
+        .page {
+            padding: 40px 60px;
+            max-width: 900px;
+            margin: 0 auto;
+            min-height: 297mm;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin: 0;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+
+        .concept-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        img {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.1);
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PORTADA -->
+    <div class="page cover page-break">
+        <div style="height: 300px; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-palette"
+                style="font-size: 100px; background: var(--gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"></i>
+        </div>
+        <h1>Fina Ergen</h1>
+        <h2 style="text-align: center; border: none; margin-top: 10px; color: #fff;">Boceto Oficial v2</h2>
+        <p style="text-align: center; color: var(--text-muted);">Integración de Mockups "Futuras" - Definición Final UI
+        </p>
+        <div class="footer">Documento generado con Assets de Usuario | Feb 2026</div>
+    </div>
+
+    <!-- PÁGINA 1 -->
+    <div class="page page-break">
+        <h2>1. Gestión y Hogar</h2>
+
+        <div class="concept-card">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/imagenes futuras/fina_calendar_timeline_mockup_1769820123755.png">
+            <h3>Agenda Interactiva</h3>
+            <p>Timeline vertical para gestión diaria por voz. Nótese el uso de colores neón para los bloques de tiempo.
+            </p>
+        </div>
+
+        <div class="concept-card">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/imagenes futuras/fina_habitat_domain_mockup_1769819955499.png">
+            <h3>Habitat Domain (IoT)</h3>
+            <p>Panel de control centralizado para dispositivos del hogar con estética de cristal oscuro.</p>
+        </div>
+        <div class="footer">Página 1</div>
+    </div>
+
+    <!-- PÁGINA 2 -->
+    <div class="page page-break">
+        <h2>2. Configuración y Seguridad</h2>
+
+        <div class="concept-card">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/imagenes futuras/fina_settings_hub_mockup_1769819887541.png">
+            <h3>Hub de Ajustes</h3>
+            <p>Dashboard principal para navegar entre los 4 dominios de configuración.</p>
+        </div>
+
+        <div class="concept-card">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/imagenes futuras/fina_security_sentinel_mockup_1769819933409.png">
+            <h3>Security Domain</h3>
+            <p>Interfaz "Sentinel" mostrando el estado de la red y dispositivos de seguridad.</p>
+        </div>
+
+        <div class="concept-card">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/imagenes futuras/fina_intelligence_domain_mockup_1769819904498.png">
+            <h3>Ajustes de Inteligencia</h3>
+            <p>Configuración profunda de parámetros de IA y personalización.</p>
+        </div>
+        <div class="footer">Página 2</div>
+    </div>
+
+    <!-- PÁGINA 3 -->
+    <div class="page page-break">
+        <h2>3. Entretenimiento y Clima</h2>
+
+        <div class="concept-card">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/imagenes futuras/fina_visual_domain_tv_mockup_1769819918556.png">
+            <h3>Visual/TV Domain</h3>
+            <p>Centro de entretenimiento para control de TV y medios.</p>
+        </div>
+
+        <div class="concept-card">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/imagenes futuras/fina_weather_deepdive_mockup_1769820054403.png">
+            <h3>Weather Deep-Dive</h3>
+            <p>Visualización rica y atmosférica de condiciónes climáticas.</p>
+        </div>
+        <div class="footer">Página 3</div>
+    </div>
+
+    <!-- PÁGINA 4 -->
+    <div class="page">
+        <h2>4. Sistema y Avatar</h2>
+
+        <div class="concept-card">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/imagenes futuras/fina_system_stats_mockup_1769820040060.png">
+            <h3>System Stats</h3>
+            <p>Monitor de recursos de hardware en tiempo real.</p>
+        </div>
+
+        <div class="concept-card">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/imagenes futuras/fina_voice_interaction_mockup_1769819969091.png">
+            <h3>Voice Avatar</h3>
+            <p>La nueva representación visual de Fina, interactiva y dinámica.</p>
+        </div>
+        <div class="footer">Página 4</div>
+    </div>
+
+</body>
+
+</html>

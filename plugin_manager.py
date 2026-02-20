@@ -1,0 +1,458 @@
+#!/usr/bin/env python3
+"""
+Plugin Manager para Fina
+Gestiona la carga, descarga e instalación de plugins
+"""
+
+import os
+import json
+import subprocess
+import sys
+import importlib.util
+from pathlib import Path
+from typing import Dict, List, Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
+class PluginManager:
+    """Gestor de plugins para Fina"""
+    
+    def __init__(self, plugins_dir: str = None):
+        """
+        Inicializa el gestor de plugins
+        
+        Args:
+            plugins_dir: Directorio donde están los plugins (default: ./plugins)
+        """
+        if plugins_dir is None:
+            # Obtener directorio raíz de Fina
+            self.root_dir = Path(__file__).parent.absolute()
+            self.plugins_dir = self.root_dir / "plugins"
+        else:
+            self.plugins_dir = Path(plugins_dir)
+        
+        self.loaded_plugins: Dict[str, dict] = {}
+        self.plugin_processes: Dict[str, subprocess.Popen] = {}
+        
+        # Crear directorio de plugins si no existe
+        self.plugins_dir.mkdir(exist_ok=True)
+        
+        logger.info(f"Plugin Manager inicializado. Directorio: {self.plugins_dir}")
+    
+    def discover_plugins(self) -> List[str]:
+        """
+        Descubre todos los plugins disponibles (YAML o JSON)
+        
+        Returns:
+            Lista de nombres de plugins encontrados
+        """
+        plugins = []
+        
+        if not self.plugins_dir.exists():
+            logger.warning(f"Directorio de plugins no existe: {self.plugins_dir}")
+            return plugins
+        
+        for item in self.plugins_dir.iterdir():
+            if item.is_dir():
+                if (item / "plugin.yaml").exists() or (item / "plugin.json").exists():
+                    plugins.append(item.name)
+                    logger.debug(f"Plugin descubierto: {item.name}")
+        
+        return plugins
+    
+    def load_plugin_metadata(self, plugin_name: str) -> Optional[dict]:
+        """
+        Carga los metadatos de un plugin desde plugin.yaml (preferido) o plugin.json
+        """
+        plugin_path = self.plugins_dir / plugin_name
+        
+        yaml_file = plugin_path / "plugin.yaml"
+        json_file = plugin_path / "plugin.json"
+        
+        data = None
+        try:
+            if yaml_file.exists():
+                # Intentamos usar PyYAML si está disponible
+                try:
+                    import yaml
+                    with open(yaml_file, 'r', encoding='utf-8') as f:
+                        data = yaml.safe_load(f)
+                except ImportError:
+                    logger.error(f"PyYAML no instalado. No se puede leer {yaml_file}")
+                    return None
+            elif json_file.exists():
+                try:
+                    with open(json_file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                except json.JSONDecodeError as e:
+                    logger.error(f"Error parseando JSON de {plugin_name}: {e}")
+                    return None
+            else:
+                logger.error(f"No se encontró archivo de configuración para {plugin_name}")
+                return None
+                
+            # Agregar ruta del plugin
+            data['_path'] = str(plugin_path)
+            return data
+
+        except Exception as e:
+            logger.error(f"Error cargando metadata de {plugin_name}: {e}")
+            return None
+    
+    def check_requirements(self, plugin_name: str) -> tuple[bool, List[str]]:
+        """
+        Verifica que se cumplan los requisitos del plugin
+        """
+        metadata = self.load_plugin_metadata(plugin_name)
+        if not metadata:
+            return False, ["No se pudo cargar metadata"]
+        
+        missing = []
+        requirements = metadata.get('requirements', {})
+        
+        # Verificar comandos del sistema
+        system_reqs = requirements.get('system', [])
+        for cmd in system_reqs:
+            if not self._command_exists(cmd):
+                missing.append(f"Sistema: {cmd}")
+        
+        # Verificar versión de Python
+        python_req = requirements.get('python', [])
+        if python_req:
+            # Simplificado
+            pass
+        
+        # Verificar paquetes Python
+        python_packages = requirements.get('packages', [])
+        for package in python_packages:
+            if not self._package_exists(package):
+                missing.append(f"Python package: {package}")
+        
+        return len(missing) == 0, missing
+    
+    def install_plugin(self, plugin_name: str, auto_deps: bool = True) -> bool:
+        """
+        Instala un plugin (ejecuta setup.sh si existe)
+        """
+        metadata = self.load_plugin_metadata(plugin_name)
+        if not metadata:
+            return False
+        
+        plugin_path = Path(metadata['_path'])
+        
+        # Ejecutar script de setup si existe
+        setup_script = metadata.get('scripts', {}).get('setup')
+        if setup_script:
+            setup_path = plugin_path / setup_script
+            if setup_path.exists():
+                logger.info(f"Ejecutando setup para {plugin_name}...")
+                try:
+                    result = subprocess.run(
+                        ['bash', str(setup_path)],
+                        cwd=str(plugin_path),
+                        capture_output=True,
+                        text=True,
+                        timeout=300
+                    )
+                    return result.returncode == 0
+                except Exception as e:
+                    logger.error(f"Error setup {plugin_name}: {e}")
+                    return False
+        
+        return True
+    
+    def load_plugin(self, plugin_name: str) -> bool:
+        """
+        Carga un plugin en memoria (instancia si es Clase Python)
+        """
+        if plugin_name in self.loaded_plugins:
+            return True
+        
+        metadata = self.load_plugin_metadata(plugin_name)
+        if not metadata:
+            return False
+        
+        # Verificar requisitos
+        ok, missing = self.check_requirements(plugin_name)
+        if not ok:
+            logger.error(f"Plugin {plugin_name} faltan requisitos: {missing}")
+            return False
+        
+        self.loaded_plugins[plugin_name] = metadata
+        
+        # --- CARGA DINÁMICA DE CLASE PYTHON (NUEVO) ---
+        if "main_class" in metadata and "main_file" in metadata:
+            try:
+                plugin_path = Path(metadata['_path'])
+                sys.path.insert(0, str(plugin_path)) # Añadir al path
+                
+                module_name = metadata["main_file"].replace(".py", "")
+                spec = importlib.util.spec_from_file_location(module_name, plugin_path / metadata["main_file"])
+                if spec and spec.loader:
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
+                    
+                    if hasattr(module, metadata["main_class"]):
+                        cls = getattr(module, metadata["main_class"])
+                        # Instanciamos pasando el manager como contexto
+                        instance = cls(self)
+                        
+                        # Guardamos la instancia
+                        self.loaded_plugins[plugin_name]['_instance'] = instance
+                        
+                        # Si tiene método verify_scripts, ejecutarlo
+                        if hasattr(instance, 'verify_scripts'):
+                            instance.verify_scripts()
+                            
+                        logger.info(f"✓ Plugin {plugin_name} (Clase Python) cargado e instanciado.")
+                    else:
+                        logger.error(f"Clase {metadata['main_class']} no encontrada en {module_name}")
+            except Exception as e:
+                logger.error(f"Error instanciando plugin {plugin_name}: {e}")
+                import traceback
+                traceback.print_exc()
+                return False
+                
+        logger.info(f"✓ Plugin {plugin_name} cargado")
+        return True
+    
+    def start_plugin(self, plugin_name: str) -> bool:
+        """
+        Inicia el proceso monitor de un plugin
+        
+        Args:
+            plugin_name: Nombre del plugin
+            
+        Returns:
+            True si se inició exitosamente
+        """
+        if plugin_name not in self.loaded_plugins:
+            logger.error(f"Plugin {plugin_name} no está cargado")
+            return False
+        
+        if plugin_name in self.plugin_processes:
+            logger.warning(f"Plugin {plugin_name} ya está corriendo")
+            return True
+        
+        metadata = self.loaded_plugins[plugin_name]
+        plugin_path = Path(metadata['_path'])
+        
+        # Obtener script monitor
+        monitor_script = metadata.get('scripts', {}).get('monitor')
+        if not monitor_script:
+            logger.warning(f"Plugin {plugin_name} no tiene script monitor")
+            return True  # No es error, simplemente no tiene monitor
+        
+        monitor_path = plugin_path / monitor_script
+        if not monitor_path.exists():
+            logger.error(f"Script monitor no encontrado: {monitor_path}")
+            return False
+        
+        try:
+            # Iniciar proceso
+            process = subprocess.Popen(
+                [sys.executable, '-u', str(monitor_path)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1
+            )
+            
+            self.plugin_processes[plugin_name] = process
+            logger.info(f"✓ Plugin {plugin_name} iniciado (PID: {process.pid})")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error iniciando plugin {plugin_name}: {e}")
+            return False
+    
+    def stop_plugin(self, plugin_name: str) -> bool:
+        """
+        Detiene el proceso de un plugin
+        
+        Args:
+            plugin_name: Nombre del plugin
+            
+        Returns:
+            True si se detuvo exitosamente
+        """
+        if plugin_name not in self.plugin_processes:
+            logger.warning(f"Plugin {plugin_name} no está corriendo")
+            return True
+        
+        process = self.plugin_processes[plugin_name]
+        
+        try:
+            process.terminate()
+            process.wait(timeout=5)
+            del self.plugin_processes[plugin_name]
+            logger.info(f"✓ Plugin {plugin_name} detenido")
+            return True
+        except subprocess.TimeoutExpired:
+            logger.warning(f"Plugin {plugin_name} no respondió a SIGTERM, usando SIGKILL")
+            process.kill()
+            del self.plugin_processes[plugin_name]
+            return True
+        except Exception as e:
+            logger.error(f"Error deteniendo plugin {plugin_name}: {e}")
+            return False
+    
+    def get_plugin_intents(self, plugin_name: str) -> List[dict]:
+        """
+        Obtiene los intents del plugin (Normalizado a Lista de dicts)
+        Returns: [{'name': '...', 'patterns': [...]}, ...]
+        """
+        if plugin_name not in self.loaded_plugins:
+            return []
+            
+        meta = self.loaded_plugins[plugin_name]
+        intents = []
+        
+        # 1. Instancia Python (Prioridad)
+        if '_instance' in meta:
+            try:
+                raw_intents = meta['_instance'].get_intents()
+                # Normalizar si devuelve dict {name: [patterns]}
+                if isinstance(raw_intents, dict):
+                    for name, patterns in raw_intents.items():
+                        intents.append({
+                            'name': name,
+                            'patterns': patterns
+                        })
+                elif isinstance(raw_intents, list):
+                    intents = raw_intents
+            except Exception as e:
+                logger.error(f"Error obteniendo intents dinámicos de {plugin_name}: {e}")
+        
+        # 2. Definición Estática (YAML/JSON)
+        # Si la clase no devolvió nada o falló, o no hay clase, usamos lo del YAML
+        if not intents:
+            intents = meta.get('intents', [])
+            
+        return intents
+
+    def execute_intent(self, plugin_name: str, intent_name: str, command: str, **kwargs):
+        """
+        Ejecuta un intent. 
+        - Si es plugin con clase, llama a handle_intent.
+        - Si es plugin script (legacy), intenta ejecutar_plugin_action si se pasa el script... 
+          pero idealmente main.py maneja eso.
+        """
+        if plugin_name not in self.loaded_plugins: return None
+        meta = self.loaded_plugins[plugin_name]
+        
+        if '_instance' in meta:
+            return meta['_instance'].handle_intent(intent_name, command, **kwargs)
+        
+        logger.warning(f"Plugin {plugin_name} no tiene instancia para ejecutar intent {intent_name} dinámicamente.")
+        return None
+
+    def execute_plugin_action(self, plugin_name: str, action_command: str) -> bool:
+        """
+        Ejecuta un comando o script asociado a un plugin
+        """
+        if plugin_name not in self.loaded_plugins:
+            return False
+            
+        metadata = self.loaded_plugins[plugin_name]
+        plugin_path = Path(metadata['_path'])
+        
+        try:
+            # Si el comando es una ruta a un archivo dentro del plugin
+            potential_script = plugin_path / action_command
+            if potential_script.exists():
+                subprocess.Popen(['bash' if action_command.endswith('.sh') else sys.executable, str(potential_script)],
+                               cwd=str(plugin_path),
+                               stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL)
+            else:
+                # Ejecutar como comando de shell
+                subprocess.Popen(action_command, shell=True, cwd=str(plugin_path),
+                               stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL)
+            return True
+        except Exception as e:
+            logger.error(f"Error ejecutando acción de {plugin_name}: {e}")
+            return False
+    
+    def list_plugins(self) -> List[dict]:
+        """
+        Lista todos los plugins disponibles con su metadata
+        
+        Returns:
+            Lista de diccionarios con info de plugins
+        """
+        plugins = []
+        for plugin_name in self.discover_plugins():
+            metadata = self.load_plugin_metadata(plugin_name)
+            if metadata:
+                plugins.append({
+                    'name': plugin_name,
+                    'version': metadata.get('version', 'unknown'),
+                    'description': metadata.get('description', ''),
+                    'author': metadata.get('author', 'unknown'),
+                    'category': metadata.get('category', 'other'),
+                    'loaded': plugin_name in self.loaded_plugins,
+                    'running': plugin_name in self.plugin_processes
+                })
+        
+        return plugins
+    
+    def _command_exists(self, cmd: str) -> bool:
+        """Verifica si un comando existe en el sistema"""
+        try:
+            subprocess.run(
+                ['which', cmd],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=True
+            )
+            return True
+        except subprocess.CalledProcessError:
+            return False
+    
+    def _package_exists(self, package: str) -> bool:
+        """Verifica si un paquete Python está instalado"""
+        try:
+            importlib.import_module(package)
+            return True
+        except ImportError:
+            return False
+    
+    def cleanup(self):
+        """Detiene todos los plugins y limpia recursos"""
+        logger.info("Limpiando Plugin Manager...")
+        for plugin_name in list(self.plugin_processes.keys()):
+            self.stop_plugin(plugin_name)
+
+
+# CLI para testing
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    
+    manager = PluginManager()
+    
+    print("🔌 Fina Plugin Manager")
+    print("=" * 50)
+    
+    # Descubrir plugins
+    plugins = manager.discover_plugins()
+    print(f"\nPlugins encontrados: {len(plugins)}")
+    
+    for plugin_name in plugins:
+        print(f"\n📦 {plugin_name}")
+        metadata = manager.load_plugin_metadata(plugin_name)
+        if metadata:
+            print(f"   Versión: {metadata.get('version')}")
+            print(f"   Autor: {metadata.get('author')}")
+            print(f"   Descripción: {metadata.get('description')}")
+            
+            # Verificar requisitos
+            ok, missing = manager.check_requirements(plugin_name)
+            if ok:
+                print("   ✓ Requisitos cumplidos")
+            else:
+                print("   ✗ Requisitos faltantes:")
+                for item in missing:
+                    print(f"     - {item}")

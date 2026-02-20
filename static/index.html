@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fina Assistant - Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+        [v-cloak] {
+            display: none;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #020617;
+            color: #f8fafc;
+            overflow: hidden;
+            margin: 0;
+            height: 100vh;
+        }
+
+        /* --- Fullscreen Avatar & Halo --- */
+        .avatar-viewport {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+
+        .avatar-img {
+            height: 42.5vh;
+            /* Reducción de 15% adicional (50vh -> 42.5vh) */
+            width: auto;
+            object-fit: contain;
+            opacity: 0.7;
+            mask-image: radial-gradient(circle, black 40%, transparent 85%);
+            -webkit-mask-image: radial-gradient(circle, black 40%, transparent 85%);
+            border: none !important;
+            outline: none !important;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            transition: transform 0.05s linear, opacity 0.1s ease-out, filter 0.1s ease-out;
+            transform: scale(0.95);
+        }
+
+        .halo {
+            position: absolute;
+            border-radius: 50%;
+            /* Círculo concéntrico perfecto con ligero efecto neón */
+            filter: blur(2px);
+            transition: transform 0.05s linear, opacity 0.1s ease-out;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .halo-1 {
+            width: 54vh;
+            height: 54vh;
+            opacity: 0.2;
+        }
+
+        .halo-2 {
+            width: 49vh;
+            height: 49vh;
+            opacity: 0.3;
+        }
+
+        .halo-3 {
+            width: 45vh;
+            height: 45vh;
+            opacity: 0.4;
+        }
+
+        /* Estilo para Fina Despierta: Imagen original con resplandor cian */
+        .avatar-active {
+            filter: drop-shadow(0 0 30px rgba(0, 150, 255, 0.6));
+        }
+
+        /* Estilo para Fina Durmiendo */
+        .avatar-sleeping {
+            filter: brightness(1.4);
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(24px);
+            /* Cambiamos borde sólido por sombra para evitar la línea vertical pulsante */
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-220px);
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 60px;
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        /* --- UI Elements --- */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-bubble {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- Fullscreen Auth --- */
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.95);
+            backdrop-filter: blur(40px);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fingerprint-large {
+            height: 50vh;
+            filter: drop-shadow(0 0 50px rgba(34, 211, 238, 0.8));
+            animation: fp-pulse 2s infinite alternate ease-in-out;
+        }
+
+        @keyframes fp-pulse {
+            from {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
+
+            to {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .sleeping-pulse {
+            animation: breathe 4s infinite ease-in-out;
+        }
+
+        @keyframes breathe {
+
+            0%,
+            100% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.18);
+                opacity: 1;
+            }
+        }
+
+        @keyframes loading-sweep {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .animate-loading-sweep {
+            animation: loading-sweep 1.5s infinite ease-in-out;
+        }
+
+        @keyframes loading-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+            }
+        }
+
+        .loading-bar-glow {
+            animation: loading-glow 2s infinite ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" v-cloak>
+
+        <!-- --- FULLSCREEN BACKGROUND VIEW --- -->
+        <div class="avatar-viewport">
+            <!-- Triple anillo concéntrico con movimiento independiente -->
+            <div class="halo halo-1" :style="{ 
+                transform: `scale(${1 + audioIntensity * 1.6}) rotate(${audioIntensity * 10}deg)`, 
+                opacity: 0.2 + audioIntensity * 0.4, 
+                border: `1.5px solid ${haloColor}`,
+                boxShadow: `0 0 ${10 + audioIntensity * 20}px ${haloColor}`
+            }"></div>
+            <div class="halo halo-2" :style="{ 
+                transform: `scale(${1 + audioIntensity * 1.2}) rotate(${-audioIntensity * 15}deg)`, 
+                opacity: 0.3 + audioIntensity * 0.5, 
+                border: `2px solid ${haloColor}`
+            }"></div>
+            <div class="halo halo-3" :style="{ 
+                transform: `scale(${1 + audioIntensity * 0.8})`, 
+                opacity: 0.4 + audioIntensity * 0.6, 
+                border: `3px solid ${haloColor}`
+            }"></div>
+
+            <img :src="finaState.status === 'sleeping' ? '/assets/fina_sleeping.png' : '/assets/avatar.png'"
+                class="avatar-img"
+                :class="finaState.status === 'sleeping' ? 'avatar-sleeping sleeping-pulse' : 'avatar-active'" :style="{ 
+                    transform: `scale(${0.95 + audioIntensity * 0.2})`,
+                    opacity: 0.7 + audioIntensity * 0.3,
+                    filter: finaState.status !== 'sleeping' 
+                        ? `brightness(${1.0 + audioIntensity * 0.4}) drop-shadow(0 0 ${20 + audioIntensity * 30}px rgba(0, 150, 255, 0.8))` 
+                        : null
+                 }">
+        </div>
+
+        <!-- --- NEW CENTERED TEXT LAYOUT --- -->
+        <div class="fixed inset-0 flex flex-col items-center z-20 pointer-events-none" v-if="activeTab === 'status'">
+            <!-- Greeting Top Center -->
+            <div class="mt-20 flex flex-col items-center">
+                <p class="text-xl font-medium opacity-40 capitalize tracking-[0.2em]">[[ t('hello') ]] [[ sysInfo.user
+                    ]],</p>
+
+                <!-- Startup Progress Bar (ENHANCED VISIBILITY) -->
+                <div v-if="isAppStarting" class="mt-10 flex flex-col items-center animate-fadeIn" style="z-index: 100;">
+                    <div class="flex justify-between w-80 mb-3 px-1">
+                        <span class="text-xs font-black text-blue-400 uppercase tracking-widest">Inicializando...</span>
+                        <span class="text-xs font-black text-blue-400 tabular-nums">[[ loadingPercentage ]]%</span>
+                    </div>
+                    <div class="w-80 h-3 bg-slate-900 border border-white/20 rounded-full overflow-hidden shadow-2xl">
+                        <div class="h-full bg-blue-500 transition-all duration-300 shadow-[0_0_20px_rgba(59,130,246,0.8)]"
+                            :style="{ width: loadingPercentage + '%' }"></div>
+                    </div>
+                    <p class="text-[10px] text-blue-400/60 mt-2 font-bold uppercase tracking-widest">Sincronizando
+                        modelos de voz...</p>
+                </div>
+            </div>
+
+            <!-- "Soy Fina" and Process below the Halo -->
+            <div class="mt-auto mb-20 text-center">
+                <h1 class="text-6xl font-black gradient-text tracking-tighter mb-4">Soy [[ t('fina') ]]</h1>
+
+                <!-- Process Status Message -->
+                <div
+                    class="px-6 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-3">
+                    <div class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
+                    <span class="text-sm font-bold tracking-widest text-cyan-400/80 uppercase">[[ finaState.process
+                        ]]</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- --- SIDEBAR NAVIGATION --- -->
+        <aside class="sidebar h-full flex flex-col shadow-2xl" :class="{ 'collapsed': isSidebarCollapsed }">
+            <div class="p-6 flex items-center justify-between border-b border-white/5">
+                <div class="flex items-center gap-3" v-if="!isSidebarCollapsed">
+                    <div
+                        class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                        <i class="fas fa-robot text-sm text-white"></i>
+                    </div>
+                    <span class="font-bold text-lg tracking-tight">Fina Panel</span>
+                </div>
+                <button @click="isSidebarCollapsed = !isSidebarCollapsed" class="sidebar-toggle">
+                    <i class="fas" :class="isSidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
+                <button v-for="tab in navigation" :key="tab.id" @click="activeTab = tab.id; isSidebarCollapsed = false"
+                    class="w-full flex items-center gap-4 p-3 rounded-xl transition-all"
+                    :class="activeTab === tab.id ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:bg-white/5'">
+                    <i :class="tab.icon" class="w-6 text-center text-lg"></i>
+                    <span v-if="!isSidebarCollapsed" class="font-medium text-sm">[[ tab.name ]]</span>
+                </button>
+
+                <!-- Tools (Hidden in prod) -->
+                <div class="pt-8" v-if="!isSidebarCollapsed && mode !== 'prod'">
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-2 mb-2">Pruebas</p>
+                    <div class="space-y-2">
+                        <button @click="toggleRealMicrophone"
+                            class="w-full flex items-center gap-4 p-3 rounded-xl transition-all"
+                            :class="isMicOn ? 'bg-green-500/20 text-green-400' : 'bg-red-500/10 text-red-400'">
+                            <i class="fas fa-microphone"></i>
+                            <span class="font-medium text-xs">[[ isMicOn ? 'Micro: ON' : t('test_mic') ]]</span>
+                        </button>
+                        <button @click="testVerification"
+                            class="w-full flex items-center gap-4 p-3 rounded-xl transition-all bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20">
+                            <i class="fas fa-fingerprint"></i>
+                            <span class="font-medium text-xs">[[ t('test_auth') ]]</span>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-white/5 space-y-2" v-if="!isSidebarCollapsed">
+                <button @click="showAbout"
+                    class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all">
+                    <i class="fas fa-info-circle mr-2"></i> Acerca de
+                </button>
+                <button @click="toggleWindowMode"
+                    class="w-full py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-xl font-bold text-[10px] transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                    MODO VENTANA (F11)
+                </button>
+                <button @click="saveAll"
+                    class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-lg transition-all">
+                    [[ t('save_all') ]]
+                </button>
+            </div>
+        </aside>
+
+        <!-- --- MAIN FLOATING CONTENT (Configuration Tabs) --- -->
+        <main class="fixed inset-0 left-0 md:left-20 pointer-events-none z-10 p-8 flex items-start justify-end pr-12">
+            <div v-if="activeTab !== 'status'"
+                class="w-full max-w-2xl glass-panel rounded-3xl p-8 pointer-events-auto shadow-2xl animate-fadeIn custom-scrollbar overflow-y-auto max-h-[85vh]">
+
+                <header class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
+                    <h2 class="text-2xl font-bold flex items-center gap-4 font-black tracking-tight uppercase">
+                        <i :class="currentTabData.icon" class="text-blue-500"></i>
+                        [[ currentTabData.name ]]
+                    </h2>
+                    <button @click="activeTab = 'status'" class="text-slate-500 hover:text-white transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </header>
+
+                <div v-if="settings">
+                    <!-- Tab: Televisores -->
+                    <div v-if="activeTab === 'tvs'" class="space-y-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-xs font-bold text-blue-500 uppercase tracking-widest">Dispositivos en Red
+                            </h3>
+                            <button @click="scanTVs"
+                                class="px-4 py-2 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-bold hover:bg-blue-600/30 transition-all">DETECTAR
+                                TVS</button>
+                        </div>
+                        <div v-for="(tv, index) in settings.tvs" :key="index"
+                            class="p-5 bg-slate-900/50 rounded-2xl border border-white/5">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="col-span-1">
+                                    <label class="text-[10px] text-slate-500 uppercase ml-1">[[ t('name') ]]</label>
+                                    <input v-model="tv.name" class="w-full px-4 py-2 rounded-xl input-bubble text-sm">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="text-[10px] text-slate-500 uppercase ml-1">[[ t('ip') ]]</label>
+                                    <input v-model="tv.ip" class="w-full px-4 py-2 rounded-xl input-bubble text-sm">
+                                </div>
+                                <div class="flex items-center gap-6 mt-2 ml-1">
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" v-model="tv.enabled" class="hidden">
+                                        <div class="w-8 h-4 bg-slate-700 rounded-full relative"
+                                            :class="tv.enabled ? 'bg-blue-500' : ''">
+                                            <div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-all"
+                                                :class="tv.enabled ? 'translate-x-4' : ''"></div>
+                                        </div>
+                                        <span class="text-[10px] text-slate-400 uppercase font-bold">[[ t('active')
+                                            ]]</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer group">
+                                        <input type="radio" :checked="tv.primary" @change="setPrimaryTV(index)"
+                                            class="hidden">
+                                        <div class="w-4 h-4 rounded-full border-2 border-slate-600 flex items-center justify-center"
+                                            :class="tv.primary ? 'border-blue-500' : ''">
+                                            <div v-if="tv.primary" class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                        </div>
+                                        <span class="text-[10px] text-slate-400 uppercase font-bold">[[ t('primary')
+                                            ]]</span>
+                                    </label>
+                                </div>
+                                <div class="col-span-2 text-right">
+                                    <button @click="settings.tvs.splice(index, 1)"
+                                        class="text-red-400/50 hover:text-red-400 text-[10px] uppercase font-bold flex items-center gap-2 ml-auto">
+                                        <i class="fas fa-trash"></i> [[ t('delete') ]]
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: APIs y Canales -->
+                    <div v-if="activeTab === 'apis'" class="space-y-8">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-xs font-bold text-blue-500 uppercase tracking-widest">Favoritos de TV
+                                </h3>
+                                <div class="flex gap-2">
+                                    <button @click="scanChannels"
+                                        class="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-lg text-[10px] font-bold hover:bg-blue-600/30 transition-all">ESCANEAR
+                                        TV</button>
+                                    <button @click="addCustomChannel"
+                                        class="px-3 py-1 bg-cyan-600/20 text-cyan-400 rounded-lg text-[10px] font-bold hover:bg-cyan-600/30 transition-all">+
+                                        MANUAL</button>
+                                </div>
+                            </div>
+                            <!-- Indicador de Escaneo -->
+                            <div v-if="isScanning"
+                                class="p-6 bg-blue-500/5 border border-blue-500/20 rounded-3xl space-y-4 text-center animate-pulse">
+                                <div class="flex items-center justify-center gap-4">
+                                    <i class="fas fa-satellite-dish text-3xl text-blue-400 animate-bounce"></i>
+                                    <div class="text-left">
+                                        <h4 class="text-sm font-bold text-blue-400 uppercase tracking-widest">Escaneando
+                                            Fecuencias...</h4>
+                                        <p class="text-[10px] text-slate-500">Esto puede tardar un par de minutos. No
+                                            apagues la TV.</p>
+                                    </div>
+                                </div>
+                                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-blue-500 animate-loading-sweep"></div>
+                                </div>
+                            </div>
+                            <div
+                                class="grid grid-cols-2 lg:grid-cols-3 gap-2 max-h-[250px] overflow-y-auto custom-scrollbar p-2">
+                                <label v-for="ch in allChannels" :key="ch"
+                                    class="p-3 bg-white/5 rounded-xl flex items-center gap-3 cursor-pointer hover:bg-blue-500/10">
+                                    <input type="checkbox" :value="ch" v-model="settings.channels.favorites"
+                                        class="rounded bg-slate-800 border-white/10">
+                                    <span class="text-xs capitalize font-medium">[[ ch ]]</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Canales Personalizados -->
+                        <div v-if="settings.channels.custom && settings.channels.custom.length > 0">
+                            <h3 class="text-xs font-bold text-cyan-500 uppercase tracking-widest mb-4">Canales Manuales
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div v-for="(ch, idx) in settings.channels.custom" :key="idx"
+                                    class="p-4 bg-slate-900/50 rounded-2xl border border-white/5 flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm font-bold">[[ ch.name ]]</p>
+                                        <p class="text-[10px] text-slate-500">Canal [[ ch.number ]]</p>
+                                    </div>
+                                    <button @click="settings.channels.custom.splice(idx, 1)"
+                                        class="text-red-400/50 hover:text-red-400"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-4">Claves API</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div v-for="(val, key) in settings.apis" :key="key">
+                                    <label class="text-[10px] text-slate-500 uppercase ml-1">[[ key ]]</label>
+                                    <div class="relative group">
+                                        <input :type="showSecrets[key] ? 'text' : 'password'"
+                                            v-model="settings.apis[key]"
+                                            class="w-full px-4 py-2 rounded-xl input-bubble text-sm pr-10 focus:border-blue-500/50 outline-none">
+                                        <button @click="showSecrets[key] = !showSecrets[key]"
+                                            class="absolute right-3 top-2.5 text-slate-600 hover:text-blue-400">
+                                            <i class="fas" :class="showSecrets[key] ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Biometría -->
+                    <div v-if="activeTab === 'biometrics'" class="space-y-6">
+                        <div class="p-6 bg-slate-900/50 rounded-3xl border border-white/5 flex items-center gap-6">
+                            <div class="w-20 h-20 rounded-2xl bg-cyan-500/10 flex items-center justify-center">
+                                <i class="fas fa-fingerprint text-4xl text-cyan-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold">[[ configStatus && configStatus.biometrics_available ?
+                                    t('bio_active') : t('bio_inactive') ]]</h3>
+                                <p class="text-xs text-slate-500">Gestión de identidad por hardware</p>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Huellas -->
+                        <div v-if="fingerprints && fingerprints.length > 0 && !isEnrolling" class="space-y-3">
+                            <h3 class="text-[10px] font-bold text-cyan-500 uppercase tracking-widest px-1">Huellas
+                                Registradas</h3>
+                            <div v-for="finger in fingerprints" :key="finger"
+                                class="p-4 bg-slate-900/50 rounded-2xl border border-white/5 flex justify-between items-center group hover:border-cyan-500/30 transition-all">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center">
+                                        <i class="fas fa-check text-cyan-400 text-[10px]"></i>
+                                    </div>
+                                    <span class="text-sm font-medium capitalize">[[ finger.replace(/-/g, ' ') ]]</span>
+                                </div>
+                                <button @click="deleteFingerprint(finger)"
+                                    class="p-2 text-red-400/50 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Interfaz de Registro (Enroll) -->
+                        <div v-if="isEnrolling"
+                            class="p-8 bg-cyan-500/5 border border-cyan-500/20 rounded-3xl space-y-6 text-center animate-pulse">
+                            <div class="relative w-24 h-24 mx-auto">
+                                <i class="fas fa-fingerprint text-6xl text-cyan-400"></i>
+                                <div
+                                    class="absolute inset-0 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <h4 class="text-lg font-bold text-cyan-400">[[ enrollStatus.message ]]</h4>
+                                <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-cyan-500 transition-all duration-500"
+                                        :style="{ width: enrollStatus.progress + '%' }"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <button @click="enrollFingerprint"
+                                class="py-4 border-2 border-dashed border-cyan-500/30 rounded-2xl text-cyan-400 font-bold text-xs uppercase tracking-widest hover:bg-cyan-500/5 transition-all">
+                                <i class="fas fa-plus mr-2"></i> [[ t('enroll_finger') ]]
+                            </button>
+                            <button @click="testVerification"
+                                class="py-4 bg-cyan-600/20 text-cyan-400 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-cyan-600/30 transition-all border border-cyan-500/20">
+                                <i class="fas fa-shield-alt mr-2"></i> Probar Verificación
+                            </button>
+                            <button @click="exportFingerprints"
+                                class="py-4 bg-slate-800 text-slate-300 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-slate-700 transition-all border border-white/5">
+                                <i class="fas fa-file-export mr-2"></i> Exportar Huellas
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Apps -->
+                    <div v-if="activeTab === 'apps'" class="space-y-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-xs font-bold text-blue-500 uppercase tracking-widest">Atajos de Aplicaciones
+                            </h3>
+                            <button @click="scanApps"
+                                class="px-4 py-2 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-bold hover:bg-blue-600/30 transition-all">BUSCAR
+                                EN TV</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div v-for="(pkg, name) in settings.tv_apps" :key="name"
+                                class="p-4 bg-slate-900/50 rounded-2xl border border-white/5 flex justify-between items-center group">
+                                <div class="flex flex-col gap-1 overflow-hidden">
+                                    <span class="text-xs font-bold text-blue-400 uppercase">[[ name ]]</span>
+                                    <span class="text-[10px] text-slate-500 truncate">[[ pkg ]]</span>
+                                </div>
+                                <button @click="deleteApp(name)"
+                                    class="text-slate-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><i
+                                        class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- --- AUTH OVERLAY --- -->
+        <div v-if="finaState.status === 'authenticating'" class="auth-overlay animate-fadeIn">
+            <img src="/assets/fingerprint.png" class="fingerprint-large mb-12">
+            <h2 class="text-4xl font-black tracking-tighter text-blue-400 uppercase mb-4">[[ t('auth_required') ]]</h2>
+            <p class="text-slate-400 text-lg tracking-widest animate-pulse uppercase">[[ finaState.process ]]</p>
+            <div class="mt-20">
+                <button @click="updateFinaState('idle', 'Esperando órdenes...')"
+                    class="px-12 py-3 bg-white/5 text-slate-400 rounded-2xl font-bold uppercase tracking-widest text-xs">[[
+                    t('cancel') ]]</button>
+            </div>
+        </div>
+
+        <!-- --- TOP RIGHT CLOCK --- -->
+        <div class="fixed top-8 right-8 z-20 pointer-events-auto" v-if="activeTab === 'status'">
+            <div class="glass-panel px-5 py-3 rounded-2xl flex items-center gap-3">
+                <i class="fas fa-clock text-blue-400"></i>
+                <span class="font-bold text-sm tracking-widest tabular-nums w-24 text-center inline-block">[[
+                    currentTime ]]</span>
+            </div>
+        </div>
+
+        <!-- --- BOTTOM STATUS INFO --- -->
+        <div class="fixed bottom-8 right-8 z-20 pointer-events-auto" v-if="activeTab === 'status'">
+            <div class="glass-panel px-5 py-3 rounded-2xl flex items-center gap-6">
+                <!-- Mic Visualizer -->
+                <div class="flex items-center gap-3">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mic</span>
+                    <div class="h-1 w-20 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500 transition-all duration-75"
+                            :style="{ width: audioIntensity * 100 + '%' }"></div>
+                    </div>
+                </div>
+                <!-- Temperature -->
+                <div class="flex items-center gap-3 border-l border-white/10 pl-6">
+                    <i class="fas fa-sun text-yellow-500"></i>
+                    <span class="font-bold text-sm">[[ finaState.temp || '--°C' ]]</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted, computed, watch } = Vue;
+
+        const translations = {
+            es_ES: {
+                hello: 'bienvenido', fina: 'Fina', tagging: 'Sistema listo.',
+                test_mic: 'Probar Micrófono', test_auth: 'Probar Huella',
+                save_all: 'Guardar Configuración', name: 'Nombre', ip: 'IP', active: 'Activa',
+                primary: 'Principal', delete: 'Eliminar', add_tv: 'Añadir TV', manage_fingers: 'Gestionar Huellas',
+                enroll_finger: 'Vincular Nueva Huella', bio_active: 'Lector Activo',
+                bio_inactive: 'Lector no detectado', auth_required: 'Autenticación Biométrica',
+                scanning: 'Escaneando...', cancel: 'Cancelar'
+            },
+            en_US: {
+                hello: 'welcome', fina: 'Fina', tagging: 'System ready.',
+                test_mic: 'Test Microphone', test_auth: 'Test Fingerprint',
+                save_all: 'Save Configuration', name: 'Name', ip: 'IP', active: 'Enabled',
+                primary: 'Primary', delete: 'Delete', add_tv: 'Add TV', manage_fingers: 'Manage Fingerprints',
+                enroll_finger: 'Enroll New Fingerprint', bio_active: 'Fingerprint Reader Ready',
+                bio_inactive: 'No reader found', auth_required: 'Biometric Authentication',
+                scanning: 'Scanning Finger...', cancel: 'Cancel'
+            }
+        };
+
+        createApp({
+            setup() {
+                const settings = ref(null);
+                const activeTab = ref('status');
+                const isSidebarCollapsed = ref(true);
+                const audioIntensity = ref(0);
+                const isMicOn = ref(false);
+                const finaState = ref({ status: 'idle', intensity: 0, process: 'Cargando...', temp: '--°C' });
+                const currentTime = ref('');
+                const showSecrets = ref({});
+                const configStatus = ref(null);
+                const sysInfo = ref({ user: 'Claudio', language: 'es_ES' });
+                const allChannels = ref([]);
+                const isEnrolling = ref(false);
+                const enrollStatus = ref({ message: '', progress: 0 });
+                const isScanning = ref(false);
+                const scanStatus = ref({ active: false, last_result: {}, progress: 0 });
+                const isAppStarting = ref(true);
+                const loadingPercentage = ref(0);
+                const mode = ref(new URLSearchParams(window.location.search).get('mode') || 'dev');
+
+                const navigation = [
+                    { id: 'status', name: 'Dashboard', icon: 'fas fa-home' },
+                    { id: 'tvs', name: 'Televisores', icon: 'fas fa-tv' },
+                    { id: 'apis', name: 'Canales y APIs', icon: 'fas fa-key' },
+                    { id: 'apps', name: 'Aplicaciones TV', icon: 'fas fa-th-large' },
+                    { id: 'biometrics', name: 'Biometría', icon: 'fas fa-fingerprint' },
+                ];
+
+                const t = (k) => translations[sysInfo.value.language.split('_')[0] === 'es' ? 'es_ES' : 'en_US'][k] || k;
+                const currentTabData = computed(() => navigation.find(t => t.id === activeTab.value) || navigation[0]);
+
+                const fingerprints = ref([]);
+                const fetchFingerprints = async () => {
+                    try {
+                        const res = await fetch('/api/biometrics/list');
+                        const data = await res.json();
+                        fingerprints.value = data.fingers || [];
+                    } catch (e) { }
+                };
+
+                const startEnrollPolling = () => {
+                    const timer = setInterval(async () => {
+                        try {
+                            const res = await fetch('/api/biometrics/enroll-status');
+                            const data = await res.json();
+                            enrollStatus.value = data;
+                            if (!data.active) {
+                                clearInterval(timer);
+                                isEnrolling.value = false;
+                                fetchFingerprints(); // Refrescar lista al terminar
+                            }
+                        } catch (e) { clearInterval(timer); isEnrolling.value = false; }
+                    }, 1000);
+                };
+
+                const startScanPolling = () => {
+                    const timer = setInterval(async () => {
+                        try {
+                            const res = await fetch('/api/scan-status');
+                            const data = await res.json();
+                            scanStatus.value = data;
+                            if (!data.active) {
+                                clearInterval(timer);
+                                isScanning.value = false;
+                                if (data.last_result.message.includes("completado")) {
+                                    alert(`Escaneo finalizado: ${data.last_result.added} canales nuevos.`);
+                                } else {
+                                    alert(data.last_result.message);
+                                }
+                                fetchAll();
+                            }
+                        } catch (e) { clearInterval(timer); isScanning.value = false; }
+                    }, 2000);
+                };
+
+                const fetchAll = async () => {
+                    try {
+                        settings.value = await (await fetch('/api/settings')).json();
+                        configStatus.value = await (await fetch('/api/config-status')).json();
+                        // Capitalize username
+                        const rawInfo = await (await fetch('/api/system-info')).json();
+                        rawInfo.user = rawInfo.user.charAt(0).toUpperCase() + rawInfo.user.slice(1);
+                        sysInfo.value = rawInfo;
+                        allChannels.value = await (await fetch('/api/channels-list')).json();
+                        if (activeTab.value === 'biometrics') fetchFingerprints();
+                    } catch (e) { }
+                };
+
+                watch(activeTab, (newTab) => {
+                    if (newTab === 'biometrics') fetchFingerprints();
+                });
+
+                const updateFinaState = async (status, process) => {
+                    await fetch('/api/state', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: status, intensity: status === 'idle' ? 0 : 1, process: process })
+                    });
+                };
+
+                const startAudioTest = async () => {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const audioContext = new AudioContext();
+                    const analyser = audioContext.createAnalyser();
+                    const source = audioContext.createMediaStreamSource(stream);
+                    source.connect(analyser);
+                    const data = new Uint8Array(analyser.frequencyBinCount);
+                    const update = () => {
+                        if (!isMicOn.value) return;
+                        analyser.getByteFrequencyData(data);
+                        audioIntensity.value = (data.reduce((a, b) => a + b) / data.length) / 128;
+                        requestAnimationFrame(update);
+                    };
+                    update();
+                };
+
+                const updateClock = () => {
+                    const now = new Date();
+                    currentTime.value = now.toLocaleTimeString(sysInfo.value.language.replace('_', '-'), { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                };
+
+                onMounted(() => {
+                    fetchAll();
+                    updateClock();
+                    setInterval(updateClock, 1000);
+
+                    // Simulación de carga progresiva inicial (Robusta)
+                    const loadTimer = setInterval(() => {
+                        if (isAppStarting.value && loadingPercentage.value < 92) {
+                            loadingPercentage.value += Math.floor(Math.random() * 4) + 1;
+                        }
+                    }, 300);
+
+                    const startTime = Date.now();
+
+                    // LOGICA DE CARGA: Sólo termina cuando Daniela empieza a hablar
+                    const checkCompletion = () => {
+                        if (isAppStarting.value && finaState.value.status === 'speaking') {
+                            const elapsed = Date.now() - startTime;
+                            const waitTime = Math.max(0, 2500 - elapsed); // Mínimo 2.5 segundos de barra
+
+                            setTimeout(() => {
+                                clearInterval(loadTimer);
+                                loadingPercentage.value = 100;
+                                setTimeout(() => {
+                                    isAppStarting.value = false;
+                                    console.log("Carga finalizada tras tiempo mínimo.");
+                                }, 1000);
+                            }, waitTime);
+                        }
+                    };
+
+                    let consecutiveErrors = 0;
+                    const pollingInterval = setInterval(async () => {
+                        try {
+                            const res = await fetch('/api/state');
+                            if (!res.ok) throw new Error("API Error");
+                            const s = await res.json();
+                            consecutiveErrors = 0; // Reset error counter
+                            finaState.value = s;
+
+                            // Restaurar movimiento de los anillos (Halo)
+                            const isActive = s.status === 'speaking' || isMicOn.value;
+                            if (isActive) {
+                                audioIntensity.value = 0.2 + Math.random() * 0.45;
+                            } else {
+                                audioIntensity.value = 0;
+                            }
+
+                            checkCompletion();
+
+                            // Cierre automático si el estado es shutdown
+                            if (s.process === 'shutdown' || s.status === 'shutdown') {
+                                closeApp();
+                            }
+                        } catch (e) {
+                            consecutiveErrors++;
+                            // Si fallamos 5 veces seguidas (1.25s), asumimos que el backend murió por "Adiós"
+                            if (consecutiveErrors >= 5) {
+                                console.warn("Backend perdido. Cerrando por seguridad.");
+                                closeApp();
+                            }
+                        }
+                    }, 250);
+
+                    const closeApp = async () => {
+                        clearInterval(pollingInterval);
+                        console.log("Iniciando secuencia de cierre...");
+
+                        if (window.__TAURI__) {
+                            try {
+                                const { invoke } = window.__TAURI__.core;
+                                // Invocar el comando Rust que mata el proceso limpiamente
+                                await invoke('exit_app');
+                            } catch (e) {
+                                console.error("Fallo al invocar exit_app:", e);
+                                // Fallback
+                                const { getCurrentWindow } = window.__TAURI__.window;
+                                getCurrentWindow().close();
+                            }
+                        } else {
+                            window.close();
+                        }
+                    };
+
+                    // --- AUTO SHUTDOWN ON CLOSE (RELIABLE) ---
+                    window.addEventListener('pagehide', () => {
+                        navigator.sendBeacon('/api/shutdown');
+                    });
+
+                    // --- FULLSCREEN TOGGLE SHORTCUT ---
+                    window.addEventListener('keydown', (e) => {
+                        if (e.key === 'F11') {
+                            e.preventDefault();
+                            toggleWindowMode();
+                        }
+                    });
+                });
+
+                const toggleWindowMode = async () => {
+                    console.log("toggleWindowMode llamado");
+
+                    if (window.__TAURI__) {
+                        console.log("Usando Tauri API");
+                        // Usar invoke para llamar al comando Rust
+                        try {
+                            const { invoke } = window.__TAURI__.core;
+                            console.log("Invocando toggle_fullscreen...");
+                            await invoke('toggle_fullscreen');
+                            console.log("toggle_fullscreen invocado exitosamente");
+                        } catch (e) {
+                            console.error("Fallo switch fullscreen Tauri:", e);
+                        }
+                    } else if (window.pywebview) {
+                        console.log("Usando pywebview API");
+                        window.pywebview.api.toggle_fullscreen();
+                    } else {
+                        console.log("No se detectó Tauri ni pywebview");
+                    }
+                };
+
+                return {
+                    settings, activeTab, isSidebarCollapsed, audioIntensity, isMicOn, finaState,
+                    showSecrets, configStatus, sysInfo, navigation, currentTabData, allChannels, mode,
+                    t, updateFinaState, currentTime,
+                    fingerprints, isEnrolling, enrollStatus, isScanning, scanStatus,
+                    fetchFingerprints,
+                    deleteFingerprint: async (finger) => {
+                        if (confirm(`¿Eliminar huella "${finger}"?`)) {
+                            const res = await fetch('/api/biometrics/delete', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ finger })
+                            });
+                            if (res.ok) fetchFingerprints();
+                        }
+                    },
+                    enrollFingerprint: async () => {
+                        const finger = prompt("Introduce el nombre del dedo (ej: right-index-finger, right-thumb, left-index-finger...):", "right-index-finger");
+                        if (!finger) return;
+                        const res = await (await fetch('/api/biometrics/enroll', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ finger })
+                        })).json();
+                        if (res.status === 'started') {
+                            isEnrolling.value = true;
+                            startEnrollPolling();
+                        } else {
+                            alert(res.message);
+                        }
+                    },
+                    testVerification: async () => {
+                        // Solo lanzamos la orden. La UI reacciona globalmente al cambio de estado del backend.
+                        console.log("Iniciando prueba de verificación...");
+                        fetch('/api/biometrics/verify-test', { method: 'POST' });
+                    },
+                    exportFingerprints: async () => {
+                        try {
+                            const res = await fetch('/api/biometrics/sync', { method: 'POST' });
+                            if (res.ok) alert("Huelas exportadas con éxito a fina_settings.json");
+                        } catch (e) {
+                            alert("Error al exportar huellas.");
+                        }
+                    },
+                    toggleRealMicrophone: () => { isMicOn.value = !isMicOn.value; if (isMicOn.value) startAudioTest(); },
+                    saveAll: async () => { await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings.value) }); alert(t('save_all')); },
+                    addTV: () => settings.value.tvs.push({ name: '', ip: '', mac: '', enabled: true, primary: false }),
+                    setPrimaryTV: (i) => settings.value.tvs.forEach((v, idx) => v.primary = idx === i),
+                    scanTVs: async () => {
+                        const d = await (await fetch('/api/scan-tvs')).json();
+                        if (d.devices.length === 0) { alert("No se encontraron TVs nuevas vía ADB"); return; }
+                        d.devices.forEach(dev => {
+                            if (!settings.value.tvs.find(t => t.ip === dev.ip)) {
+                                settings.value.tvs.push({ name: dev.name, ip: dev.ip, mac: '', enabled: true, primary: false });
+                            }
+                        });
+                        alert(`Detección completada: ${d.devices.length} dispositivo(s) encontrado(s).`);
+                    },
+                    scanChannels: async () => {
+                        const res = await (await fetch('/api/scan-channels')).json();
+                        if (res.status === 'started') {
+                            isScanning.value = true;
+                            startScanPolling();
+                        } else {
+                            alert(res.status === 'already_scanning' ? "Ya hay un escaneo en curso." : "Error al iniciar escaneo");
+                        }
+                    },
+                    addCustomChannel: () => { const n = prompt("Nombre canal:"); const v = prompt("Número:"); if (n && v) { settings.value.channels.custom.push({ name: n, number: v }); } },
+                    scanApps: async () => { const d = await (await fetch('/api/scan-apps')).json(); Object.assign(settings.value.tv_apps, d.suggested); alert(`Apps encontradas: ${d.added}`); },
+                    toggleWindowMode,
+                    showAbout: () => {
+                        alert("Fina Ergen v 3.2.1\n\nAutor: Dankopetro\nF. Creación: Vie 06 Feb 2026 21:58");
+                    },
+                    isAppStarting,
+                    loadingPercentage,
+                    haloColor: computed(() => {
+                        if (finaState.value.status === 'speaking') return 'rgba(0, 150, 255, 1)'; // Azul Eléctrico Puro
+                        if (finaState.value.status === 'sleeping') return 'rgba(15, 23, 42, 0.8)'; // Azul Medianoche
+                        if (finaState.value.status === 'listening' || isMicOn.value) return 'rgba(34, 255, 94, 0.8)'; // Verde Brillante
+                        return 'rgba(0, 80, 200, 0.5)'; // Azul Deep
+                    })
+                };
+            },
+            compilerOptions: { delimiters: ['[[', ']]'] }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>

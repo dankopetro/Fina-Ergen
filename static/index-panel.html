@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fina - Configuración</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: transparent;
+            color: #e2e8f0;
+        }
+
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-bubble {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        }
+    </style>
+</head>
+
+<body class="p-4">
+    <div id="app" v-cloak>
+        <div v-if="settings" class="space-y-8">
+            <!-- Navigation -->
+            <div class="flex gap-2 overflow-x-auto pb-2">
+                <button v-for="tab in tabs" @click="activeTab = tab.id"
+                    class="px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap"
+                    :class="activeTab === tab.id ? 'bg-indigo-500 text-white' : 'bg-white/5 text-slate-400 hover:bg-white/10'">
+                    <i :class="tab.icon" class="mr-2"></i>[[ tab.name ]]
+                </button>
+            </div>
+
+            <!-- TVs -->
+            <div v-if="activeTab === 'tvs'" class="space-y-4">
+                <div v-for="(tv, idx) in settings.tvs" class="p-4 glass rounded-2xl flex flex-wrap gap-4 items-end">
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="text-[10px] text-slate-500 uppercase ml-1">Nombre</label>
+                        <input v-model="tv.name" class="w-full px-3 py-2 rounded-lg input-bubble text-sm">
+                    </div>
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="text-[10px] text-slate-500 uppercase ml-1">IP</label>
+                        <input v-model="tv.ip" class="w-full px-3 py-2 rounded-lg input-bubble text-sm">
+                    </div>
+                    <div class="flex items-center gap-4 py-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" v-model="tv.enabled" class="rounded bg-slate-800 border-slate-700">
+                            <span class="text-xs">Activa</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" :checked="tv.primary" @change="setPrimaryTV(idx)"
+                                class="rounded-full bg-slate-800 border-slate-700">
+                            <span class="text-xs">Principal</span>
+                        </label>
+                    </div>
+                </div>
+                <button @click="addTV"
+                    class="w-full py-3 border-2 border-dashed border-slate-800 rounded-2xl text-slate-500 hover:text-indigo-400 transition-all">+
+                    Añadir TV</button>
+            </div>
+
+            <!-- APIs -->
+            <div v-if="activeTab === 'apis'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div v-for="(val, key) in settings.apis" class="space-y-1">
+                    <label class="text-[10px] text-slate-500 uppercase ml-1">[[ key ]]</label>
+                    <input v-model="settings.apis[key]" type="password"
+                        class="w-full px-3 py-2 rounded-lg input-bubble text-sm">
+                </div>
+            </div>
+
+            <!-- Common Save -->
+            <div class="flex justify-end gap-3 pt-4">
+                <button @click="importFromConfig" class="px-4 py-2 bg-slate-800 rounded-lg text-xs">Importar
+                    config.py</button>
+                <button @click="saveSettings"
+                    class="px-6 py-2 btn-primary rounded-lg text-sm font-bold shadow-lg">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+        createApp({
+            setup() {
+                const settings = ref(null);
+                const activeTab = ref('tvs');
+                const tabs = [
+                    { id: 'tvs', name: 'TVs', icon: 'fas fa-tv' },
+                    { id: 'apis', name: 'APIs', icon: 'fas fa-key' }
+                ];
+                const fetchSettings = async () => {
+                    const res = await fetch('/api/settings');
+                    settings.value = await res.json();
+                };
+                const saveSettings = async () => {
+                    await fetch('/api/settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(settings.value)
+                    });
+                    alert('Guardado correctamente');
+                };
+                const importFromConfig = async () => {
+                    const res = await fetch('/api/import-config', { method: 'POST' });
+                    settings.value = await res.json();
+                };
+                const addTV = () => settings.value.tvs.push({ name: '', ip: '', mac: '', enabled: true, primary: false });
+                const setPrimaryTV = (idx) => settings.value.tvs.forEach((tv, i) => tv.primary = (i === idx));
+                onMounted(fetchSettings);
+                return { settings, activeTab, tabs, saveSettings, importFromConfig, addTV, setPrimaryTV };
+            },
+            compilerOptions: { delimiters: ['[[', ']]'] }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>

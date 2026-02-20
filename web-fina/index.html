@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fina Ergen - Tu Asistente Inteligente</title>
+    <meta name="description"
+        content="Fina Ergen es el asistente de voz modular y domótico definitivo para Linux. Inteligencia artificial, privacidad y control total.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <nav class="glass">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Fina Logo">
+                <span>Fina Ergen</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#hero">Inicio</a></li>
+                <li><a href="#showcase">Showcase</a></li>
+                <li><a href="#market">Fina Market</a></li>
+                <li><a href="#github">GitHub</a></li>
+                <li><a href="#donar" class="btn-small">Apoyar</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section id="hero" class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="gradient-text">Tu Asistente Inteligente en Linux.</h1>
+                <p>Asistente de voz modular con biometría dual, IA offline y control domótico extremo.</p>
+                <div class="hero-btns">
+                    <a href="https://github.com/dankopetro/Fina-Ergen" class="btn-primary">Ver en GitHub</a>
+                    <a href="#market" class="btn-secondary">Explorar Plugins</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="app-mockup">
+                    <div class="mockup-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <img src="assets/screenshot_new.png" alt="Fina View" class="main-screenshot">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="showcase" class="showcase-section">
+        <div class="container">
+            <h2 class="section-title">Showcase</h2>
+            <p class="section-subtitle">Explora la interfaz intuitiva y potente de Fina Ergen.</p>
+
+            <div class="showcase-slider">
+                <div id="showcase-track" class="showcase-track">
+                    <!-- Generation will be handled by JS for cleaner code and easier ordering -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="close-lightbox">&times;</span>
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <img id="lightbox-img" src="" alt="Fina Preview">
+            <div class="lightbox-nav">
+                <button onclick="prevImg()" class="nav-btn">❮</button>
+                <button onclick="nextImg()" class="nav-btn">❯</button>
+            </div>
+        </div>
+    </div>
+
+    <section id="market" class="market-section">
+        <div class="container">
+            <h2 class="section-title">Fina Market</h2>
+            <p class="section-subtitle">Añade poderes a Fina con nuestra arquitectura de plugins.</p>
+
+            <div class="plugins-grid">
+                <!-- Plugin 1 -->
+                <div class="plugin-card glass">
+                    <div class="plugin-icon"><img src="https://img.icons8.com/ios-filled/100/00d2ff/doorbell.png"
+                            alt="Timbre"></div>
+                    <h3>Tuya Doorbell Sniper</h3>
+                    <p>Atiende tus visitas desde Fina. Integración nativa con cámaras y timbres Tuya/SmartLife.</p>
+                    <span class="badge">Disponible</span>
+                </div>
+                <!-- Plugin 2 -->
+                <div class="plugin-card glass">
+                    <div class="plugin-icon"><img src="https://img.icons8.com/isometric-line/100/00d2ff/tv.png"
+                            alt="TV"></div>
+                    <h3>TCL / Android TV</h3>
+                    <p>Control total de volumen, canales y apps. Compatible con televisores TCL y dispositivos Android
+                        TV.</p>
+                    <span class="badge">Disponible</span>
+                </div>
+                <!-- Plugin 3 -->
+                <div class="plugin-card glass">
+                    <div class="plugin-icon"><img
+                            src="https://img.icons8.com/isometric-line/100/00d2ff/air-conditioner.png" alt="AC"></div>
+                    <h3>Clima Master (Midea/Surrey)</h3>
+                    <p>Gestiona la temperatura de tu hogar por voz. Soporte para aires acondicionados inteligentes.</p>
+                    <span class="badge">Disponible</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="donar" class="donation-section">
+        <div class="container glass">
+            <h2>💖 Apoya el Desarrollo</h2>
+            <p>Fina es código abierto y gratuito. Tu donación ayuda a mantener el proyecto vivo y pagar los costes del
+                servidor del modelo de voz.</p>
+
+            <div class="donation-links">
+                <a href="https://www.buymeacoffee.com/dankopetro" class="donate-btn">
+                    <img src="https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black"
+                        alt="Buy Me A Coffee">
+                </a>
+                <a href="https://paypal.me/dankopetro" class="donate-btn">
+                    <img src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white"
+                        alt="PayPal">
+                </a>
+            </div>
+
+            <div class="btc-box">
+                <p>Donar via Bitcoin:</p>
+                <code>bc1qa75vqz7q7kac0mdf8tzsd4gxpnljh5cukvt2ll</code>
+            </div>
+        </div>
+    </section>
+
+    <footer id="github">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="assets/logo.png" alt="Fina Logo" class="footer-icon">
+                    <span>Fina Ergen</span>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/dankopetro/Fina-Ergen"><img
+                            src="https://img.icons8.com/ios-filled/50/ffffff/github.png" width="30" alt="GitHub"> GitHub
+                        Repository</a>
+                </div>
+            </div>
+            <p class="copyright">Hecho con ❤️ en Argentina. Licencia MIT. © 2026</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Simple scroll animation for nav
+        window.onscroll = function () {
+            var nav = document.querySelector('nav');
+            if (window.pageYOffset > 50) {
+                nav.style.padding = "10px 0";
+                nav.style.background = "rgba(10, 15, 30, 0.95)";
+            } else {
+                nav.style.padding = "20px 0";
+                nav.style.background = "rgba(10, 15, 30, 0.8)";
+            }
+        };
+
+        // IMAGE GALLERY LOGIC
+        const track = document.getElementById('showcase-track');
+        // Correct order: 1, 2, 27, 3, 4, 5...26
+        const imgOrder = [1, 2, 27, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26];
+        let currentIndex = 0;
+
+        // Generate images
+        imgOrder.forEach((num, idx) => {
+            const item = document.createElement('div');
+            item.className = 'showcase-item';
+            item.onclick = () => openLightbox(idx);
+            item.innerHTML = `
+                <div class="app-mockup mini">
+                    <div class="mockup-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <img src="assets/showcase/${num}.png" alt="Fina screenshot ${num}">
+                </div>
+            `;
+            track.appendChild(item);
+        });
+
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+
+        function openLightbox(index) {
+            currentIndex = index;
+            updateLightboxImage();
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function updateLightboxImage() {
+            lightboxImg.src = `assets/showcase/${imgOrder[currentIndex]}.png`;
+        }
+
+        function nextImg() {
+            currentIndex = (currentIndex + 1) % imgOrder.length;
+            updateLightboxImage();
+        }
+
+        function prevImg() {
+            currentIndex = (currentIndex - 1 + imgOrder.length) % imgOrder.length;
+            updateLightboxImage();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('active')) return;
+            if (e.key === "ArrowRight") nextImg();
+            if (e.key === "ArrowLeft") prevImg();
+            if (e.key === "Escape") closeLightbox();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,164 @@
+import sys
+import os
+import json
+import re
+import subprocess
+import threading
+import time
+from typing import List, Optional, Dict
+
+# --- LOGGING DIAGNÓSTICO ---
+# Dejamos que el script de bash maneje los logs (tee)
+print(f"\n--- [ARRANQUE API] {time.strftime('%Y-%m-%d %H:%M:%S')} ---", flush=True)
+
+try:
+    from fastapi import FastAPI, HTTPException
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import FileResponse
+    from fastapi.middleware.cors import CORSMiddleware
+    from pydantic import BaseModel
+    import uvicorn
+    import locale
+    import getpass
+    # Intentamos importar config, si falla no matamos la API, usamos defaults
+    try:
+        import config
+    except ImportError:
+        print("⚠️ [WARN] config.py no encontrado. Usando valores por defecto.", flush=True)
+        config = None
+except Exception as e:
+    print(f"❌ [CRITICAL] Error importando librerías: {e}", flush=True)
+    sys.exit(1)
+
+app = FastAPI(title="Fina API Ergen")
+
+# --- CORS (CRÍTICO PARA TAURI/FETCH) ---
+# Permitimos TODO para evitar "Load Failed" en local
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permitir cualquier origen (tauri://localhost, http://localhost)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+SETTINGS_PATH = os.path.join(PROJECT_ROOT, "config", "settings.json") # Estandarizamos ruta config
+if not os.path.exists(os.path.dirname(SETTINGS_PATH)):
+    os.makedirs(os.path.dirname(SETTINGS_PATH), exist_ok=True)
+CHANNELS_PATH = os.path.join(PROJECT_ROOT, "channels.json")
+CONFIG_PATH = os.path.join(PROJECT_ROOT, "config.py")
+USER_DATA_PATH = os.path.join(PROJECT_ROOT, "user_data.json")
+
+print(f"✅ Rutas configuradas. Root: {PROJECT_ROOT}", flush=True)
+
+# --- Models ---
+class TV(BaseModel):
+    name: str
+    ip: str
+    mac: str
+    enabled: bool
+    primary: bool
+
+class Settings(BaseModel):
+    tvs: List[TV]
+    apis: Dict[str, str]
+    paths: Dict[str, str]
+    channels: Dict[str, List]
+    tv_apps: Dict[str, str]
+
+class StateUpdate(BaseModel):
+    status: str 
+    intensity: float = 0.0
+    process: Optional[str] = None 
+    temp: Optional[str] = None
+
+    class Config:
+        extra = "allow"
+
+# --- Global State ---
+current_fina_state = {
+    "status": "idle", 
+    "intensity": 0.0, 
+    "process": "SISTEMA LISTO",
+    "temp": "--°C",
+    "pending_command": None  # Nuevo: para comandos que la UI debe ejecutar
+}
+
+scan_state = {"active": False, "progress": 0, "last_result": {}}
+enroll_info = {"active": False, "message": "Esperando...", "progress": 0}
+
+# --- Helper Functions ---
+def load_settings_data():
+    if not os.path.exists(SETTINGS_PATH):
+        # Crear default si no existe
+        return {"tvs": [], "apis": {}, "paths": {}, "tv_apps": {}}
+    try:
+        with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"❌ Error cargando settings: {e}", flush=True)
+        return {}
+
+def save_settings_data(data):
+    try:
+        with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"❌ Error guardando settings: {e}", flush=True)
+
+# --- Endpoints ---
+@app.get("/api/state")
+async def get_fina_state():
+    global current_fina_state
+    # Devolvemos el estado y LIMPIAMOS el comando para que no se ejecute dos veces
+    state_to_return = current_fina_state.copy()
+    current_fina_state["pending_command"] = None
+    return state_to_return
+
+@app.post("/api/state")
+async def update_fina_state(state: StateUpdate):
+    global current_fina_state
+    # Actualizar estado global con TODO lo que venga (incluido timer)
+    update_data = state.dict(exclude_unset=True)
+    current_fina_state.update(update_data)
+    return current_fina_state
+
+@app.post("/api/command")
+async def queue_command(command: dict):
+    global current_fina_state
+    current_fina_state["pending_command"] = command
+    print(f"📥 Comando encolado: {command.get('name')}", flush=True)
+    return {"status": "queued"}
+
+@app.get("/api/shutdown")
+async def shutdown_api():
+    print("⚠️ Orden de apagado recibida", flush=True)
+    def kill():
+        time.sleep(1)
+        os._exit(0)
+    threading.Thread(target=kill).start()
+    return {"message": "Bye"}
+
+@app.get("/api/userdata")
+async def get_user_data():
+    if not os.path.exists(USER_DATA_PATH):
+        return {"notes": [], "reminders": []}
+    try:
+        with open(USER_DATA_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"❌ Error cargando user_data: {e}", flush=True)
+        return {"notes": [], "reminders": []}
+
+# --- Static ---
+if os.path.exists(os.path.join(PROJECT_ROOT, "static")):
+    app.mount("/", StaticFiles(directory=os.path.join(PROJECT_ROOT, "static"), html=True), name="static")
+
+# --- Boot Logic ---
+if __name__ == "__main__":
+    print("🚀 Iniciando Uvicorn en 0.0.0.0:8000...", flush=True)
+    # Ejecutamos Uvicorn
+    # IMPORTANTE: log_config=None para que use nuestros handlers si quisieramos, 
+    # pero aquí confiamos en que stdout ya está redirigido a API_BOOT.log
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,0 +1,26 @@
+2025-12-08 15:11:08,362 [INFO] FinaUtils: ✅ Vosk Final: suspender ahora
+Batches: 100%|███████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 78.81it/s]
+Intent: suspend
+2025-12-08 15:11:08,745 [ERROR] FinaMain: Unhandled exception in main loop: No module named 'faceAuthorization'
+Traceback (most recent call last):
+  File "/home/claudio/Descargas/Fina - Asistente de Voz para Linux/main.py", line 608, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/claudio/Descargas/Fina - Asistente de Voz para Linux/main.py", line 185, in main
+    suspend(selected_voice_model)
+  File "/home/claudio/Descargas/Fina - Asistente de Voz para Linux/utils.py", line 1083, in suspend
+    if not require_face_auth(selected_model):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/claudio/Descargas/Fina - Asistente de Voz para Linux/utils.py", line 1065, in require_face_auth
+    from faceAuthorization.faceDetection import check_authorization
+ModuleNotFoundError: No module named 'faceAuthorization'
+A critical error occurred. Please check the logs for details.
+
