@@ -44,26 +44,26 @@ jobs:
           releaseDraft: false
           prerelease: false
 
-      - name: Build AppImage with XZ compression 
+      - name: Build AppImage with XZ compression
         run: |
           # The linuxdeploy plugin bundled with Tauri fails when setting LDAI_COMP=xz
           # To fix this, we generate the xz AppImage manually using the official AppImageTool
           wget "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
           chmod +x appimagetool-x86_64.AppImage
-          
+
           # Fix absolute paths from the AppDir that bug out AppImageLauncher before repacking
           cd src-tauri/target/release/bundle/appimage/fina-ergen.AppDir
           rm -f fina-ergen.desktop .DirIcon
           ln -s usr/share/applications/fina-ergen.desktop fina-ergen.desktop
           ln -s fina-ergen.png .DirIcon
           cd ../../../../../../
-          
-          # Generate the slim xz AppImage
-          ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz src-tauri/target/release/bundle/appimage/fina-ergen.AppDir fina-ergen-patched.AppImage
-          
+
+          # Generate the slim xz AppImage using extraction trick to bypass missing libfuse2 in Ubuntu 24.04 Actions
+          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz src-tauri/target/release/bundle/appimage/fina-ergen.AppDir fina-ergen-patched.AppImage
+
           # Extract the version from package.json to construct the target filename
           VERSION=$(node -p "require('./package.json').version")
           TARGET_FILENAME="fina-ergen_${VERSION}_amd64.AppImage"
-          
+
           echo "Replacing GitHub Release Asset..."
           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-patched.AppImage#${TARGET_FILENAME} --clobber
