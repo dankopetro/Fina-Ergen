@@ -138,12 +138,28 @@ async fn execute_js_in_window(
     Ok("Script executed".to_string())
 }
 
+#[tauri::command]
+fn install_market_plugin(category: &str, subpath: &str) -> Result<String, String> {
+    use std::process::Command;
+    println!("[RUST] Instalando plugin de market: {}/{}", category, subpath);
+    let output = Command::new("python3")
+        .args(&["/home/claudio/Descargas/Fina-Ergen/scripts/install_plugin.py", category, subpath])
+        .output()
+        .map_err(|e| format!("Error ejecutando instalador: {}", e))?;
+    
+    let result = String::from_utf8_lossy(&output.stdout);
+    if result.contains("ERROR") {
+        return Err(result.to_string());
+    }
+    Ok(result.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![exit_app, hangup_doorbell, send_adb_command, start_streamer, execute_shell_command, spawn_shell_command, check_adb_status, execute_js_in_window])
+        .invoke_handler(tauri::generate_handler![exit_app, hangup_doorbell, send_adb_command, start_streamer, execute_shell_command, spawn_shell_command, check_adb_status, execute_js_in_window, install_market_plugin])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::Destroyed = event {
                 if window.label() == "main" {

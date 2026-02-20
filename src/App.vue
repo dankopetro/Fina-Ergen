@@ -911,12 +911,68 @@ const initiateMobileCall = async (number) => {
     }
 };
 
-const openPluginStore = () => {
-    finaState.value.process = "ABRIENDO HUB DE PLUGINS";
-    // Mock for future web interface
-    setTimeout(() => {
-        finaState.value.process = "HUB LISTO - EXPLORANDO";
-    }, 1000);
+const showMarket = ref(false);
+const marketPlugins = ref([]);
+const isMarketLoading = ref(false);
+
+const openPluginStore = async () => {
+    finaState.value.process = "ABRIENDO MARKET DE PLUGINS";
+    showMarket.value = true;
+    isMarketLoading.value = true;
+
+    try {
+        const categories = ["TVs", "Decos", "Doorbells", "AirConditioning"];
+        const plugins = [];
+
+        for (const cat of categories) {
+            const resp = await fetch(`https://api.github.com/repos/dankopetro/Fina-Plugins-Market/contents/${cat}`);
+            if (!resp.ok) continue;
+            const items = await resp.json();
+
+            for (const brand of items) {
+                if (brand.type === 'dir') {
+                    // Fetch models inside brand
+                    const modelResp = await fetch(brand.url);
+                    const models = await modelResp.json();
+                    for (const model of models) {
+                        if (model.type === 'dir') {
+                            plugins.push({
+                                name: model.name,
+                                brand: brand.name,
+                                category: cat,
+                                path: `${brand.name}/${model.name}`,
+                                installed: false // TODO: check if locally folder exists
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        marketPlugins.value = plugins;
+        finaState.value.process = "MARKET LISTO";
+    } catch (e) {
+        console.error("Market error:", e);
+        finaState.value.process = "ERROR AL CARGAR MARKET";
+    } finally {
+        isMarketLoading.value = false;
+    }
+};
+
+const installMarketPlugin = async (plugin) => {
+    finaState.value.process = `INSTALANDO ${plugin.name.toUpperCase()}...`;
+    try {
+        const res = await invoke("install_market_plugin", {
+            category: plugin.category,
+            subpath: plugin.path
+        });
+        addChatMessage(`Plugin ${plugin.name} instalado con éxito.`);
+        finaState.value.process = "INSTALACIÓN COMPLETADA";
+        setTimeout(() => finaState.value.process = "SISTEMA LISTO", 2000);
+    } catch (e) {
+        console.error("Install error:", e);
+        addChatMessage("Error al instalar plugin: " + e);
+        finaState.value.process = "ERROR EN INSTALACIÓN";
+    }
 };
 
 const isTvConnected = computed(() => {
@@ -2500,7 +2556,7 @@ const registerMasterPassword = () => {
                                 {{ msg.text }}</p>
                             <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{
                                 msg.time
-                            }}</span>
+                                }}</span>
                         </div>
                     </transition-group>
                 </div>
@@ -3030,7 +3086,7 @@ const registerMasterPassword = () => {
                                         <span class="text-[9px] font-bold text-slate-500 uppercase">Almacenamiento
                                             (Root)</span>
                                         <span class="text-[9px] font-bold text-white">{{ systemStats.disk.percent
-                                        }}%</span>
+                                            }}%</span>
                                     </div>
                                     <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                         <div class="h-full bg-gradient-to-r from-cyan-600 to-blue-500 transition-all duration-1000"
@@ -3126,7 +3182,7 @@ const registerMasterPassword = () => {
                                                     'border-pink-500/50': index % 3 === 2
                                                 }">
                                                 <span class="text-[11px] font-bold text-white">{{ reminder.task
-                                                    }}</span>
+                                                }}</span>
                                                 <span
                                                     class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{
                                                         reminder.time }}</span>
@@ -3345,8 +3401,8 @@ const registerMasterPassword = () => {
                                 class="w-full max-w-7xl py-6 bg-gradient-to-r from-slate-900 to-slate-800 border border-white/10 rounded-[35px] flex items-center justify-center gap-4 hover:from-slate-800 hover:to-slate-700 transition-all group/store shadow-xl shrink-0">
                                 <i
                                     class="fa-solid fa-puzzle-piece text-cyan-400 group-hover/store:rotate-45 transition-transform duration-500"></i>
-                                <span class="text-xs font-black text-white uppercase tracking-[0.4em]">Explorar
-                                    Ecosistema de Fina</span>
+                                <span class="text-xs font-black text-white uppercase tracking-[0.4em]">Acceder al Market
+                                    de Plugins</span>
                             </button>
                         </div>
                         <div v-else-if="activeTab === 'ajustes'"
@@ -4031,7 +4087,7 @@ const registerMasterPassword = () => {
                                                 class="p-4 mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-2">
                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
                                                 <span class="text-xs font-bold text-red-200 uppercase">{{ mobileHubError
-                                                    }}</span>
+                                                }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4505,14 +4561,14 @@ const registerMasterPassword = () => {
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Temperatura</span>
                                                         <span class="text-xs font-mono font-bold text-white">{{
                                                             acState.temp
-                                                        }}°C</span>
+                                                            }}°C</span>
                                                     </div>
                                                     <div class="flex justify-between items-center">
                                                         <span
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Modo</span>
                                                         <span class="text-xs font-black text-white uppercase">{{
                                                             acState.mode
-                                                        }}</span>
+                                                            }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -4766,23 +4822,23 @@ const registerMasterPassword = () => {
                                     <span class="text-xl font-black text-white">{{
                                         Math.round(systemStats.cpu?.percent || 0) }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.cpu?.freq
-                                    }} MHz</span>
+                                        }} MHz</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">RAM</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.ram?.percent
-                                    }}%</span>
+                                        }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.ram?.used
-                                    }} / {{ systemStats.ram?.total }} GB</span>
+                                        }} / {{ systemStats.ram?.total }} GB</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">DISCO</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.disk?.percent
-                                    }}%</span>
+                                        }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.disk?.free
-                                    }} GB Libres</span>
+                                        }} GB Libres</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
@@ -5191,6 +5247,104 @@ const registerMasterPassword = () => {
                                 class="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black uppercase tracking-wider hover:from-cyan-500 hover:to-blue-500 shadow-lg shadow-cyan-900/20 transition-all text-[10px]">
                                 SÍ, VINCULAR
                             </button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+
+            <!-- FINA MARKET MODAL (INNER SYSTEM) -->
+            <transition name="fade">
+                <div v-if="showMarket"
+                    class="fixed inset-0 z-[80] flex items-center justify-center bg-black/95 backdrop-blur-xl p-6"
+                    @click.self="showMarket = false">
+                    <div class="w-full max-w-6xl h-[85vh] bg-[#050a14] border border-cyan-500/20 rounded-[50px] shadow-3xl relative overflow-hidden flex flex-col"
+                        @click.stop>
+
+                        <!-- Header -->
+                        <div class="p-10 border-b border-white/5 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-6">
+                                <div
+                                    class="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center border border-cyan-500/20">
+                                    <i class="fa-solid fa-puzzle-piece text-3xl text-cyan-400"></i>
+                                </div>
+                                <div>
+                                    <h1 class="text-3xl font-black text-white uppercase tracking-tighter">Fina Market
+                                    </h1>
+                                    <p class="text-xs text-slate-500 font-bold uppercase tracking-[0.3em] mt-1">
+                                        Ecosistema de
+                                        Complementos Modulares</p>
+                                </div>
+                            </div>
+                            <button @click="showMarket = false"
+                                class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-red-500/20 hover:text-red-400 transition-all">
+                                <i class="fa-solid fa-xmark text-xl"></i>
+                            </button>
+                        </div>
+
+                        <!-- Content wrapper -->
+                        <div class="flex-1 overflow-y-auto p-10 custom-scrollbar">
+
+                            <!-- Loading State -->
+                            <div v-if="isMarketLoading"
+                                class="w-full h-full flex flex-col items-center justify-center gap-6">
+                                <div class="relative w-24 h-24">
+                                    <div class="absolute inset-0 border-4 border-cyan-500/20 rounded-full"></div>
+                                    <div
+                                        class="absolute inset-0 border-4 border-cyan-400 rounded-full border-t-transparent animate-spin">
+                                    </div>
+                                </div>
+                                <p class="text-cyan-400 font-black uppercase tracking-widest animate-pulse">
+                                    Sincronizando con
+                                    Repositorio Central...</p>
+                            </div>
+
+                            <!-- Plugin Grid -->
+                            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                <div v-for="plugin in marketPlugins" :key="plugin.path"
+                                    class="bg-white/5 border border-white/10 rounded-[35px] p-8 flex flex-col gap-6 hover:border-cyan-500/40 hover:bg-white/[0.07] transition-all group">
+
+                                    <div class="flex items-start justify-between">
+                                        <div
+                                            class="w-14 h-14 bg-black/40 rounded-2xl flex items-center justify-center border border-white/5">
+                                            <i class="fa-solid text-2xl text-cyan-400" :class="{
+                                                'fa-tv': plugin.category === 'TVs',
+                                                'fa-box': plugin.category === 'Decos',
+                                                'fa-bell': plugin.category === 'Doorbells',
+                                                'fa-wind': plugin.category === 'AirConditioning'
+                                            }"></i>
+                                        </div>
+                                        <span
+                                            class="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[10px] font-black text-cyan-400 uppercase tracking-widest">{{
+                                            plugin.category }}</span>
+                                    </div>
+
+                                    <div>
+                                        <h3 class="text-xl font-black text-white uppercase tracking-tight">{{
+                                            plugin.name }}</h3>
+                                        <p class="text-xs text-slate-500 font-bold mt-1">{{ plugin.brand }}</p>
+                                    </div>
+
+                                    <div class="mt-auto pt-4 flex gap-3">
+                                        <button @click="installMarketPlugin(plugin)"
+                                            class="flex-1 py-4 bg-cyan-500 text-black font-black rounded-2xl hover:bg-cyan-400 transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-download"></i>
+                                            INSTALAR PODER
+                                        </button>
+                                        <a :href="'https://github.com/dankopetro/Fina-Plugins-Market/tree/main/' + plugin.category + '/' + plugin.path"
+                                            target="_blank"
+                                            class="w-14 py-4 bg-white/5 border border-white/10 text-white rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center">
+                                            <i class="fa-brands fa-github"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Info -->
+                        <div class="p-6 bg-black/40 border-t border-white/5 text-center shrink-0">
+                            <p class="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">Los plugins se
+                                instalan
+                                automáticamente en la carpeta de ejecución local.</p>
                         </div>
                     </div>
                 </div>
