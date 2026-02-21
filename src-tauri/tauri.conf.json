@@ -69,7 +69,6 @@
       "../main.py",
       "../fina_api.py",
       "../utils.py",
-      "../config.py",
       "../intent_classifier.py",
       "../secondaryClassifier.py",
       "../plugin_manager.py",
