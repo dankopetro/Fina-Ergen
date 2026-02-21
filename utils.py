@@ -938,12 +938,22 @@ def find_file(name):
         return "Error buscando archivo."
 
 def get_clipboard():
+    """Lee el portapapeles soportando X11 (xclip) y Wayland (wl-paste)"""
     try:
-        # Requiere xclip o xsel
-        res = subprocess.run(["xclip", "-o", "-selection", "clipboard"], capture_output=True, text=True)
+        # Intento 1: X11 con xclip
+        res = subprocess.run(["xclip", "-o", "-selection", "clipboard"], capture_output=True, text=True, timeout=2)
         if res.returncode == 0: return res.stdout
-        return "Portapapeles vacío o inaccesible."
-    except: return "No pude leer el portapapeles."
+    except:
+        pass
+
+    try:
+        # Intento 2: Wayland con wl-clipboard
+        res = subprocess.run(["wl-paste", "--no-newline"], capture_output=True, text=True, timeout=2)
+        if res.returncode == 0: return res.stdout
+    except:
+        pass
+
+    return "Portapapeles vacío o inaccesible (asegúrate de tener xclip o wl-clipboard instalado)."
 
 # --- REAL IMPLEMENTATIONS OF TOOLS (part 2) ---
 

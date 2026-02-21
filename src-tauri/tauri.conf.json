@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "fina-ergen",
-  "version": "3.5.4-10",
+  "version": "3.5.4-11",
   "identifier": "com.admin.fina-ergen",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -77,7 +77,9 @@
           "libportaudio2",
           "scrcpy",
           "libvlc5",
-          "xclip"
+          "xclip",
+          "wl-clipboard",
+          "libfuse2"
         ]
       },
       "rpm": {
@@ -90,7 +92,9 @@
           "portaudio",
           "scrcpy",
           "vlc",
-          "xclip"
+          "xclip",
+          "wl-clipboard",
+          "fuse-libs"
         ]
       },
       "appimage": {
