@@ -138,7 +138,8 @@ def main():
     # Solo guardar si el escaneo terminó o no fue cancelado
     if channels_found:
         project_root = "."
-        output_file = os.path.join(project_root, "config", "channels.json")
+        # Ruta Universal protegida
+        output_file = os.path.expanduser("~/.config/Fina/channels.json")
         
         try:
             os.makedirs(os.path.dirname(output_file), exist_ok=True)

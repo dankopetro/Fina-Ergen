@@ -14,8 +14,8 @@ try:
     # Validar que sea JSON válido antes de guardar
     data = json.loads(json_str)
     
-    # Ruta fija al archivo de configuración
-    config_path = "./config/settings.json"
+    # Ruta Universal: ~/.config/Fina/settings.json
+    config_path = os.path.expanduser("~/.config/Fina/settings.json")
     
     # Asegurar que el directorio existe
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
