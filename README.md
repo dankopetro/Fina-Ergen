@@ -64,7 +64,7 @@ Si prefieres no instalar nada a nivel sistema, descarga una de nuestras versione
 Fina viene "pelada" de fábrica para ser rapidísima. Todo el control de aparatos IoT, TV y automatizaciones de terceros se descarga por separado mediante un Market. Tienes dos maneras de hacerlo:
 
 ### Vía Interfaz (Recomendada)
-1. Abre Fina Ergen y dirígete al botón **Market de Plugins** (actualmente visible en la sección *Agenda / Inteligencia*).
+1. Abre Fina Ergen y dirígete al botón **Market de Plugins** (actualmente visible en la sección *Agenda*).
 2. Explora el repertorio, haz clic en **Instalar** al plugin que desees y Fina se encargará de descargarlo, inyectarlo en tu perfil de usuario y encenderlo automáticamente.
 
 ### Vía Manual
