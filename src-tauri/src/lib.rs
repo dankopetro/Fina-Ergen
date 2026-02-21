@@ -57,6 +57,47 @@ fn execute_shell_command(command: &str) -> Result<String, String> {
 }
 
 #[tauri::command]
+fn scan_network_devices(app_handle: tauri::AppHandle) -> Result<String, String> {
+    use std::process::Command;
+    use tauri::Manager;
+
+    // Buscar python3 disponible en el sistema
+    let python = if Command::new("python3").arg("--version").output().is_ok() {
+        "python3"
+    } else {
+        "python"
+    };
+
+    // Obtener ruta real del script desde los recursos empaquetados
+    let resource_dir = app_handle.path().resource_dir()
+        .map_err(|e| format!("No se pudo obtener resource_dir: {}", e))?;
+
+    let script = resource_dir.join("_up_/iot/network_scan.py");
+
+    if !script.exists() {
+        return Err(format!("Script no encontrado: {:?}", script));
+    }
+
+    println!("[RUST] Escaneando red con: {:?}", script);
+
+    let output = Command::new(python)
+        .arg("-u")
+        .arg(&script)
+        .output()
+        .map_err(|e| format!("Error al ejecutar network_scan.py: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("network_scan.py error: {}", stderr));
+    }
+
+    let result = String::from_utf8_lossy(&output.stdout).to_string();
+    println!("[RUST] Escaneo completado: {} bytes", result.len());
+    Ok(result)
+}
+
+
+#[tauri::command]
 fn spawn_shell_command(command: &str) -> Result<String, String> {
     use std::process::Command;
     println!("[RUST] Lanzando comando background: {}", command);
@@ -170,7 +211,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![exit_app, hangup_doorbell, send_adb_command, start_streamer, execute_shell_command, spawn_shell_command, check_adb_status, execute_js_in_window, install_market_plugin])
+        .invoke_handler(tauri::generate_handler![exit_app, hangup_doorbell, send_adb_command, start_streamer, execute_shell_command, spawn_shell_command, check_adb_status, execute_js_in_window, install_market_plugin, scan_network_devices])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::Destroyed = event {
                 if window.label() == "main" {
@@ -179,7 +220,44 @@ pub fn run() {
                 }
             }
         })
-        .setup(|_app| {
+        .setup(|app| {
+            use tauri::Manager;
+            use std::process::Command;
+
+            let resource_dir = app.path().resource_dir()
+                .expect("No se pudo obtener la carpeta de recursos");
+
+            // Detectar python disponible en el sistema
+            let python = if Command::new("python3").arg("--version").output().is_ok() {
+                "python3"
+            } else {
+                "python"
+            };
+
+            // --- Arrancar fina_api.py (Backend REST) ---
+            let api_script = resource_dir.join("_up_/fina_api.py");
+            if api_script.exists() {
+                println!("[RUST] Arrancando backend API: {:?}", api_script);
+                let _ = Command::new(python)
+                    .arg("-u")
+                    .arg(&api_script)
+                    .spawn();
+            } else {
+                println!("[RUST] ⚠ fina_api.py no encontrado en {:?}", api_script);
+            }
+
+            // --- Arrancar main.py (Cerebro) ---
+            let brain_script = resource_dir.join("_up_/main.py");
+            if brain_script.exists() {
+                println!("[RUST] Arrancando cerebro: {:?}", brain_script);
+                let _ = Command::new(python)
+                    .arg("-u")
+                    .arg(&brain_script)
+                    .spawn();
+            } else {
+                println!("[RUST] ⚠ main.py no encontrado en {:?}", brain_script);
+            }
+
             Ok(())
         })
         .run(tauri::generate_context!())

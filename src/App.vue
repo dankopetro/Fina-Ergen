@@ -1110,27 +1110,19 @@ const deviceTypesList = [
 ];
 
 const scanNetwork = async () => {
-    if (!projectRoot.value) {
-        finaState.value.process = "ESPERANDO BACKEND...";
-        await syncSystemInfo();
-        if (!projectRoot.value) return;
-    }
     finaState.value.process = "ESCANEANDO RED...";
     isScanningNetwork.value = true;
     try {
-        const script = `${projectRoot.value}/iot/network_scan.py`;
-        const cmd = `${pythonExecutable.value} "${script}"`;
-        const output = await invoke("execute_shell_command", { command: cmd });
+        // Usar comando Tauri directo (Rust) que conoce la ruta real del bundle
+        const output = await invoke("scan_network_devices");
         scannedDevices.value = JSON.parse(output);
         console.log("Red escaneada:", scannedDevices.value);
         finaState.value.process = `DETECTADOS ${scannedDevices.value.length} DISPOSITIVOS`;
-
-        // Auto-detect known IPs based on settings
         syncDevicesWithSettings();
-
     } catch (error) {
         console.error("Error escaneando red:", error);
         finaState.value.process = "ERROR AL ESCANEAR";
+        addChatMessage(`Fina: ⚠ No pude escanear la red: ${error}`);
     } finally {
         isScanningNetwork.value = false;
         setTimeout(() => finaState.value.process = "SISTEMA LISTO", 3000);
@@ -2017,7 +2009,6 @@ onMounted(async () => {
             refreshDoorbellStatus().catch(() => { })
         ]);
 
-        addChatMessage("Equipamientos Suffolk y Surrey online.");
         await new Promise(r => setTimeout(r, 800));
 
         // 2. ADB / Móvil
@@ -2604,7 +2595,7 @@ const registerMasterPassword = () => {
                                 {{ msg.text }}</p>
                             <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{
                                 msg.time
-                            }}</span>
+                                }}</span>
                         </div>
                     </transition-group>
                 </div>
@@ -3134,7 +3125,7 @@ const registerMasterPassword = () => {
                                         <span class="text-[9px] font-bold text-slate-500 uppercase">Almacenamiento
                                             (Root)</span>
                                         <span class="text-[9px] font-bold text-white">{{ systemStats.disk.percent
-                                        }}%</span>
+                                            }}%</span>
                                     </div>
                                     <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                         <div class="h-full bg-gradient-to-r from-cyan-600 to-blue-500 transition-all duration-1000"
@@ -3230,7 +3221,7 @@ const registerMasterPassword = () => {
                                                     'border-pink-500/50': index % 3 === 2
                                                 }">
                                                 <span class="text-[11px] font-bold text-white">{{ reminder.task
-                                                    }}</span>
+                                                }}</span>
                                                 <span
                                                     class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{
                                                         reminder.time }}</span>
@@ -4135,7 +4126,7 @@ const registerMasterPassword = () => {
                                                 class="p-4 mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-2">
                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
                                                 <span class="text-xs font-bold text-red-200 uppercase">{{ mobileHubError
-                                                    }}</span>
+                                                }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4609,14 +4600,14 @@ const registerMasterPassword = () => {
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Temperatura</span>
                                                         <span class="text-xs font-mono font-bold text-white">{{
                                                             acState.temp
-                                                        }}°C</span>
+                                                            }}°C</span>
                                                     </div>
                                                     <div class="flex justify-between items-center">
                                                         <span
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Modo</span>
                                                         <span class="text-xs font-black text-white uppercase">{{
                                                             acState.mode
-                                                        }}</span>
+                                                            }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -4870,23 +4861,23 @@ const registerMasterPassword = () => {
                                     <span class="text-xl font-black text-white">{{
                                         Math.round(systemStats.cpu?.percent || 0) }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.cpu?.freq
-                                    }} MHz</span>
+                                        }} MHz</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">RAM</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.ram?.percent
-                                    }}%</span>
+                                        }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.ram?.used
-                                    }} / {{ systemStats.ram?.total }} GB</span>
+                                        }} / {{ systemStats.ram?.total }} GB</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">DISCO</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.disk?.percent
-                                    }}%</span>
+                                        }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.disk?.free
-                                    }} GB Libres</span>
+                                        }} GB Libres</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">

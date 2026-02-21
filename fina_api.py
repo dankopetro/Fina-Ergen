@@ -187,6 +187,29 @@ async def get_plugins():
         print(f"❌ Error listando plugins: {e}", flush=True)
         return []
 
+@app.get("/api/network/scan")
+async def scan_network():
+    """Ejecuta el escáner de red y devuelve la lista de dispositivos detectados"""
+    try:
+        scan_script = os.path.join(PROJECT_ROOT, "iot", "network_scan.py")
+        if not os.path.exists(scan_script):
+            return {"error": f"Script no encontrado: {scan_script}", "devices": []}
+        result = subprocess.run(
+            [sys.executable, scan_script],
+            capture_output=True, text=True, timeout=60
+        )
+        if result.returncode != 0:
+            print(f"❌ Error escáner red: {result.stderr}", flush=True)
+            return {"error": result.stderr, "devices": []}
+        devices = json.loads(result.stdout)
+        print(f"✅ Red escaneada: {len(devices)} dispositivos", flush=True)
+        return {"devices": devices}
+    except subprocess.TimeoutExpired:
+        return {"error": "Timeout: el escaneo tardó demasiado.", "devices": []}
+    except Exception as e:
+        print(f"❌ Error en scan_network: {e}", flush=True)
+        return {"error": str(e), "devices": []}
+
 @app.get("/api/system/info")
 async def get_system_info():
     """Devuelve rutas críticas para que el frontend sepa qué usar"""

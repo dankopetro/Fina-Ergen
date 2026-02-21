@@ -1,8 +1,11 @@
 [package]
 name = "fina-ergen"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "El Asistente de Voz Modular y Domótico para Linux"
+authors = ["Danko Petro <fina.assistant@proton.me>"]
+homepage = "https://github.com/dankopetro/Fina-Ergen"
+repository = "https://github.com/dankopetro/Fina-Ergen"
+license = "MIT"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

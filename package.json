@@ -1,7 +1,7 @@
 {
   "name": "fina-ergen",
   "private": true,
-  "version": "3.5.4-13",
+  "version": "3.5.4-14",
   "type": "module",
   "scripts": {
     "dev": "vite",
