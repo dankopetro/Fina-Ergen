@@ -20,52 +20,69 @@ class PluginManager:
     
     def __init__(self, plugins_dir: str = None):
         """
-        Inicializa el gestor de plugins
-        
-        Args:
-            plugins_dir: Directorio donde están los plugins (default: ./plugins)
+        Inicializa el gestor de plugins con soporte para rutas de Sistema y Usuario
         """
-        if plugins_dir is None:
-            # Obtener directorio raíz de Fina
-            self.root_dir = Path(__file__).parent.absolute()
-            self.plugins_dir = self.root_dir / "plugins"
-        else:
-            self.plugins_dir = Path(plugins_dir)
+        self.root_dir = Path(__file__).parent.absolute()
+        
+        # 1. Carpeta de Sistema (dentro del proyecto/AppImage)
+        self.system_plugins_dir = self.root_dir / "plugins"
+        
+        # 2. Carpeta de Usuario (Persistente en .config)
+        self.user_plugins_dir = Path(os.path.expanduser("~/.config/Fina/plugins"))
+        
+        # Asegurar que existan
+        self.system_plugins_dir.mkdir(exist_ok=True)
+        self.user_plugins_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Para compatibilidad con código viejo que use self.plugins_dir, apuntamos a la de sistema
+        self.plugins_dir = self.system_plugins_dir
         
         self.loaded_plugins: Dict[str, dict] = {}
         self.plugin_processes: Dict[str, subprocess.Popen] = {}
         
-        # Crear directorio de plugins si no existe
-        self.plugins_dir.mkdir(exist_ok=True)
-        
-        logger.info(f"Plugin Manager inicializado. Directorio: {self.plugins_dir}")
+        logger.info(f"Plugin Manager (Universal) inicializado.")
+        logger.info(f"📂 Sistema: {self.system_plugins_dir}")
+        logger.info(f"📂 Usuario: {self.user_plugins_dir}")
     
     def discover_plugins(self) -> List[str]:
         """
-        Descubre todos los plugins disponibles (YAML o JSON)
-        
-        Returns:
-            Lista de nombres de plugins encontrados
+        Descubre plugins en ambas carpetas. 
+        Si hay colisión de nombres, el de Usuario tiene prioridad.
         """
-        plugins = []
+        plugins_map = {} # name -> path
         
-        if not self.plugins_dir.exists():
-            logger.warning(f"Directorio de plugins no existe: {self.plugins_dir}")
-            return plugins
+        # Escanear Sistema
+        if self.system_plugins_dir.exists():
+            for item in self.system_plugins_dir.iterdir():
+                if item.is_dir() and ((item / "plugin.yaml").exists() or (item / "plugin.json").exists()):
+                    plugins_map[item.name] = item
         
-        for item in self.plugins_dir.iterdir():
-            if item.is_dir():
-                if (item / "plugin.yaml").exists() or (item / "plugin.json").exists():
-                    plugins.append(item.name)
-                    logger.debug(f"Plugin descubierto: {item.name}")
+        # Escanear Usuario (Sobrescribe si hay duplicado)
+        if self.user_plugins_dir.exists():
+            for item in self.user_plugins_dir.iterdir():
+                if item.is_dir() and ((item / "plugin.yaml").exists() or (item / "plugin.json").exists()):
+                    plugins_map[item.name] = item
         
-        return plugins
+        return list(plugins_map.keys())
     
+    def _get_plugin_path(self, plugin_name: str) -> Optional[Path]:
+        """Busca la ruta real de un plugin priorizando Usuario"""
+        user_path = self.user_plugins_dir / plugin_name
+        if user_path.exists(): return user_path
+        
+        sys_path = self.system_plugins_dir / plugin_name
+        if sys_path.exists(): return sys_path
+        
+        return None
+
     def load_plugin_metadata(self, plugin_name: str) -> Optional[dict]:
         """
-        Carga los metadatos de un plugin desde plugin.yaml (preferido) o plugin.json
+        Carga los metadatos buscando en ambas rutas posibles
         """
-        plugin_path = self.plugins_dir / plugin_name
+        plugin_path = self._get_plugin_path(plugin_name)
+        if not plugin_path:
+            logger.error(f"No se encontró ruta para plugin {plugin_name}")
+            return None
         
         yaml_file = plugin_path / "plugin.yaml"
         json_file = plugin_path / "plugin.json"

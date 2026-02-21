@@ -36,34 +36,42 @@ sys.path.append(PROJECT_ROOT)
 
 # --- CARGAR CONFIGURACIÓN ---
 DOORBELL_CONFIGURED = False
+DEFAULT_IP = "192.168.0.5" # IP Genérica de ejemplo
+
 try:
-    p = os.path.join(PROJECT_ROOT, "config/settings.json")
+    # Usar la ruta centralizada si existe
+    config_dir = os.path.expanduser("~/.config/Fina")
+    p = os.path.join(config_dir, "settings.json")
+    
+    # Fallback al proyecto solo si no existe en home
+    if not os.path.exists(p):
+        p = os.path.join(PROJECT_ROOT, "config/settings.json")
+
     if os.path.exists(p):
         import json
         with open(p, "r") as f:
             data = json.load(f)
             
             # 1. Mirar en APIS
-            timeout_ip = data.get("apis", {}).get("TIMBRE_IP")
-            if timeout_ip:
-                DOORBELL_IP = timeout_ip
+            custom_ip = data.get("apis", {}).get("TIMBRE_IP")
+            if custom_ip and custom_ip != DEFAULT_IP:
+                DOORBELL_IP = custom_ip
                 DOORBELL_CONFIGURED = True
             
-            # 2. Mirar en Devices (Filtro estricto para evitar cámaras IP genéricas)
+            # 2. Mirar en Devices
             devices = data.get("devices", [])
             for d in devices:
                 d_type = str(d.get("type", "")).lower()
                 d_name = str(d.get("name", "")).lower()
                 
-                # Criterios: Que sea un Timbre explícito o que use la marca Tuya
-                es_timbre = d_type in ["timbre", "doorbell"] or "timbre" in d_name or "doorbell" in d_name
-                es_tuya = "tuya" in d_type or "tuya" in d_name
-                
-                if es_timbre or es_tuya:
-                    DOORBELL_IP = d.get("ip", DOORBELL_IP)
-                    DOORBELL_CONFIGURED = True
-                    break
-except: pass
+                if any(x in d_type or x in d_name for x in ["timbre", "doorbell", "tuya"]):
+                    device_ip = d.get("ip")
+                    if device_ip and device_ip != "0.0.0.0":
+                        DOORBELL_IP = device_ip
+                        DOORBELL_CONFIGURED = True
+                        break
+except Exception as e:
+    print(f"DEBUG: Error leyendo config en monitor: {e}")
 # ----------------------------
 
 # Importar utils o definir fallbacks

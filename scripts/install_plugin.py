@@ -7,7 +7,10 @@ import io
 
 def install_plugin(category, subpath):
     repo_url = "https://github.com/dankopetro/Fina-Plugins-Market/archive/refs/heads/main.zip"
-    plugins_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "plugins")
+    # Ruta Universal: ~/.config/Fina/plugins
+    plugins_dir = os.path.expanduser("~/.config/Fina/plugins")
+    if not os.path.exists(plugins_dir):
+        os.makedirs(plugins_dir, exist_ok=True)
     
     print(f"Buscando plugin: {category}/{subpath}...")
     

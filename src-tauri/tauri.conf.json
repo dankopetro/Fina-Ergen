@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "fina-ergen",
-  "version": "3.5.4-12",
+  "version": "3.5.4-13",
   "identifier": "com.admin.fina-ergen",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -64,6 +64,26 @@
     ],
     "externalBin": [
       "binaries/brain"
+    ],
+    "resources": [
+      "../main.py",
+      "../fina_api.py",
+      "../utils.py",
+      "../config.py",
+      "../intent_classifier.py",
+      "../secondaryClassifier.py",
+      "../plugin_manager.py",
+      "../fina_plugin_integration.py",
+      "../intents.json",
+      "../requirements.txt",
+      "../setup.py",
+      "../iot/**/*",
+      "../plugins/**/*",
+      "../voice_models/**/*",
+      "../static/**/*",
+      "../tools/**/*",
+      "../auth/**/*",
+      "../config/**/*"
     ],
     "linux": {
       "deb": {

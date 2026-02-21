@@ -11,6 +11,15 @@ from typing import List, Optional, Dict
 # Dejamos que el script de bash maneje los logs (tee)
 print(f"\n--- [ARRANQUE API] {time.strftime('%Y-%m-%d %H:%M:%S')} ---", flush=True)
 
+# --- CONFIG DIRECTORY [CENTRALIZED] ---
+CONFIG_DIR = os.path.expanduser("~/.config/Fina")
+if not os.path.exists(CONFIG_DIR):
+    os.makedirs(CONFIG_DIR, exist_ok=True)
+
+# Inyectar CONFIG_DIR al inicio de sys.path para que 'import config' lo encuentre allí
+if CONFIG_DIR not in sys.path:
+    sys.path.insert(0, CONFIG_DIR)
+
 try:
     from fastapi import FastAPI, HTTPException
     from fastapi.staticfiles import StaticFiles
@@ -24,7 +33,7 @@ try:
     try:
         import config
     except ImportError:
-        print("⚠️ [WARN] config.py no encontrado. Usando valores por defecto.", flush=True)
+        print("⚠️ [WARN] config.py no encontrado en .config/Fina. Usando valores por defecto.", flush=True)
         config = None
 except Exception as e:
     print(f"❌ [CRITICAL] Error importando librerías: {e}", flush=True)
@@ -44,20 +53,12 @@ app.add_middleware(
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# --- CONFIG DIRECTORY [CENTRALIZED] ---
-CONFIG_DIR = os.path.expanduser("~/.config/Fina")
-if not os.path.exists(CONFIG_DIR):
-    os.makedirs(CONFIG_DIR, exist_ok=True)
-
-# Inyectar CONFIG_DIR al inicio de sys.path para que 'import config' lo encuentre allí
-if CONFIG_DIR not in sys.path:
-    sys.path.insert(0, CONFIG_DIR)
-
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
+CONTACTS_PATH = os.path.join(CONFIG_DIR, "contact.json")
 CHANNELS_PATH = os.path.join(PROJECT_ROOT, "channels.json") # Mantener canales en root por ahora
 USER_DATA_PATH = os.path.join(CONFIG_DIR, "user_data.json")
 
-print(f"✅ Rutas configuradas. Config Dir: {CONFIG_DIR}", flush=True)
+print(f"✅ Rutas de usuario activas: {CONFIG_DIR}", flush=True)
 
 # --- Models ---
 class TV(BaseModel):
@@ -157,6 +158,34 @@ async def get_user_data():
     except Exception as e:
         print(f"❌ Error cargando user_data: {e}", flush=True)
         return {"notes": [], "reminders": []}
+
+@app.get("/api/settings")
+async def get_settings():
+    """Retorna los ajustes desde .config/Fina/settings.json"""
+    return load_settings_data()
+
+@app.get("/api/contacts")
+async def get_contacts():
+    """Retorna los contactos desde .config/Fina/contact.json"""
+    if not os.path.exists(CONTACTS_PATH):
+        return {}
+    try:
+        with open(CONTACTS_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"❌ Error cargando contactos: {e}", flush=True)
+        return {}
+
+@app.get("/api/plugins")
+async def get_plugins():
+    """Retorna la lista de plugins instalados (Sistema + Usuario)"""
+    try:
+        from plugin_manager import PluginManager
+        pm = PluginManager()
+        return pm.list_plugins()
+    except Exception as e:
+        print(f"❌ Error listando plugins: {e}", flush=True)
+        return []
 
 @app.get("/api/system/info")
 async def get_system_info():

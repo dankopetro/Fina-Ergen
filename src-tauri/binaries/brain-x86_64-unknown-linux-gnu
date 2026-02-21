@@ -3,23 +3,49 @@
 
 # Directorio donde se encuentra este script
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ERGEN_ROOT="$(realpath "$SCRIPT_DIR/../../../")"
-ERGEN_MAIN="$ERGEN_ROOT/main.py"
 
-# En caso de no encontrarlo (ej: AppImage), fallback a carpeta actual
-if [ ! -f "$ERGEN_MAIN" ]; then
+# Estrategia de búsqueda de raíz (Desarrollo vs Producción .deb/.rpm)
+# 1. Desarrollo: ../../../ (desde binaries/)
+# 2. Producción: ../ (desde binaries/ en /usr/lib/fina-ergen/)
+# 3. Producción (Alternate): ../resources/
+for root in "$SCRIPT_DIR/../../../" "$SCRIPT_DIR/../" "$SCRIPT_DIR/../resources/"; do
+    IF_ROOT="$(realpath "$root" 2>/dev/null)"
+    if [ -f "$IF_ROOT/main.py" ]; then
+        ERGEN_ROOT="$IF_ROOT"
+        ERGEN_MAIN="$ERGEN_ROOT/main.py"
+        break
+    fi
+done
+
+if [ -z "$ERGEN_ROOT" ]; then
+    echo "⚠️ ADVERTENCIA: No se encontró main.py en rutas estándar. Usando PWD." >&2
     ERGEN_ROOT="$(pwd)"
     ERGEN_MAIN="$ERGEN_ROOT/main.py"
 fi
 
-# Ubicación del VENV (Priorizamos .venv local, sino uno en el HOME del usuario)
-USER_VENV="$HOME/.local/share/Fina/venv"
-LOCAL_VENV="$ERGEN_ROOT/.venv"
+echo "📂 Root detectado: $ERGEN_ROOT" >&2
 
-if [ -f "$LOCAL_VENV/bin/python3" ]; then
-    PYTHON_BIN="$LOCAL_VENV/bin/python3"
-else
-    PYTHON_BIN="$USER_VENV/bin/python3"
+# Ubicación del VENV (Priorizamos locales, luego globales)
+PYTHON_BIN=""
+
+# 1. Buscar en carpetas locales del proyecto [MODO DESARROLLO]
+for venv_name in ".venv" "venv"; do
+    if [ -f "$ERGEN_ROOT/$venv_name/bin/python3" ]; then
+        PYTHON_BIN="$ERGEN_ROOT/$venv_name/bin/python3"
+        echo "🐍 Usando VENV local: $venv_name" >&2
+        break
+    fi
+done
+
+# 2. Si no hay local, buscar globales [MODO PRODUCCIÓN / USUARIO]
+if [ -z "$PYTHON_BIN" ]; then
+    if [ -f "$HOME/.venv/bin/python3" ]; then
+        PYTHON_BIN="$HOME/.venv/bin/python3"
+        echo "🐍 Usando VENV global del HOME (~/.venv)" >&2
+    elif [ -f "$HOME/.local/share/Fina/venv/bin/python3" ]; then
+        PYTHON_BIN="$HOME/.local/share/Fina/venv/bin/python3"
+        echo "🐍 Usando VENV global de Fina (.local/share/Fina/venv)" >&2
+    fi
 fi
 
 # --- INICIALIZACIÓN AUTOMÁTICA DEL ENTORNO ---

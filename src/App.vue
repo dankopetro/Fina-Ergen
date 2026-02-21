@@ -31,6 +31,8 @@ const invoke = async (cmd, args = {}) => {
 
 // --- RECURSOS DINÁMICOS ---
 const pythonExecutable = ref("python3");
+const projectRoot = ref("");
+const configDir = ref("");
 
 const syncSystemInfo = async () => {
     if (!isTauri) return;
@@ -39,11 +41,13 @@ const syncSystemInfo = async () => {
         const data = await res.json();
         if (data.python_path) {
             pythonExecutable.value = data.python_path;
-            console.log("✅ Fina Python Detectado:", pythonExecutable.value);
+            projectRoot.value = data.project_root || projectRoot.value;
+            configDir.value = data.config_dir || configDir.value;
+            console.log("✅ Fina System Info:", { python: pythonExecutable.value, root: projectRoot.value, config: configDir.value });
         }
     } catch (e) {
-        // Backend no listo, reintentar en 5s
-        setTimeout(syncSystemInfo, 5000);
+        // Backend no listo, reintentar en 3s
+        setTimeout(syncSystemInfo, 3000);
     }
 };
 
@@ -163,13 +167,15 @@ const addChatMessage = (text, timeout = 7000) => {
     });
     if (chatHistory.value.length > 5) chatHistory.value.shift();
 
-    // Auto-eliminar después del tiempo definido
-    setTimeout(() => {
-        const index = chatHistory.value.findIndex(m => m.id === id);
-        if (index > -1) {
-            chatHistory.value.splice(index, 1);
-        }
-    }, timeout);
+    // Auto-eliminar después del tiempo definido (si es > 0)
+    if (timeout > 0) {
+        setTimeout(() => {
+            const index = chatHistory.value.findIndex(m => m.id === id);
+            if (index > -1) {
+                chatHistory.value.splice(index, 1);
+            }
+        }, timeout);
+    }
 };
 
 // --- LOGGING ---
@@ -258,7 +264,7 @@ const filteredTvApps = computed(() => {
 
 const getSystemStats = async () => {
     const pyPath = pythonExecutable.value;
-    const scriptPath = "./plugins/system/get_stats.py";
+    const scriptPath = `${projectRoot.value}/plugins/system/get_stats.py`;
     try {
         const output = await invoke("execute_shell_command", { command: `timeout 3 ${pyPath} "${scriptPath}"` });
         systemStats.value = JSON.parse(output);
@@ -363,7 +369,7 @@ const addSentinelLog = (msg) => {
 const logVoice = async (cmd) => {
     try {
         const py = pythonExecutable.value;
-        const script = "./plugins/system/log_manager.py";
+        const script = `${projectRoot.value}/plugins/system/log_manager.py`;
         await invoke("execute_shell_command", { command: `${py} "${script}" log_cmd "${cmd}"` });
         addSentinelLog(`[VOZ] ${cmd}`);
     } catch (e) { console.error(e); }
@@ -372,7 +378,7 @@ const logVoice = async (cmd) => {
 const logError = async (err) => {
     try {
         const py = pythonExecutable.value;
-        const script = "./plugins/system/log_manager.py";
+        const script = `${projectRoot.value}/plugins/system/log_manager.py`;
         await invoke("execute_shell_command", { command: `${py} "${script}" log_err "${err}"` });
         addSentinelLog(`[ERROR] ${err}`);
     } catch (e) { console.error(e); }
@@ -381,7 +387,7 @@ const logError = async (err) => {
 const fetchSystemLogs = async () => {
     try {
         const py = pythonExecutable.value;
-        const script = "./plugins/system/log_manager.py";
+        const script = `${projectRoot.value}/plugins/system/log_manager.py`;
         const output = await invoke("execute_shell_command", { command: `${py} "${script}" read` });
         if (output) {
             const lines = output.split('\n').filter(l => l.trim());
@@ -512,7 +518,7 @@ const sendMobileSMS = async (number, msg, forceApp = null) => {
             }
 
             const py = pythonExecutable.value;
-            const script = "./plugins/system/mobile_hub.py";
+            const script = `${projectRoot.value}/plugins/system/mobile_hub.py`;
 
             // 2. Ejecutar envío y CAPTURAR salida
             const rawOutput = await invoke("execute_shell_command", {
@@ -561,12 +567,12 @@ const sendMobileSMS = async (number, msg, forceApp = null) => {
                 notifyFina("WHATSAPP ENVIADO");
                 addChatMessage(`WhatsApp enviado a ${number}: "${msg}"`);
                 invoke("execute_shell_command", {
-                    command: `${pythonExecutable.value} ./utils.py speak "Mensaje de WhatsApp enviado correctamente."`
+                    command: `${pythonExecutable.value} ${projectRoot.value}/utils.py speak "Mensaje de WhatsApp enviado correctamente."`
                 }).catch(() => { });
             } else {
                 await logMsg(`ERROR EN ENVÍO: ${result.error}`, "ERROR");
                 await invoke("execute_shell_command", {
-                    command: `${pythonExecutable.value} ./utils.py speak "No pude enviar el mensaje de WhatsApp. Revisa los logs."`
+                    command: `${pythonExecutable.value} ${projectRoot.value}/utils.py speak "No pude enviar el mensaje de WhatsApp. Revisa los logs."`
                 }).catch(() => { });
             }
 
@@ -654,7 +660,7 @@ const generatePairingQR = async () => {
 
         const hint = "Escanea el código QR desde tu celular para emparejar.";
         invoke("execute_shell_command", {
-            command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
+            command: `${pythonExecutable.value} ${projectRoot.value}/utils.py speak "${hint}"`
         }).catch(() => { });
 
         return true;
@@ -662,7 +668,7 @@ const generatePairingQR = async () => {
         console.error("Error generando QR:", e);
         const hint = "No pude generar el código QR. Verifica la conexión de red.";
         invoke("execute_shell_command", {
-            command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
+            command: `${pythonExecutable.value} ${projectRoot.value}/utils.py speak "${hint}"`
         }).catch(() => { });
         return false;
     }
@@ -792,7 +798,7 @@ const retryMobileConnection = async () => {
             finaState.value.process = "ESPERANDO AUTORIZACIÓN EN EL CELULAR...";
             const hint = "Por favor, acepta la autorización de depuración USB en la pantalla de tu celular.";
             invoke("execute_shell_command", {
-                command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
+                command: `${pythonExecutable.value} ${projectRoot.value}/utils.py speak "${hint}"`
             }).catch(() => { });
 
             let authorized = false;
@@ -829,7 +835,7 @@ const retryMobileConnection = async () => {
             detectMessagingApps(); // Detectar apps al conectar
             const hint = `Conexión restablecida. Ya puedes desconectar el cable USB.`;
             invoke("execute_shell_command", {
-                command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
+                command: `${pythonExecutable.value} ${projectRoot.value}/utils.py speak "${hint}"`
             }).catch(() => { });
 
             addChatMessage(`Conexión con ${dev.name} restablecida. Puedes quitar el cable.`);
@@ -852,7 +858,7 @@ const retryMobileConnection = async () => {
                 showPairingModal.value = true;
                 const hint = `${dev.name} usa Android ${androidVersion}. La conexión automática falló. Escanea el QR.`;
                 invoke("execute_shell_command", {
-                    command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
+                    command: `${pythonExecutable.value} ${projectRoot.value}/utils.py speak "${hint}"`
                 }).catch(() => { });
                 return;
             }
@@ -886,7 +892,7 @@ const initiateMobileCall = async (number) => {
 
     try {
         const py = pythonExecutable.value;
-        const script = "./plugins/system/mobile_hub.py";
+        const script = `${projectRoot.value}/plugins/system/mobile_hub.py`;
 
         // 1. Try Connection (Blocking wait con timeout)
         if (dev.ip) {
@@ -913,7 +919,7 @@ const initiateMobileCall = async (number) => {
         // Vocal feedback e instrucciones
         const hint = `No puedo iniciar la llamada porque el celular ${dev.name} está fuera de línea. Revisa la guía de conexión en pantalla.`;
         invoke("execute_shell_command", {
-            command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
+            command: `${pythonExecutable.value} ${projectRoot.value}/utils.py speak "${hint}"`
         }).catch(() => { });
 
         // MOSTRAR AYUDA VISUAL PROACTIVA
@@ -939,6 +945,11 @@ const openPluginStore = async () => {
     isMarketLoading.value = true;
 
     try {
+        // Obtener lista de instalados primero
+        const localResp = await fetch("http://127.0.0.1:8000/api/plugins");
+        const installedLocal = localResp.ok ? await localResp.json() : [];
+        const installedNames = installedLocal.map(p => p.name.toLowerCase());
+
         const categories = ["TVs", "Decos", "Doorbells", "AirConditioning"];
         const plugins = [];
 
@@ -954,12 +965,13 @@ const openPluginStore = async () => {
                     const models = await modelResp.json();
                     for (const model of models) {
                         if (model.type === 'dir') {
+                            const pName = model.name;
                             plugins.push({
-                                name: model.name,
+                                name: pName,
                                 brand: brand.name,
                                 category: cat,
                                 path: `${brand.name}/${model.name}`,
-                                installed: false // TODO: check if locally folder exists
+                                installed: installedNames.includes(pName.toLowerCase())
                             });
                         }
                     }
@@ -1098,10 +1110,16 @@ const deviceTypesList = [
 ];
 
 const scanNetwork = async () => {
+    if (!projectRoot.value) {
+        finaState.value.process = "ESPERANDO BACKEND...";
+        await syncSystemInfo();
+        if (!projectRoot.value) return;
+    }
     finaState.value.process = "ESCANEANDO RED...";
     isScanningNetwork.value = true;
     try {
-        const cmd = `${pythonExecutable.value} iot/network_scan.py`;
+        const script = `${projectRoot.value}/iot/network_scan.py`;
+        const cmd = `${pythonExecutable.value} "${script}"`;
         const output = await invoke("execute_shell_command", { command: cmd });
         scannedDevices.value = JSON.parse(output);
         console.log("Red escaneada:", scannedDevices.value);
@@ -1189,7 +1207,7 @@ const assignDeviceType = (device, type, name) => {
         userSettings.value.tvs.push({
             ip: device.ip,
             mac: device.mac || "",
-            name: name || customDeviceName.value || `TV ${customDeviceRoom.value}`,
+            name: name || customDeviceName.value || `TV ${customDeviceRoom.value} `,
             room: customDeviceRoom.value || "Living",
             enabled: true
         });
@@ -1250,7 +1268,7 @@ const sendCommAction = async () => {
     );
 
     if (contactMatch) {
-        console.log(`🔍 Resolviendo contacto "${target}" -> ${contacts.value[contactMatch]}`);
+        console.log(`🔍 Resolviendo contacto "${target}" -> ${contacts.value[contactMatch]} `);
         target = contacts.value[contactMatch];
     }
 
@@ -1258,7 +1276,7 @@ const sendCommAction = async () => {
     const isInternational = target.startsWith('+');
     target = (isInternational ? '+' : '') + target.replace(/[^0-9]/g, '');
 
-    console.log(`📱 Número final procesado: ${target}`);
+    console.log(`📱 Número final procesado: ${target} `);
 
     showCommModal.value = false;
 
@@ -1316,7 +1334,7 @@ const handleMessagingClick = () => {
     if (!linkedMobileDevice.value) {
         const hint = `Hola ${userSettings.value.apis.USER_NAME || 'Usuario'}. No veo un celular por cable, pero puedes usar las aplicaciones de mensajería vinculadas.`;
         invoke("execute_shell_command", {
-            command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
+            command: `${pythonExecutable.value} ${projectRoot.value}/utils.py speak "${hint}"`
         }).catch(() => { });
     }
 };
@@ -1329,7 +1347,7 @@ const handleCallClick = () => {
 
         const hint = "No puedo iniciar llamadas sin un dispositivo vinculado. Por favor, revisa la guía en pantalla.";
         invoke("execute_shell_command", {
-            command: `python3 ./utils.py speak "${hint}"`
+            command: `python3 ${projectRoot.value}/utils.py speak "${hint}"`
         }).catch(() => { });
     }
 };
@@ -1365,7 +1383,7 @@ const updateWeather = async () => {
         }
 
         const pyPath = pythonExecutable.value;
-        const scriptPath = "./iot/clima_api.py";
+        const scriptPath = `${projectRoot.value}/iot/clima_api.py`;
 
         // Ejecutar script con argumentos
         const jsonStr = await invoke("execute_shell_command", { command: `timeout 10 ${pyPath} "${scriptPath}" "${apiKey}" "${cityId}"` });
@@ -1395,7 +1413,7 @@ const updateWeather = async () => {
             if (data.name) weatherCityName.value = data.name;
 
             // --- FETCH FORECAST (Background) ---
-            const forecastScript = "./iot/clima_forecast.py";
+            const forecastScript = `${projectRoot.value}/iot/clima_forecast.py`;
             // No await needed, run parallel
             invoke("execute_shell_command", { command: `timeout 5 ${pyPath} "${forecastScript}" "${apiKey}" "${cityId}"` })
                 .then(out => {
@@ -1429,7 +1447,7 @@ const weatherIcon = computed(() => {
 
         // Disparar secuencia de backend (Wake + Cast TV) - ASÍNCRONO REAL
         const pyPath = pythonExecutable.value;
-        const scriptPath = "./plugins/doorbell/monitor.py";
+        const scriptPath = `${projectRoot.value}/plugins/doorbell/monitor.py`;
         invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --trigger` }).catch(e =>
             console.error("Error trigger:", e));
 
@@ -1444,7 +1462,7 @@ const hangUp = async () => {
     try {
         // Usar script Python inteligente (detecta IP dinámica + No mata streamer)
         const pyPath = pythonExecutable.value;
-        const hangupScript = "./plugins/doorbell/hangup_doorbell.py";
+        const hangupScript = `${projectRoot.value}/plugins/doorbell/hangup_doorbell.py`;
 
         await invoke("spawn_shell_command", { command: `${pyPath} "${hangupScript}"` });
 
@@ -1512,7 +1530,7 @@ const notifyFina = (msg, duration = 4000) => {
 // --- REFRESH SYSTEMS ---
 const refreshAcStatus = async (silent = false) => {
     const pyPath = pythonExecutable.value;
-    const scriptPath = "./iot/clima.py";
+    const scriptPath = `${projectRoot.value}/iot/clima.py`;
     const ac_ip = userSettings.value.apis.AC_IP || "";
     let command = `${pyPath} "${scriptPath}" --status`;
     if (ac_ip) command += ` --ip ${ac_ip}`;
@@ -1546,7 +1564,7 @@ const refreshAcStatus = async (silent = false) => {
 
 const refreshDoorbellStatus = async () => {
     const pyPath = pythonExecutable.value;
-    const scriptPath = "./plugins/doorbell/doorbell_status.py";
+    const scriptPath = `${projectRoot.value}/plugins/doorbell/doorbell_status.py`;
     const command = `${pyPath} "${scriptPath}"`;
     try {
         const output = await invoke("execute_shell_command", { command });
@@ -1563,12 +1581,10 @@ const refreshDoorbellStatus = async () => {
 
 const fetchSettings = async () => {
     try {
-        const pyPath = pythonExecutable.value;
-        const script = `import json, os; print(json.dumps(json.load(open("./config/settings.json"))))`;
-        const output = await invoke("execute_shell_command", { command: `${pyPath} -c '${script}'` });
-
-        const loaded = JSON.parse(output);
-        console.log("📂 Raw Loaded Settings:", loaded);
+        const response = await fetch("http://127.0.0.1:8000/api/settings");
+        if (!response.ok) throw new Error("API Settings Error");
+        const loaded = await response.json();
+        console.log("📂 Loaded Settings from API:", loaded);
 
         // MERGE INTELIGENTE (Evita que undefined rompa el UI)
         if (loaded.apis) {
@@ -1591,6 +1607,8 @@ const fetchSettings = async () => {
         }
 
         console.log("✅ Settings Merged:", userSettings.value);
+        // Disparar clima inmediatamente después de tener las keys
+        updateWeather();
     } catch (e) {
         console.warn("⚠️ Error loading settings (usando defaults):", e);
         // No sobreescribimos userSettings, usamos los defaults definidos arriba
@@ -1599,11 +1617,11 @@ const fetchSettings = async () => {
 
 const fetchContacts = async () => {
     try {
-        const pyPath = pythonExecutable.value;
-        const script = `import json, os; p="./config/contact.json"; print(json.dumps(json.load(open(p)))) if os.path.exists(p) else print("{}")`;
-        const output = await invoke("execute_shell_command", { command: `${pyPath} -c '${script}'` });
-        contacts.value = JSON.parse(output);
-        console.log("👥 Contactos cargados:", Object.keys(contacts.value).length);
+        const response = await fetch("http://127.0.0.1:8000/api/contacts");
+        if (response.ok) {
+            contacts.value = await response.json();
+            console.log("👥 Contactos cargados vía API:", Object.keys(contacts.value).length);
+        }
     } catch (e) {
         console.error("Error loading contacts:", e);
     }
@@ -1633,7 +1651,7 @@ const syncContactsFromMobile = async (force = false) => {
 
     try {
         const pyPath = pythonExecutable.value;
-        const script = "./plugins/system/sync_contacts.py";
+        const script = `${projectRoot.value}/plugins/system/sync_contacts.py`;
 
         console.log("🔄 Sincronizando contactos desde el móvil...");
         await invoke("execute_shell_command", { command: `${pyPath} "${script}"` });
@@ -1680,7 +1698,7 @@ const saveSettings = async () => {
         const safeJson = jsonContent.replace(/'/g, "'\\''");
 
         const pyPath = pythonExecutable.value;
-        const scriptPath = "./iot/save_settings.py";
+        const scriptPath = `${projectRoot.value}/iot/save_settings.py`;
 
         // Pasamos el JSON como argumento único entre comillas simples
         const cmd = `${pyPath} "${scriptPath}" '${safeJson}'`;
@@ -1724,7 +1742,7 @@ const sendTvCommand = async (script, args = "") => {
     const mac = activeTv?.mac || "";
 
     const pyPath = pythonExecutable.value;
-    const tvScript = `./plugins/tv/${modelFolder}/${script}`;
+    const tvScript = `${projectRoot.value}/plugins/tv/${modelFolder}/${script}`;
 
     let command = `${pyPath} "${tvScript}" --ip ${ip}`;
     // La MAC solo es necesaria para comandos que despiertan la TV (Power/On/Input TV)
@@ -1960,6 +1978,7 @@ const closeWindow = async () => {
 };
 
 onMounted(async () => {
+    syncSystemInfo(); // Obtener rutas del backend inmediatamente
     updateClock();
     setInterval(updateClock, 1000);
     setInterval(getSystemStats, 5000);
@@ -1979,6 +1998,17 @@ onMounted(async () => {
     try {
         finaState.value.process = "CARGANDO SISTEMA";
         addChatMessage("Sistemas Ergen V3 en línea.");
+
+        // --- VERIFICACIÓN DE PRIMERA CONFIGURACIÓN ---
+        const criticalKeys = ['MISTRAL_API_KEY', 'OPENAI_API_KEY', 'WEATHER_API_KEY'];
+        const isUnconfigured = criticalKeys.every(k => !userSettings.value.apis[k]);
+
+        if (isUnconfigured) {
+            setTimeout(() => {
+                addChatMessage("⚠️ Aviso: Parece que es tu primera vez. Por favor, completa tus credenciales en Ajustes según el manual de instalación.", 0);
+            }, 3000);
+        }
+
         await new Promise(r => setTimeout(r, 1000));
 
         // 1. Estados iniciales en paralelo
@@ -2309,7 +2339,7 @@ const scanChannels = async () => {
     const modelFolder = activeTv?.type || 'tcl_32s60a';
 
     const pyPath = pythonExecutable.value;
-    const scriptPath = `./plugins/tv/${modelFolder}/scan_ultra_fast.py`;
+    const scriptPath = `${projectRoot.value}/plugins/tv/${modelFolder}/scan_ultra_fast.py`;
     try {
         await invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --ip ${ip}` });
         // En un scan ultra fast no podemos saber exacto cuando termina si usamos spawn_shell_command
@@ -2340,7 +2370,7 @@ const tuneChannel = (val) => {
 const sendAcCommand = async (args, msg) => {
     finaState.value.process = msg.toUpperCase();
     const pyPath = pythonExecutable.value;
-    const scriptPath = "./iot/clima.py";
+    const scriptPath = `${projectRoot.value}/iot/clima.py`;
     const command = `${pyPath} "${scriptPath}" ${args}`;
     try {
         await invoke("spawn_shell_command", { command });
@@ -2361,7 +2391,7 @@ const launchTvApp = async (pkg) => {
     const modelFolder = activeTv?.type || 'tcl_32s60a';
 
     const pyPath = pythonExecutable.value;
-    const scriptPath = `./plugins/tv/${modelFolder}/launch_app.py`;
+    const scriptPath = `${projectRoot.value}/plugins/tv/${modelFolder}/launch_app.py`;
 
     try {
         await invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --package ${pkg} --ip ${ip}` });
@@ -2385,7 +2415,7 @@ const scanTvApps = async () => {
     const modelFolder = activeTv?.type || 'tcl_32s60a';
 
     const pyPath = pythonExecutable.value;
-    const scriptPath = `./plugins/tv/${modelFolder}/list_tv_apps.py`;
+    const scriptPath = `${projectRoot.value}/plugins/tv/${modelFolder}/list_tv_apps.py`;
 
     try {
         await invoke("execute_shell_command", { command: `${pyPath} "${scriptPath}" --ip ${ip}` });
@@ -2412,25 +2442,25 @@ const toggleAcSwing = () => sendAcCommand(`--swing ${acState.value.swing ? 'off'
 
 const enrollVoice = () => {
     finaState.value.process = "ENTRENANDO VOZ...";
-    const interactive = "./plugins/biometria/run_interactive.sh";
+    const interactive = `${projectRoot.value}/plugins/biometria/run_interactive.sh`;
     const py = pythonExecutable.value;
-    const script = "./plugins/biometria/train_voice.py";
+    const script = `${projectRoot.value}/plugins/biometria/train_voice.py`;
     invoke("spawn_shell_command", { command: `${interactive} "${py} ${script}"` }).catch(e => console.error(e));
 };
 
 const enrollFace = () => {
     finaState.value.process = "ENTRENANDO CARA...";
-    const interactive = "./plugins/biometria/run_interactive.sh";
+    const interactive = `${projectRoot.value}/plugins/biometria/run_interactive.sh`;
     const py = pythonExecutable.value;
-    const script = "./plugins/biometria/train_face.py";
+    const script = `${projectRoot.value}/plugins/biometria/train_face.py`;
     invoke("spawn_shell_command", { command: `${interactive} "${py} ${script}"` }).catch(e => console.error(e));
 };
 
 const enrollFinger = () => {
     finaState.value.process = "REGISTRANDO HUELLA...";
-    const interactive = "./plugins/biometria/run_interactive.sh";
+    const interactive = `${projectRoot.value}/plugins/biometria/run_interactive.sh`;
     const py = "python3";
-    const script = "./plugins/biometria/enroll_finger.py";
+    const script = `${projectRoot.value}/plugins/biometria/enroll_finger.py`;
     invoke("spawn_shell_command", { command: `${interactive} "${py} ${script}"` }).catch(e => console.error(e));
 };
 
@@ -2574,7 +2604,7 @@ const registerMasterPassword = () => {
                                 {{ msg.text }}</p>
                             <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{
                                 msg.time
-                                }}</span>
+                            }}</span>
                         </div>
                     </transition-group>
                 </div>
@@ -3104,7 +3134,7 @@ const registerMasterPassword = () => {
                                         <span class="text-[9px] font-bold text-slate-500 uppercase">Almacenamiento
                                             (Root)</span>
                                         <span class="text-[9px] font-bold text-white">{{ systemStats.disk.percent
-                                            }}%</span>
+                                        }}%</span>
                                     </div>
                                     <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                         <div class="h-full bg-gradient-to-r from-cyan-600 to-blue-500 transition-all duration-1000"
@@ -3200,7 +3230,7 @@ const registerMasterPassword = () => {
                                                     'border-pink-500/50': index % 3 === 2
                                                 }">
                                                 <span class="text-[11px] font-bold text-white">{{ reminder.task
-                                                }}</span>
+                                                    }}</span>
                                                 <span
                                                     class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{
                                                         reminder.time }}</span>
@@ -4105,7 +4135,7 @@ const registerMasterPassword = () => {
                                                 class="p-4 mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-2">
                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
                                                 <span class="text-xs font-bold text-red-200 uppercase">{{ mobileHubError
-                                                }}</span>
+                                                    }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4579,14 +4609,14 @@ const registerMasterPassword = () => {
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Temperatura</span>
                                                         <span class="text-xs font-mono font-bold text-white">{{
                                                             acState.temp
-                                                            }}°C</span>
+                                                        }}°C</span>
                                                     </div>
                                                     <div class="flex justify-between items-center">
                                                         <span
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Modo</span>
                                                         <span class="text-xs font-black text-white uppercase">{{
                                                             acState.mode
-                                                            }}</span>
+                                                        }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -4840,23 +4870,23 @@ const registerMasterPassword = () => {
                                     <span class="text-xl font-black text-white">{{
                                         Math.round(systemStats.cpu?.percent || 0) }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.cpu?.freq
-                                        }} MHz</span>
+                                    }} MHz</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">RAM</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.ram?.percent
-                                        }}%</span>
+                                    }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.ram?.used
-                                        }} / {{ systemStats.ram?.total }} GB</span>
+                                    }} / {{ systemStats.ram?.total }} GB</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">DISCO</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.disk?.percent
-                                        }}%</span>
+                                    }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.disk?.free
-                                        }} GB Libres</span>
+                                    }} GB Libres</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">

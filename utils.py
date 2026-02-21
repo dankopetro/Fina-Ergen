@@ -84,7 +84,7 @@ def _ensure_config_exists():
                 print(f"📦 Migrado: {os.path.basename(src)} -> {CONFIG_DIR}")
             except: pass
 
-_ensure_config_exists()
+# _ensure_config_exists()  # Desactivado para permitir limpieza manual del usuario
 
 # Inyectar CONFIG_DIR al inicio de sys.path para que 'import config' lo encuentre primero
 if CONFIG_DIR not in sys.path:
@@ -177,13 +177,28 @@ def _voice_engine_worker():
     global current_voice_process
     # Detectar rutas dinámicamente
     import shutil
-    piper_path = shutil.which("piper") or "/home/admin/.venv/bin/piper"
+    # Estrategia: 1. PATH, 2. Local bin, 3. Assets, 4. Raíz
+    piper_path = shutil.which("piper")
+    
+    if not piper_path:
+        # Buscar en lugares comunes del proyecto
+        potential_locations = [
+            os.path.join(ERGEN_ROOT, "assets", "piper"),
+            os.path.join(ERGEN_ROOT, "bin", "piper"),
+            os.path.join(ERGEN_ROOT, ".venv", "bin", "piper"),
+            "/usr/local/bin/piper"
+        ]
+        for loc in potential_locations:
+            if os.path.exists(loc) and os.access(loc, os.X_OK):
+                piper_path = loc
+                break
+
     aplay_path = shutil.which("aplay") or "/usr/bin/aplay"
 
-    if not piper_path or not os.path.exists(piper_path):
-        logger.error(f"FATAL: Piper no encontrado. Asegúrese de que esté en el PATH.")
+    if not piper_path:
+        logger.error(f"FATAL: Piper no encontrado. La síntesis de voz no funcionará.")
     if not aplay_path or not os.path.exists(aplay_path):
-        logger.error(f"FATAL: Aplay no encontrado.")
+        logger.error(f"FATAL: Aplay no encontrado (paquete alsa-utils insuficiente).")
     
     # Crear directorio temporal si no existe
     temp_dir = os.path.join(ERGEN_ROOT, "temp_audio")

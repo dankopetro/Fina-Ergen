@@ -4,16 +4,19 @@ import sys
 import os
 
 def get_battery():
-    # Intentar localizar tuya_config.json en el nuevo proyecto
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # plugins/doorbell -> config/tuya_config.json
-    config_path = os.path.join(script_dir, "../../config/tuya_config.json")
+    # PRIORIDAD: Ruta Universal (~/.config/Fina/tuya_config.json)
+    universal_path = os.path.expanduser("~/.config/Fina/tuya_config.json")
     
-    if not os.path.exists(config_path):
-        # Fallback a la ruta antigua por si todavía no se movió
-        config_path = "./config/tuya_config.json"
-        if not os.path.exists(config_path):
-            return "N/A"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_path = os.path.join(script_dir, "../../config/tuya_config.json")
+    
+    config_path = ""
+    if os.path.exists(universal_path):
+        config_path = universal_path
+    elif os.path.exists(project_path):
+        config_path = project_path
+    else:
+        return "N/A"
         
     try:
         with open(config_path, "r") as f:

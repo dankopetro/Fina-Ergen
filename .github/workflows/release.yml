@@ -40,7 +40,25 @@ jobs:
         with:
           tagName: v__VERSION__ # Real version will be taken from package.json
           releaseName: "Fina Ergen v__VERSION__"
-          releaseBody: "Release automática de Fina Ergen. Compilado en Ubuntu 24.04 (Compatible con Linux Mint 22)."
+          releaseBody: |
+            ## 🚀 Fina Ergen v__VERSION__ - Edición Universal
+            
+            Esta versión marca un hito en la portabilidad de Fina Ergen, convirtiéndola en un asistente 100% autodependiente y universal.
+            
+            ### 🛠️ Novedades de esta Versión:
+            *   **Universalidad Total**: Se han eliminado todas las rutas locales fijas. Fina ahora detecta su ubicación y recursos dinámicamente.
+            *   **Persistencia Segura**: Tus ajustes, contactos y perfiles de voz ahora se guardan en `~/.config/Fina/`, permitiendo actualizar la aplicación sin perder tus datos.
+            *   **Gestión de Plugins Avanzada**: Soporte para instalación de plugins en la carpeta del usuario. ¡Tus extensiones te siguen a donde vayas!
+            *   **Optimización de Recursos**: El sistema de Android (Waydroid/Weston) ahora solo se activa si tienes un timbre configurado, ahorrando mucha memoria y CPU.
+            *   **Clima en Tiempo Real**: Sincronización inmediata al arranque. No más esperas para ver la temperatura de tu ciudad.
+            
+            ### 📦 ¿Qué archivo descargar?
+            Encontrarás dos versiones de AppImage en los assets:
+            
+            1.  **fina-ergen_v..._amd64.AppImage (RECOMENDADO)**: Versión optimizada con compresión **XZ** (más liviana) y parches de compatibilidad para Iconos y sistemas modernos (Ubuntu 24.04+, Mint 22). 
+            2.  **fina-ergen_v..._x86_64.AppImage**: Versión estándar generada por el compilador base.
+            
+            ¡Gracias por ser parte de la evolución de Fina! ❤️
           releaseDraft: false
           prerelease: false
 

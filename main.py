@@ -65,7 +65,7 @@ from utils import (
     tv_volume_up_cmd, tv_volume_down_cmd, tv_channel_up_cmd, tv_channel_down_cmd, 
     tv_open_app_cmd, tv_exit_app_cmd, tv_set_channel_cmd, tv_mute_cmd, is_tv_on, 
     ensure_tv_is_on,    tv_set_input_cmd, get_doorbell_status_cmd, show_doorbell_image, 
-    show_doorbell_stream, send_ui_command,
+    show_doorbell_stream, send_ui_command, check_system_dependencies,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config
 )
 from auth.fingerprint_auth import authenticate_user

@@ -13,9 +13,8 @@ class VoiceAuthenticator:
         if storage_path:
             self.storage_path = Path(storage_path)
         else:
-            # ERGEN MOD: Usar ruta local del proyecto
-            ERGEN_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            self.storage_path = Path(ERGEN_ROOT) / "voice_profiles"
+            # RUTA UNIVERSAL: ~/.config/Fina/voice_profiles
+            self.storage_path = Path(os.path.expanduser("~/.config/Fina/voice_profiles"))
         
         self.storage_path.mkdir(parents=True, exist_ok=True)
         self.profiles_file = self.storage_path / "profiles.json"
