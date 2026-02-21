@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Manual Práctico de Usuario - Fina Ergen</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        :root {
+            --bg-body: #000000;
+            --bg-card: #0c0c0c;
+            --primary: #3b82f6;
+            --accent: #22d3ee;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --gradient: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%);
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+            background: #000000;
+        }
+
+        @page :left {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        @page :right {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.8;
+            font-size: 11pt;
+        }
+
+        /* Página de Portada */
+        .cover-page {
+            height: 297mm;
+            width: 210mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            position: relative;
+            page-break-after: always;
+        }
+
+        .cover-logo {
+            width: 300px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.3));
+        }
+
+        h1.main-title {
+            font-size: 55pt;
+            font-weight: 800;
+            margin: 0;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 20pt;
+            font-weight: 400;
+            letter-spacing: 5px;
+            color: var(--text-main);
+            margin-top: 15px;
+        }
+
+        .version-badge {
+            margin-top: 50px;
+            padding: 12px 35px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 14pt;
+            letter-spacing: 2px;
+            background: #111;
+        }
+
+        .author-footer {
+            position: absolute;
+            bottom: 30mm;
+            font-size: 11pt;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .content-container {
+            padding: 20mm 20mm;
+            background-color: var(--bg-body);
+        }
+
+        h2 {
+            font-size: 24pt;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-top: 50px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 800;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            font-size: 16pt;
+            color: var(--accent);
+            margin-top: 30px;
+            font-weight: 600;
+            page-break-after: avoid;
+        }
+
+        p {
+            margin-bottom: 18px;
+            text-align: justify;
+            color: #d1d5db;
+        }
+
+        .image-full {
+            text-align: center;
+            margin: 30px 0;
+            page-break-inside: avoid;
+        }
+
+        .image-full img {
+            max-width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .caption {
+            margin-top: 12px;
+            color: var(--text-muted);
+            font-style: italic;
+            font-size: 10pt;
+        }
+
+        ul.feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        ul.feature-list li {
+            padding: 10px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        ul.feature-list li i {
+            color: var(--primary);
+            margin-top: 6px;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 10pt;
+            border-top: 1px solid var(--border);
+            background: #050505;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PORTADA -->
+    <div class="cover-page">
+        <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/cover.png" class="cover-logo" alt="Fina Logo">
+        <h1 class="main-title">FINA ERGEN</h1>
+        <div class="subtitle">Manual de Usuario Oficial</div>
+        <div class="version-badge">Revisión Visual Completa</div>
+        <div class="author-footer">Fina © 2026</div>
+    </div>
+
+    <!-- INDICE -->
+    <div class="content-container page-break">
+        <h2>Índice de Secciones</h2>
+        <ul class="feature-list" style="font-size: 14pt;">
+            <li><i class="fas fa-chevron-right"></i> Sección 1: Arranque y Primer Contacto (Pantallas 1-3)</li>
+            <li><i class="fas fa-chevron-right"></i> Sección 2: Dashboard Principal y Redes (Pantallas 4-6)</li>
+            <li><i class="fas fa-chevron-right"></i> Sección 3: Opciones y Personalización Múltiple (Pantallas 7-9)</li>
+            <li><i class="fas fa-chevron-right"></i> Sección 4: Administración del Hogar e IoT (Pantallas 10-12)</li>
+            <li><i class="fas fa-chevron-right"></i> Sección 5: Integración Multimedia y Diálogo (Pantallas 13-15)</li>
+            <li><i class="fas fa-chevron-right"></i> Sección 6: Climatización y Controles Físicos (Pantallas 16-18)</li>
+            <li><i class="fas fa-chevron-right"></i> Sección 7: Agenda, Alertas y Productividad (Pantallas 19-21)</li>
+            <li><i class="fas fa-chevron-right"></i> Sección 8: Ajustes Periféricos y Plugins (Pantallas 22-24)</li>
+            <li><i class="fas fa-chevron-right"></i> Sección 9: Rutinas Nocturnas y Conclusión Visual (Pantallas 25-27)
+            </li>
+        </ul>
+        <p>Este manual detalla paso a paso las operaciones comunes a realizar dentro del panel gráfico de Fina
+            utilizando las pantallas oficiales documentadas como referencia visual directa para el usuario.</p>
+    </div>
+
+    <!-- SECCION 1 -->
+    <div class="content-container page-break">
+        <h2><i class="fas fa-power-off"></i> 1. Arranque y Primer Contacto</h2>
+
+        <h3>Arranque y Secuencia de Carga (Captura 1)</h3>
+        <p>Al ejecutar el sistema Fina desde su lanzador o terminal, se presentará inmediatamente la pantalla de
+            alineación geométrica representativa del motor de carga asíncrona. Durante esta fase sutil y rápida, Fina
+            levanta los esquemas de backend en Python, prepara los canales de audio e inicia la comunicación
+            inter-procesos (IPC).</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/1.png"
+                alt="Arranque del sistema">
+            <div class="caption">Figura 1: Pantalla de carga (Loading) que asegura el correcto anclaje de motores.</div>
+        </div>
+
+        <h3>Presentación de la Interfaz HUD (Capturas 2 y 3)</h3>
+        <p>Finalizado el escaneo de servicios, el sistema despliega el ambiente primario o Dashboard central. Aquí es
+            donde se conjuga el Glassmorphism y la visualización de datos telemétricos. La vista presenta una
+            disposición horizontal estructurada: paneles a la izquierda para sistemas y estado de la red LAN, un espacio
+            central reservado al flujo de interacción con el asistente, y el acceso a los nodos superiores estacionales.
+        </p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/2.png" alt="Visor de Inicio">
+            <div class="caption">Figura 2: Panorama base inicial del software en estado inactivo.</div>
+        </div>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/3.png"
+                alt="Información ampliada">
+            <div class="caption">Figura 3: Demostración de expansión de textos y notificaciones en pila (Snackbars).
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCION 2 -->
+    <div class="content-container page-break">
+        <h2><i class="fas fa-desktop"></i> 2. Dashboard Principal y Redes</h2>
+
+        <h3>HUD y Telemetría del Sistema (Captura 4)</h3>
+        <p>La barra de métricas (HUD) es el punto neurálgico para supervisar la salud de tu equipo donde se aloja Fina.
+            El panel expone el estado actual de la memoria virtual, y porcentaje computacional de CPU asumiendo una
+            lectura de hardware constante. Si existe sobrecalentamiento informático o picos de consumo inesperados
+            debido al cálculo de redes de Voz, estos indicadores alertarán tempranamente al operador.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/4.png"
+                alt="Lectura de Componentes">
+            <div class="caption">Figura 4: Detalles de parámetros vitales del sistema operativo.</div>
+        </div>
+
+        <h3>Gestión del Internet de las Cosas y LAN (Capturas 5 y 6)</h3>
+        <p>Mediante el área denominada <em>Devices</em> o <em>Red Local</em>, Fina ejecuta barridos exhaustivos sobre la
+            IP subyacente. Se enumeran en listas estructuradas y seleccionables todos los electrodomésticos,
+            dispositivos móviles (smartphones, TVs) presentes en este exacto segundo en el perímetro de su espectro
+            Wi-Fi/Ethernet.</p>
+        <p>Este sistema proporciona fiabilidad, dado que el asistente descarta realizar "TimeOuts" comunicándose a
+            ciegas; antes de operar tu televisor inteligente comprobara fehacientemente si el escáner lo registra como
+            Online en su tabla ARP de la captura correspondiente.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/5.png" alt="Resumen de Red">
+        </div>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/6.png" alt="Detalle IP IoT">
+            <div class="caption">Figuras 5 y 6: Monitoreo ininterrumpido de nodos vivos en conectividad perimetral.
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCION 3 -->
+    <div class="content-container page-break">
+        <h2><i class="fas fa-cogs"></i> 3. Opciones y Personalización Múltiple</h2>
+
+        <h3>Módulos de Configuración de Audio (Capturas 7 y 8)</h3>
+        <p>A través de la pestaña de Opciones/Ajustes, el usuario asume control total sobre los vectores de comunicación
+            de Fina. En las fotografías visuales se ilustran los controles de sensibilidad para el micrófono (Threshold)
+            y los limitadores directos para ajustar el nivel de volumen o ganancia digital del canal auditivo. Además,
+            permite seleccionar y conmutar el transcriptor interno en pleno vuelo asegurando adaptación a su entorno
+            acústico.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/7.png" alt="Ajuste Micrófono">
+        </div>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/8.png" alt="Ajustes Vocales">
+            <div class="caption">Figuras 7 y 8: Demarcación de umbrales auditivos de aislamiento y ráfaga fonética.
+            </div>
+        </div>
+
+        <h3>Selección Temática (Captura 9)</h3>
+        <p>Manteniendo la formalidad de una herramienta corporativa, las disposiciones visuales de color o "Temáticas"
+            se escogen en esta área, remapeando paletas a nivel general del CSS sin requerir reinicios abruptos. Se
+            exponen allí opciones destinadas a la visibilidad nocturna extrema.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/9.png"
+                alt="Pestaña Ajustes Visual">
+            <div class="caption">Figura 9: Transito fluido en la reconfiguración y comportamiento del Vue Frontend.
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCION 4 -->
+    <div class="content-container page-break">
+        <h2><i class="fas fa-home"></i> 4. Administración del Hogar e IoT</h2>
+
+        <h3>La Consola del Ecosistema Domótico (Capturas 10 y 11)</h3>
+        <p>Los comandos estructurados para la sala de estar o dormitorios están reflejados en componentes de estado
+            estáticos. Elementos visuales como lámparas o relé inteligentes exponen botones digitales de Toggle
+            (Encendido/Apagado) sobre una grilla ordenada. Al tocarlos con el ratón o pantalla háptica emularán
+            exactamente el comando dictado en paralelo a su uso por síntesis vocal.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/10.png"
+                alt="Dispositivos Sala 1">
+        </div>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/11.png"
+                alt="Dispositivos Cuarto 2">
+            <div class="caption">Figuras 10 y 11: Control directo point-and-click sobre actuadores físicos.</div>
+        </div>
+
+        <h3>Monitor de Climatización Meteorológica (Captura 12)</h3>
+        <p>El analizador del tiempo es provisto con alta meticulosidad. Con la configuración de ciudad inserta, Fina
+            despliega no solo el valor Celsius corriente, sino que grafica las sensaciones térmicas, probabilidades en
+            milímetros de lluvia, los vientos huracanados a nivel local (km/h) y predicciones extendidas, vital para
+            coordinar agendas matinales antes de abandonar la estación de trabajo.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/12.png"
+                alt="Tablero Meteorológico">
+            <div class="caption">Figura 12: Paneles ambientales descriptivos actualizando desde pasarelas meteorológicas
+                API oficiales.</div>
+        </div>
+    </div>
+
+    <!-- SECCION 5 -->
+    <div class="content-container page-break">
+        <h2><i class="fas fa-film"></i> 5. Integración Multimedia y Diálogo</h2>
+
+        <h3>Terminal de Interacción Conversacional (Capturas 13 y 14)</h3>
+        <p>Fina dispone de un historial de charla (Chat Log). En dicho panel centralizado se van amontonando una tras
+            otra de las intenciones decodificadas del propietario y la resolutiva expedida por el LLM o la Inteligencia
+            Clásica. Permite hacer un seguimiento y corroborar si un comando ruidoso o balbuceante ha sido comprendido o
+            se interpretó deficientemente, funcionando como una prueba forense de la comunicación.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/13.png"
+                alt="Historial Dialogo 1">
+        </div>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/14.png"
+                alt="Historial Dialogo Extenso">
+            <div class="caption">Figuras 13 y 14: Tracking asíncrono y auditado de sentencias gramaticales y órdenes
+                proferidas.</div>
+        </div>
+
+        <h3>Reproductor de Medios Interno (Captura 15)</h3>
+        <p>La integración con los buses multimedia Android u ordenadores anfitriones es patente. Se muestran barras de
+            progreso, miniaturas del contenido actual (Album Arts) y controles canónicos de retroceso, play-pausa y
+            volumen (ALSA/PulseAudio). Esta botonera flotante dominará las interfaces adyacentes si Fina se encuentra
+            reproduciendo música ambiente o alterando una TV cercana.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/15.png"
+                alt="Media Controller">
+            <div class="caption">Figura 15: Subsistema manipulable de media player.</div>
+        </div>
+    </div>
+
+    <!-- SECCION 6 -->
+    <div class="content-container page-break">
+        <h2><i class="fas fa-snowflake"></i> 6. Climatización y Controles Físicos</h2>
+
+        <h3>Panel Específico para Aires Acondicionados (Capturas 16 y 17)</h3>
+        <p>A diferencia de un interruptor simple, la zona de climatizadores Fina amerita interfaces profundas. Con su
+            visual designada, permite definir un dial absoluto de la temperatura esperada, conmutar Modos térmicos
+            complejos (Cool, Heat, Auto, Dry, Fan_Only) y gobernar las lamas de movimiento oscilante junto a la
+            severidad del ventilador interno (Low, Mid, High, Auto), brindando soporte profesional idéntico al control
+            remoto nativo por infrarrojos, pero derivado enteramente por la red alámbrica e inalámbrica.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/16.png"
+                alt="Controlador Clima 1">
+        </div>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/17.png"
+                alt="Variación Termostato">
+            <div class="caption">Figuras 16 y 17: Regímenes precisos de temperatura ambiente para protocolos AC
+                Midea/Surrey/SmartLife.</div>
+        </div>
+
+        <h3>Contorno de Ventana e Íconos Dinámicos (Captura 18)</h3>
+        <p>Cuando la plataforma incurre en resolutivas pesadas computacionales, íconos superiores giratorios o estados
+            en mutación notificarán el progreso subyacente de la instrucción, demostrando una cohesión de UI que
+            imposibilita la incertidumbre de si "El asistente realmente está escuchando u obedece a mis mandatos
+            técnicos".</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/18.png"
+                alt="Íconos de Estado Mutantes">
+            <div class="caption">Figura 18: Retroalimentación y <i>feautures</i> perimetrales de la ventana gráfica
+                general.</div>
+        </div>
+    </div>
+
+    <!-- SECCION 7 -->
+    <div class="content-container page-break">
+        <h2><i class="fas fa-calendar-alt"></i> 7. Agenda, Alertas y Productividad</h2>
+
+        <h3>Módulo de Recordatorios (Capturas 19 y 20)</h3>
+        <p>En el panel correspondiente a la Agenda o Almanaque perpetuo, los elementos registrados por dictado ("Fina,
+            recuérdame a las 18 horas llamar al director") aflorarán ordenadamente con sus "Tags" y horarios fijos. Fina
+            mantendrá ciclos temporizados paralelos; una vez alcanzada la marca meridiana exigida proferirá a voz alzada
+            su alarma descriptiva evitando que compromisos importantes perezcan olvidados.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/19.png"
+                alt="Listado Agenda 1">
+        </div>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/20.png"
+                alt="Listado Alternativo 2">
+            <div class="caption">Figuras 19 y 20: Disposición esquemática del gestor de tareas o To-Do embebido
+                asíncrono.</div>
+        </div>
+
+        <h3>Notificaciones Urgentes (Captura 21)</h3>
+        <p>El sistema goza de prelación y prioridades de OS (Focus-stealing intencional) configurables; si ocurre la
+            detección de rostro anónimo en la puerta de la propiedad o eventos programados severos, Fina acopla ventanas
+            informativas o Toasts destacables que cubren visualmente otras aplicaciones transcurriendo en la sesión
+            X11/Wayland de modo imperativo del administrador.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/21.png"
+                alt="Aviso Prioritario">
+            <div class="caption">Figura 21: Ejemplo representativo del subsistema visual de avisos Toast.</div>
+        </div>
+    </div>
+
+    <!-- SECCION 8 -->
+    <div class="content-container page-break">
+        <h2><i class="fas fa-sliders-h"></i> 8. Ajustes Periféricos y Plugins</h2>
+
+        <h3>Configuraciones de Menú Desplegables (Capturas 22 y 23)</h3>
+        <p>A lo largo de su arquitectura, el control detallado de Plugins de terceros inyectados en la ruta dinámica
+            reside en menús de opciones enclaustrados para no abrumar al usuario novicio. Desplegando acordeones
+            esféricos o checkboxes reactivos se habilitan o vetan permisiones a micrófonos en desuso, pasarelas ADB,
+            interconexiones API con servicios en nubes extranjeras, y parámetros LLM de forma gráfica, sin
+            obligatoriedad de entrar al archivo de texto plano `config.py`.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/22.png" alt="Opciones Menu 1">
+        </div>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/23.png"
+                alt="Opciones Switcher">
+            <div class="caption">Figuras 22 y 23: Toggles funcionales para habilitación/restricción de submódulos
+                dinámicos I/O.</div>
+        </div>
+
+        <h3>Información Base y Resguardo (Captura 24)</h3>
+        <p>Determinados páneles exhibirán reportes condensados referidos al perfil de reconocimiento de la persona que
+            interacciona de forma común con el software (Avatar, metadatos y configuraciones vinculantes), garantizando
+            que tu base de datos y llaves criptográficas subyacentes operan para el inquilino principal.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/24.png" alt="Perfil">
+            <div class="caption">Figura 24: Aspecto modular de datos primarios del operador maestro de Fina.</div>
+        </div>
+    </div>
+
+    <!-- SECCION 9 -->
+    <div class="content-container page-break">
+        <h2><i class="fas fa-moon"></i> 9. Rutinas Nocturnas y Conclusión Visual</h2>
+
+        <h3>Escenarios Concatenados (Capturas 25 y 26)</h3>
+        <p>Fina dispone de una característica superlativa denominada "Modo Operatorio / Escenarios". Esto se visualiza
+            como grupos de bloques masivos. Decir "Activar modo Noche" o presionar su variante táctil provocará
+            simultáneamente el apagado del sistema de luminarias de la casa de manera escalonada o masiva, bajada de
+            volumen media e inhibición parcial de ruidos en altoparlantes ajenos y apagado de Waydroid inactivo,
+            orquestando una noche de reposo total de la computadora anfitriona.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/25.png" alt="Cierre Visual 1">
+        </div>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/26.png" alt="Cierre Visual 2">
+            <div class="caption">Figuras 25 y 26: Despiegue de las acciones correlativas del marco de seguridad de
+                Escenarios pre-establecidos.</div>
+        </div>
+
+        <h3>Confirmación Cíclica (Captura 27)</h3>
+        <p>Pantalla documentaria del último resquicio o proceso zombie inerte rematado, garantizando que todo control se
+            devuelve sin fricciones ni memorias asfixiadas al Sistema Operativo Linux ancla, preservando el orden
+            corporativo e informático ideal.</p>
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/Fina screen/27.png"
+                alt="Cierre Transparente">
+            <div class="caption">Figura 27: Limpieza rotunda de I/O buffers y desprendimiento gráfico del asistente.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Fina © 2026</p>
+    </footer>
+
+</body>
+
+</html>
