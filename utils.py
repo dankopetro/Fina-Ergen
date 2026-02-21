@@ -201,8 +201,8 @@ def _voice_engine_worker():
     if not aplay_path or not os.path.exists(aplay_path):
         logger.error(f"FATAL: Aplay no encontrado (paquete alsa-utils insuficiente).")
     
-    # Crear directorio temporal si no existe
-    temp_dir = os.path.join(ERGEN_ROOT, "temp_audio")
+    # Crear directorio temporal si no existe (Ruta segura en el perfil del usuario)
+    temp_dir = os.path.join(os.path.expanduser("~"), ".config", "Fina", "temp_audio")
     os.makedirs(temp_dir, exist_ok=True)
 
     while True:
@@ -215,7 +215,8 @@ def _voice_engine_worker():
                 text, model_path = item
                 
                 if not model_path:
-                    model_path = os.path.join(ERGEN_ROOT, "voice_models", "es_AR-daniela-high.onnx")
+                    # Ruta universal para modelo por defecto
+                    model_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "voice_models", "es_AR-daniela-high.onnx")
                 
                 # Verify model
                 # Verify model with fallback

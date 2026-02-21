@@ -4,8 +4,8 @@ import sys
 import datetime
 import time
 
-# Logs paths
-LOGS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs'))
+# Logs paths - RUTA UNIVERSAL: ~/.config/Fina/Logs/plugins
+LOGS_DIR = os.path.expanduser("~/.config/Fina/Logs/plugins")
 COMMANDS_LOG = os.path.join(LOGS_DIR, 'commands.log')
 ERRORS_LOG = os.path.join(LOGS_DIR, 'errors.log')
 

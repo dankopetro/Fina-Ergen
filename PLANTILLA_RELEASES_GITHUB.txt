@@ -1,0 +1,16 @@
+## 🚀 Fina Ergen [VERSIÓN] - [TÍTULO CORTO DE NOVEDAD]
+
+Esta versión forma parte del ciclo de actualizaciones hacia la portabilidad y experiencia universal de Fina Ergen.
+
+### 🛠️ Novedades de esta Versión:
+*   [COMPLETAR CON LOS CAMBIOS PRINCIPALES DE ESTA VERSIÓN ESPECÍFICA]
+*   [EJEMPLO: Mejoras en UI y experiencia general]
+*   [EJEMPLO: Corrección de errores en x área]
+
+### 📦 ¿Qué archivo descargar?
+Encontrarás dos versiones de AppImage en los assets:
+
+1.  **fina-ergen_v..._amd64.AppImage (RECOMENDADO)**: Versión optimizada con compresión **XZ** (más liviana) y parches de compatibilidad para Iconos y sistemas modernos (Ubuntu 24.04+, Mint 22). 
+2.  **fina-ergen_v..._x86_64.AppImage**: Versión estándar generada por el compilador base.
+
+¡Gracias por ser parte de la comunidad de Fina! ❤️

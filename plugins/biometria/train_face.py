@@ -8,8 +8,8 @@ def train_face(user_name="Administrador"):
     print("📸 Iniciando entrenamiento facial para:", user_name)
     print("Mire a la cámara y mueva ligeramente la cabeza...")
 
-    # Crear directorio para guardar caras
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../auth/faces'))
+    # Crear directorio para guardar caras - RUTA UNIVERSAL
+    base_dir = os.path.expanduser("~/.config/Fina/faces")
     user_dir = os.path.join(base_dir, user_name)
     os.makedirs(user_dir, exist_ok=True)
 

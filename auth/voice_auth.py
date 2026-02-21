@@ -1,6 +1,11 @@
 import os
 import numpy as np
-from resemblyzer import VoiceEncoder, preprocess_wav
+try:
+    from resemblyzer import VoiceEncoder, preprocess_wav
+    HAS_RESEMBLYZER = True
+except ImportError:
+    HAS_RESEMBLYZER = False
+    logger.warning("Resemblyzer no encontrado. La autenticación por voz estará deshabilitada.")
 from pathlib import Path
 import sounddevice as sd
 import logging
@@ -19,9 +24,13 @@ class VoiceAuthenticator:
         self.storage_path.mkdir(parents=True, exist_ok=True)
         self.profiles_file = self.storage_path / "profiles.json"
         
-        print("🧠 Loading Voice Encoder Model (this may take a moment)...")
-        self.encoder = VoiceEncoder()
-        print("✅ Voice Encoder Loaded.")
+        if HAS_RESEMBLYZER:
+            print("🧠 Loading Voice Encoder Model...")
+            self.encoder = VoiceEncoder()
+            print("✅ Voice Encoder Loaded.")
+        else:
+            self.encoder = None
+            logger.error("No se pudo inicializar VoiceEncoder porque resemblyzer no está instalado.")
         
     def record_audio(self, duration=3, fs=16000):
         print(f"🎤 Recording for {duration} seconds...")

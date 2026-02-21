@@ -117,7 +117,8 @@ def scan_channels_digital(ip):
 
 def save_channels(channels, filename='test/digital.json'):
     """Guardar canales en archivo JSON"""
-    os.makedirs('test', exist_ok=True)
+    temp_test_dir = os.path.expanduser("~/.config/Fina/temp/test")
+    os.makedirs(temp_test_dir, exist_ok=True)
     
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(channels, f, indent=4, ensure_ascii=False)
