@@ -43,33 +43,31 @@ Fina está dividida en un núcleo de IA liviano y una potente de capa externa co
 | **Sistema** | `App Management`, `Brightnes`, `Xdotool`  | Minimizar, cerrar y suspender herramientas de escritorio linux. |
 | **Terceros**| `plugins/custom/`                         | Descarga automatizaciones de la comunidad sin editar el repo. |
 
-## 🚀 Instalación Rápida
+## 🚀 Instalación (Universal)
 
-_Requisitos previos: `python 3.10+`, `rustc` y `npm/Node.js`_
+A partir de la versión v3.5.4, Fina Ergen es 100% modular y autodependiente. Ya no necesitas clonar el código fuente. Dirígete a la pestaña de **Releases** en GitHub y descarga el instalador que mejor se adapte a tu distribución Linux:
 
-1. **Clona el motor base:**
-```bash
-git clone https://github.com/tu-usuario/Fina-Ergen.git
-cd Fina-Ergen
-```
+### 1. Instaladores Nativos (Ubuntu / Debian / Fedora)
+Son la vía más integrada. Descarga el paquete e instálalo con tu gestor habitual:
+- **Para Ubuntu/Debian/Mint:** Descarga el archivo `.deb` e instálalo con `sudo dpkg -i fina-ergen_..._amd64.deb`
+- **Para Fedora/RHEL:** Descarga el archivo `.rpm` e instálalo con `sudo rpm -i fina-ergen_..._x86_64.rpm`
 
-2. **Instala el núcleo (Fina Base):**
-```bash
-# Recomendado dentro de un entorno virtual (venv)
-python3 -m venv venv
-source venv/bin/activate
+### 2. Formato Portable (AppImage)
+Si prefieres no instalar nada a nivel sistema, descarga una de nuestras versiones AppImage. Solo dale permisos de ejecución (`chmod +x archivo.AppImage`) y lánzalo.
+* **fina-ergen_..._amd64.AppImage (Recomendado):** Comprimida en formato XZ (pesa solo unos ~25MB). Contiene parches para mostrar correctamente los íconos del sistema en Ubuntu 24.04 y superior.
+* **fina-ergen_..._x86_64.AppImage:** Versión AppImage genérica cruda producida por el compilador para compatibilidad heredada.
 
-# Solo instala IA, reconocimiento, UI y Utils
-pip install -r requirements.txt
-```
+---
 
-3. **Inicia Fina Ergen (Modo Gráfico Completo):**
-```bash
-bash lanzar_fina_simple.sh
-```
-_(Para añadirle poderes de TV o Aire, revisa el Manual Completo e instala el `requirements.txt` de sus carpetas en `/plugins/`)_
+## 🧩 Plugins y Extensiones (Market)
 
+Fina viene "pelada" de fábrica para ser rapidísima. Todo el control de aparatos IoT, TV y automatizaciones de terceros se descarga por separado.
 
+1. Visita nuestro Repositorio Oficial de Extensiones: **[Fina Plugins Market](https://github.com/dankopetro/Fina-Plugins-Market)**
+2. Descarga la carpeta de la extensión que te interese (ej: `AirConditioning/Midea-Surrey`).
+3. Cópiala en la nueva carpeta de configuraciones de tu usuario de Linux:
+   `~/.config/Fina/plugins/` *(Ej: `~/.config/Fina/plugins/AirConditioning/Midea-Surrey/`)*
+4. Reinicia Fina Ergen. Mágicamente absorberá la extensión para siempre.
 ## 📚 Documentación
 
 Hemos reestructurado toda la información técnica para ti:
