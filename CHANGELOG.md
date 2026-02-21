@@ -10,21 +10,18 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
-## [v3.5.4-15] - 2026-02-21 (Documentación Maestra y Estabilidad)
-Esta versión se enfoca en la profesionalización del soporte al usuario y la blindaje total del entorno de ejecución.
+## [v3.5.4-14] - 2026-02-21 (Edición Visual y Estabilidad Crítica)
+Esta actualización resuelve fricciones de portabilidad, automatiza servicios e introduce documentación de alta calidad.
 
 ### Añadido
-* **Manual Enciclopédico de Usuario (20 Páginas)**: Creación de la documentación técnica definitiva en formato PDF Premium Dark. Cubre desde la filosofía del "Dominio Local" hasta la arquitectura profunda del Dual Engine y el desarrollo de Plugins. Ubicación: `docs/Manual_Usuario_Fina_Ergen_v3.5.4.pdf`.
-* **Manual Visual de Usuario (10 Páginas)**: Guía práctica basada íntegramente en las 27 capturas de pantalla oficiales de la interfaz, explicando cada botón y widget del Dashboard. Ubicación: `docs/Manual_Usuario_Visual_Fina_v3.5.4.pdf`.
-* **Auditoría de Servicios (Persistence Logs)**: Los procesos de fondo (`main.py` y `fina_api.py`) ahora escriben sus errores y logs directamente en `~/.config/Fina/fina_services.log`. Esto permite diagnosticar fallos en instalaciones `.deb` y `AppImage` sin necesidad de una terminal abierta.
-
-## [v3.5.4-14] - 2026-02-21 (Parche Crítico AppImage)
-Corrección de errores de ejecución en entornos portables y automatización de arranque.
+* **Manual Visual de Usuario (10 Páginas)**: Guía práctica basada en 27 capturas reales de la interfaz. Ubicación: `docs/Manual_Usuario_Visual_Fina_v3.5.4.pdf` (Incluido en instaladores).
+* **Manual Enciclopédico (20 Páginas)**: Tratado técnico avanzado del ecosistema Fina. Ubicación: `docs/Manual_Usuario_Fina_Ergen_v3.5.4.pdf`.
+* **Auditoría de Servicios (Persistence Logs)**: Registro automático en `~/.config/Fina/fina_services.log` para servicios de fondo.
 
 ### Arreglado
-* **Conflicto PYTHONHOME en AppImage**: Se implementó una purga de variables de entorno (`PYTHONHOME` y `PYTHONPATH`) en el núcleo de Rust antes de invocar cualquier comando de Python. Esto soluciona el error fatal "No module named encodings" que impedía el escaneo de red en AppImages.
-* **Auto-Arranque de Backend**: El instalador `.deb` y el `AppImage` ahora lanzan automáticamente todos los servicios de Python (Cerebro y API) al abrir la aplicación, eliminando la necesidad de scripts de lanzamiento externos.
-* **Comando Nativo de Red**: Migración del escaneo de red a un comando nativo de Tauri (`scan_network_devices`), eliminando la dependencia de llamadas REST durante la fase crítica de arranque.
+* **Conflicto PYTHONHOME en AppImage**: Purga de variables de entorno en Rust para evitar el error "encodings" en entornos portables.
+* **Auto-Arranque de Backend**: Los servicios de Python inician automáticamente junto con la aplicación.
+* **Escaneo de Red Nativo**: Migración a comando Tauri de Rust para mayor velocidad y fiabilidad en el arranque.
 
 ## [v3.5.4-12] - 2026-02-21 (Edición Universal)
 Esta versión marca un hito en el ciclo de vida de Fina Ergen, convirtiéndola en una aplicación 100% autodependiente e independiente de la ubicación donde se empaquete e instale.

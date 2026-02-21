@@ -1,25 +1,16 @@
-========== PARA LA VERSIÓN v3.5.4-15 ==========
-
-## 🚀 Fina Ergen v3.5.4-15 - Documentación Maestra y Estabilidad
-
-Esta actualización se enfoca en brindar al usuario el nivel de soporte documental más alto de la historia de Fina y asegurar la estabilidad de diagnóstico del sistema.
-
-### 🛠️ Novedades de esta Versión:
-* **📖 Manual Enciclopédico (20 Páginas)**: Se incluye en el bundle el "Manual Maestro Definitivo" en PDF (Premium Dark). Un tratado profundo que cubre cada rincón de la arquitectura Dual Engine, Plugins Market y Configuración Avanzada.
-* **📸 Manual Visual de Usuario**: Una nueva guía de 10 páginas basada íntegramente en capturas de pantalla reales, explicando paso a paso el uso de cada widget y botón del Dashboard.
-* **✍️ Auditoría y Registro (Services Logs)**: Fina ahora escribe automáticamente todos los eventos, errores y "prints" de sus servicios de fondo (IA y API) en el archivo `~/.config/Fina/fina_services.log`. ¡Ya no más diagnóstico a ciegas!
-* **🔄 Sincronización de Tags**: Alineación total del repositorio para el despliegue automático de la documentación en la rama maestra.
-
 ========== PARA LA VERSIÓN v3.5.4-14 ==========
 
-## 🚀 Fina Ergen v3.5.4-14 - Parche Crítico AppImage y Auto-Arranque
+## 🚀 Fina Ergen v3.5.4-14 - Edición Visual y Estabilidad Total
 
-Esta versión resuelve las últimas fricciones de portabilidad en sistemas Linux modernos y automatiza la puesta en marcha de los servicios.
+Esta versión representa el estado más refinado de Fina hasta la fecha, combinando parches críticos de portabilidad con una suite documental de lujo.
 
 ### 🛠️ Novedades de esta Versión:
-* **🔧 Blindaje AppImage (Fix PYTHONHOME)**: Se resolvió el error fatal "init_fs_encoding" en entornos portables. Ahora Fina purga las variables de entorno conflictivas antes de invocar a Python, garantizando un funcionamiento fluido en cualquier distribución.
-* **⚡ Auto-Backend Launch**: Ya no necesitas scripts externos. Al abrir Fina (ya sea vía .deb o AppImage), la aplicación detecta y arranca por sí sola el Cerebro (IA) y la API REST en hilos aislados.
-* **🛰️ Escaneo de Red Nativo**: El comando de búsqueda de dispositivos IoT ahora es una instrucción nativa de Rust/Tauri. Esto acelera el arranque y garantiza la visibilidad de tus equipos Smart TV y Aires Acondicionados desde el segundo uno.
+* **📸 Manual Visual de Usuario (10 Páginas)**: Se incluye en el instalador la guía práctica basada en capturas reales, explicando cada botón del Dashboard.
+* **📖 Manual Enciclopédico (20 Páginas)**: Manual técnico profundo disponible en el repositorio (docs/) para Power Users.
+* **🔧 Blindaje AppImage (Fix PYTHONHOME)**: Adiós al error "init_fs_encoding". Funciona en cualquier sistema Linux moderno.
+* **⚡ Auto-Backend Launch**: Los servicios de IA y API arrancan solos al abrir la App.
+* **🛰️ Escaneo de Red Nativo**: Búsqueda ultrarrápida de dispositivos IoT mediante Rust.
+* **✍️ Auditoría y Registro (Services Logs)**: Registro detallado de eventos en `~/.config/Fina/fina_services.log`.
 
 ========== PARA LA VERSIÓN v3.5.4-12 ==========
 
