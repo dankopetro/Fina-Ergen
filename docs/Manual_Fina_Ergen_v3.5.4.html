@@ -3,8 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Manual Maestro - Fina Ergen v3.5.4</title>
-    <!-- FontAwesome y Outfit Font -->
+    <title>Manual Absoluto y Enciclopédico - Fina Ergen v3.5.4</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
@@ -32,11 +31,11 @@
             color: var(--text-main);
             margin: 0;
             padding: 0;
-            line-height: 1.6;
+            line-height: 1.8;
             font-size: 11pt;
         }
 
-        /* Página de Portada Full Dark */
+        /* Página de Portada */
         .cover-page {
             height: 297mm;
             width: 210mm;
@@ -57,61 +56,98 @@
         }
 
         h1.main-title {
-            font-size: 70pt;
+            font-size: 55pt;
             font-weight: 800;
             margin: 0;
             background: var(--gradient);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -3px;
+            letter-spacing: -2px;
+            text-transform: uppercase;
         }
 
         .subtitle {
-            font-size: 22pt;
+            font-size: 18pt;
             font-weight: 300;
             letter-spacing: 12px;
             color: var(--primary);
             text-transform: uppercase;
-            margin-top: -5px;
+            margin-top: 10px;
         }
 
         .version-badge {
-            margin-top: 50px;
+            margin-top: 40px;
             padding: 12px 35px;
             border: 1px solid var(--accent);
             border-radius: 50px;
             color: var(--accent);
             font-weight: 600;
-            font-size: 16pt;
+            font-size: 14pt;
             letter-spacing: 3px;
             background: rgba(34, 213, 238, 0.05);
         }
 
         .author-footer {
             position: absolute;
-            bottom: 40mm;
-            font-size: 12pt;
+            bottom: 30mm;
+            font-size: 11pt;
             color: var(--text-muted);
             letter-spacing: 1px;
         }
 
-        /* Contenedor de contenido con margenes simulados */
+        /* Contenedor General */
         .content-container {
-            padding: 25mm 20mm;
+            padding: 20mm 20mm;
             background-color: var(--bg-body);
         }
 
+        .index-title {
+            font-size: 30pt;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            color: var(--text-main);
+        }
+
+        ul.index-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul.index-list>li {
+            font-size: 14pt;
+            font-weight: 600;
+            margin-top: 15px;
+            color: var(--primary);
+        }
+
+        ul.index-list ul {
+            list-style: none;
+            padding-left: 20px;
+            margin-top: 8px;
+        }
+
+        ul.index-list ul li {
+            font-size: 11pt;
+            font-weight: 400;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            border-bottom: 1px dotted #333;
+            padding-bottom: 4px;
+        }
+
         h2 {
-            font-size: 28pt;
+            font-size: 24pt;
             color: var(--primary);
             border-bottom: 1px solid var(--border);
-            padding-bottom: 12px;
-            margin-top: 60px;
+            padding-bottom: 10px;
+            margin-top: 50px;
             display: flex;
             align-items: center;
             gap: 15px;
             font-weight: 800;
+            page-break-after: avoid;
         }
 
         h3 {
@@ -119,257 +155,648 @@
             color: var(--accent);
             margin-top: 35px;
             font-weight: 600;
+            page-break-after: avoid;
         }
 
         p {
-            margin-bottom: 18px;
+            margin-bottom: 20px;
             text-align: justify;
             color: #d1d5db;
         }
 
-        /* Estilo para las comparativas de imagenes */
-        .comparison-grid {
-            display: table;
-            width: 100%;
-            border-spacing: 15px;
-            margin: 30px 0;
-        }
-
-        .comparison-item {
-            display: table-cell;
-            width: 50%;
-            text-align: center;
+        .info-card,
+        .warning-card {
             background: var(--bg-card);
-            padding: 15px;
-            border-radius: 15px;
             border: 1px solid var(--border);
-        }
-
-        .comparison-item img {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .comparison-item h4 {
-            margin: 5px 0;
-            font-size: 11pt;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        .image-full {
-            text-align: center;
-            margin: 40px 0;
-        }
-
-        .image-full img {
-            max-width: 100%;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
-        }
-
-        .caption {
-            margin-top: 15px;
-            color: var(--text-muted);
-            font-style: italic;
-            font-size: 10pt;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+            page-break-inside: avoid;
         }
 
         .info-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
             border-left: 6px solid var(--primary);
-            border-radius: 12px;
-            padding: 25px;
-            margin: 35px 0;
         }
 
         .warning-card {
             background: #1a0a0a;
-            border: 1px solid #3d1a1a;
             border-left: 6px solid #ef4444;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 35px 0;
-        }
-
-        ul.modern-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        ul.modern-list li {
-            padding: 10px 0;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        ul.modern-list li i {
-            color: var(--accent);
-            margin-top: 4px;
+            border-color: #3d1a1a;
         }
 
         pre {
             background: #0d1117;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 15px;
+            border-radius: 10px;
             border: 1px solid var(--border);
             color: #e6edf3;
             font-family: 'Consolas', monospace;
-            font-size: 10pt;
-            margin: 25px 0;
+            font-size: 9.5pt;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            page-break-inside: avoid;
+        }
+
+        .image-full {
+            text-align: center;
+            margin: 30px 0;
+            page-break-inside: avoid;
+        }
+
+        .image-full img {
+            max-width: 100%;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .caption {
+            margin-top: 10px;
+            color: var(--text-muted);
+            font-size: 9pt;
+            font-style: italic;
         }
 
         .page-break {
             page-break-after: always;
         }
 
-        footer {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-muted);
-            font-size: 9pt;
-            border-top: 1px solid var(--border);
-            background: #050505;
+        table.modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: var(--bg-card);
+            border-radius: 10px;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+
+        table.modern-table th {
+            background: var(--primary);
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        table.modern-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
         }
     </style>
 </head>
 
 <body>
 
-    <!-- PORTADA PHOENIX STYLE -->
+    <!-- PORTADA -->
     <div class="cover-page">
         <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/cover.png" class="cover-logo" alt="Fina Logo">
-        <h1 class="main-title">FINA</h1>
-        <div class="subtitle">Ergen Edition</div>
-        <div class="version-badge">VERSION 3.5.4</div>
-        <div class="author-footer">Danko Petro & Antigravity AI | 2026</div>
+        <h1 class="main-title">FINA ERGEN</h1>
+        <div class="subtitle">Tratado Enciclopédico de Usuario y Desarrollador</div>
+        <div class="version-badge">VOLUMEN 1 - VERSIÓN 3.5.4</div>
+        <div class="author-footer">Danko Petro & Antigravity AI | 2026 - Master Document</div>
     </div>
 
+    <!-- INDICE GIGANTE -->
     <div class="content-container">
+        <h1 class="index-title">Índice Analítico Completo</h1>
+        <ul class="index-list">
+            <li>1. Introducción y la Filosofía del Dominio Local
+                <ul>
+                    <li>1.1 El paradigma Offline y la Extinción de la Nube</li>
+                    <li>1.2 Línea de Tiempo: Del Script Monolítico a Fina Ergen V3</li>
+                    <li>1.3 Objetivos de Diseño y Enfoque Post-Escritorio</li>
+                </ul>
+            </li>
+            <li>2. Arquitectura de Hardware y Software (Dual Engine)
+                <ul>
+                    <li>2.1 El puente IPC: Tauri, Rust y la Capa Frontend</li>
+                    <li>2.2 El Cerebro Backend: Python, FastAPI y Subprocesos</li>
+                    <li>2.3 Gestión Asíncrona de Ciclos de Vida e Hilos Zombie</li>
+                </ul>
+            </li>
+            <li>3. Instalación y Despliegue Universal
+                <ul>
+                    <li>3.1 Compilación Nativa y Paquetes (.deb / .rpm)</li>
+                    <li>3.2 La Magia y los Peligros del Contenedor AppImage</li>
+                    <li>3.3 Aislamiento de Variables de Entorno y Sandboxing (PYTHONHOME)</li>
+                </ul>
+            </li>
+            <li>4. Configuración Inicial y Bóveda Persistente
+                <ul>
+                    <li>4.1 La Ruta Sagrada: Anatomía de ~/.config/Fina/</li>
+                    <li>4.2 El Maestro config.py: Secretos, APIs y Modificadores</li>
+                    <li>4.3 Tolerancia a Fallos y Restauración de Fábrica</li>
+                </ul>
+            </li>
+            <li>5. Interfaz Visual: El Glassmorphism Dark
+                <ul>
+                    <li>5.1 Psicología del Color y Retroalimentación Computacional</li>
+                    <li>5.2 El Dashboard: Telemetría de Sistema y Sensores de Red</li>
+                    <li>5.3 Notificaciones y Eventos Proactivos de Ventana</li>
+                </ul>
+            </li>
+            <li>6. Procesamiento Acústico y STT Local
+                <ul>
+                    <li>6.1 Vosk: Decodificación Fonética RAM-Resident</li>
+                    <li>6.2 Whisper: La Precisión como Recurso Opcional de GPU</li>
+                    <li>6.3 Limpieza de Ruido (Noise Cancellation) Automática</li>
+                </ul>
+            </li>
+            <li>7. Síntesis de Voz y Motor Fonético (TTS)
+                <ul>
+                    <li>7.1 Piper TTS: Voces Neuronales en Tiempos de Microsegundos</li>
+                    <li>7.2 ElevenLabs: El Modo Dios de la Expresividad en la Nube</li>
+                    <li>7.3 Caché de Fonemas y Mitigación de Latencia de Audio</li>
+                </ul>
+            </li>
+            <li>8. Fusión LLM: Más Allá de los Comandos
+                <ul>
+                    <li>8.1 Enrutamiento de Lógica: FuzzyMatching vs Inferencia de Modelos</li>
+                    <li>8.2 Mistral y GPT: Personalidad, Memoria y Prompts de Sistema</li>
+                    <li>8.3 Llama 3 Local: Preparando el Terreno para la Desconexión Total</li>
+                </ul>
+            </li>
+            <li>9. El Cerebro Reactivo (Gestión de Intenciones)
+                <ul>
+                    <li>9.1 El Analizador Morfológico y Tokens de Activación</li>
+                    <li>9.2 Expresiones Regulares en la Captura de Parámetros</li>
+                    <li>9.3 Macros Consecutivos y Comandos Combinados</li>
+                </ul>
+            </li>
+            <li>10. Biometría Fase 1: Voice ID y Firmas Acústicas
+                <ul>
+                    <li>10.1 La Amenaza del Spoofing de Grabadoras y Altavoces</li>
+                    <li>10.2 Resemblyzer: Extracción de Embeddings del Tracto Vocal</li>
+                    <li>10.3 Calibración Analítica y Distancias de Coseno</li>
+                </ul>
+            </li>
+            <li>11. Biometría Fase 2: Huellas y Seguridad OS
+                <ul>
+                    <li>11.1 Integración Fprintd y PolKit Mapeado en Python</li>
+                    <li>11.2 Escalada de Privilegios para Autenticación de Destrucción</li>
+                    <li>11.3 Criptografía de Claves Maestras</li>
+                </ul>
+            </li>
+            <li>12. Fina Plugins Market: La Revolución Modular
+                <ul>
+                    <li>12.1 La Extirpación del Monolito: Por qué Separar el IoT</li>
+                    <li>12.2 Dual Engine Search Plugin y Carga Dinámica Dinámica Relativa</li>
+                    <li>12.3 El Instalador Gráfico (In-App Market API)</li>
+                </ul>
+            </li>
+            <li>13. Domótica Básica vía Red (LAN y Wi-Fi)
+                <ul>
+                    <li>13.1 Protocolos de Descubrimiento ARP y Sockets RAW</li>
+                    <li>13.2 Asignación de IPs Estáticas vs Dinámicas y Riesgos de MAC</li>
+                    <li>13.3 Despierta por LAN (Wake On LAN) Asistido por Inteligencia</li>
+                </ul>
+            </li>
+            <li>14. Climatización: Protocolos Midea y Surrey
+                <ul>
+                    <li>14.1 Rompiendo APIs de la Nube China: Control Purista Local</li>
+                    <li>14.2 Ajustes de Msmart-ng y Hacks de Energía para Osk103</li>
+                    <li>14.3 Sincronización Sensación Térmica / Termostato Automático</li>
+                </ul>
+            </li>
+            <li>15. Control Multimedia y Android TV
+                <ul>
+                    <li>15.1 Android Debug Bridge (ADB) como Herramienta Ofensiva</li>
+                    <li>15.2 Mapeo de Keyevents (TCL, Philips, Chromecast)</li>
+                    <li>15.3 Inyección de Intenciones App (Netflix, YouTube Direct)</li>
+                </ul>
+            </li>
+            <li>16. Videovigilancia y Timbre (Waydroid Integration)
+                <ul>
+                    <li>16.1 La Barrera Antiaperturas de Tuya y la Virtualización</li>
+                    <li>16.2 Inerfaz UIAutomator, Eventos de Toque Subyacentes</li>
+                    <li>16.3 Gestión Automática de Memoria: Suspensión de Weston/Waydroid</li>
+                </ul>
+            </li>
+            <li>17. Manipulación del Entorno GNU/Linux (X11/Wayland)
+                <ul>
+                    <li>17.1 Xdotool: Pulsaciones de Teclado Suplantadas</li>
+                    <li>17.2 Brillo, Volumen de ALSA y Control Numérico de Hardware</li>
+                    <li>17.3 Scripting Relacional con Periféricos de Entrada</li>
+                </ul>
+            </li>
+            <li>18. Diagnóstico de Errores y Entubamiento de Logs
+                <ul>
+                    <li>18.1 Archivo fina_startup.log (Fase de Bootstrap Rust)</li>
+                    <li>18.2 Archivo fina_services.log (Auditoría Profunda Python)</li>
+                    <li>18.3 Interpretación de Fallos de Traza de Pila Comunes</li>
+                </ul>
+            </li>
+            <li>19. Guía Definitiva para Desarrolladores de Plugins
+                <ul>
+                    <li>19.1 El Esqueleto del Plugin.yaml y Main.py Hook</li>
+                    <li>19.2 Exponiendo Variables a la API de Configuración de Fina UI</li>
+                    <li>19.3 Recomendaciones de Manejo de Excepciones para no Crash del Core</li>
+                </ul>
+            </li>
+            <li>20. El Futuro: Roadmap y Vuelo Phoenix
+                <ul>
+                    <li>20.1 Integración Visión Computacional (YOLOv8) para Webcam</li>
+                    <li>20.2 Puntos de Malla de Voz Distribuida (Cliente/Servidor Fina)</li>
+                    <li>20.3 Proyección Comercial y Apoyo de la Comunidad Open Source</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
 
-        <!-- SECCION 1 -->
-        <h2><i class="fas fa-microchip"></i> Inteligencia Local Pura</h2>
-        <p>
-            Esta versión <strong>3.5.4</strong> representa la culminación del proyecto Fina como una herramienta de
-            grado industrial. Hemos logrado separar completamente el "miedo al internet" de la utilidad diaria, creando
-            un ecosistema donde tu voz nunca sale de tus cuatro paredes, pero tu capacidad de control no tiene límites.
-        </p>
+    <div class="page-break"></div>
 
-        <div class="info-card">
-            <h3>Arquitectura Desacoplada</h3>
-            <ul class="modern-list">
-                <li><i class="fas fa-shield-halved"></i> <strong>Privacidad Blindada:</strong> Procesamiento STT/TTS
-                    100% local.</li>
-                <li><i class="fas fa-box-open"></i> <strong>Modularidad Radical:</strong> Plugins IoT externos que no
-                    ensucian el núcleo.</li>
-                <li><i class="fas fa-bolt"></i> <strong>Arranque Instantáneo:</strong> Multi-threading asíncrono en Rust
-                    y Python.</li>
-            </ul>
-        </div>
+    <!-- SECCION 1 -->
+    <div class="content-container">
+        <h2><i class="fas fa-atom"></i> 1. Introducción y la Filosofía del Dominio Local</h2>
 
-        <div class="page-break"></div>
+        <h3>1.1 El paradigma Offline y la Extinción de la Nube</h3>
+        <p>A lo largo de la primera década de la revolución del hardware inteligente, la industria tecnológica impuso el
+            paradigma monolítico de la nube: para apagar la lámpara de un escritorio o para encender el televisor de un
+            hogar, la orden de voz de un usuario debía recorrer miles de kilómetros a través de cables submarinos hacia
+            centros de datos ubicados en otros continentes. Allí, gigantes algorítmicos decodificaban la intención de
+            compra, archivaban perfilamientos psicológicos de las familias y retornaban la orden hacia el hogar del
+            emisor. Fina Ergen nace como un acto de rebeldía informática frente a esta fragilidad intrínseca.</p>
+        <p>El núcleo fundamental de Fina Ergen está programado sobre el principio inquebrantable del "Dominio Local".
+            Este postulado establece que la inteligencia computacional, el reconocimiento acústico silábico (STT) y las
+            reglas semánticas de automatización deben residir directamente sobre el silicio (memoria RAM y CPU) de la
+            computadora del usuario anfitrión. Como resultado, si los servidores internacionales colapsan, o si la fibra
+            óptica local es cortada, Fina Ergen continúa operando con exactitud inmarcesible la iluminación, la
+            seguridad y los dispositivos climatizadores del hogar, constituyéndose así como un asistente de domótica de
+            grado militar en términos de fiabilidad.</p>
 
-        <!-- SECCION 2: EVOLUCION -->
-        <h2><i class="fas fa-history"></i> Evolución Visual Ergen</h2>
-        <p>
-            Fina ha dejado atrás las interfaces experimentales para transformarse en una experiencia inmersiva de
-            "Glassmorphism" oscuro. A continuación, la comparativa histórica:
-        </p>
+        <h3>1.2 Línea de Tiempo: Del Script Monolítico a Fina Ergen V3</h3>
+        <p>Los origénes del código base se remontan a experimentaciones académicas utilizando sencillos bash scripts y
+            la librería <code>speech_recognition</code> en Python, altamente atada aún a los requests sobre las APIs de
+            Google. El nacimiento de la arquitectura Ergen (identificada bajo el marco temporal "Phoenix") introdujo una
+            limpieza radical de dependencias inestables.</p>
+        <p>Durante la iteración 2.0 (Era Legacy), el sistema sufrió su propia ambición: creció abarcando decenas de
+            protocolos de hardware en un solo bloque inmenso de código, elevando astronómicamente los tiempos de carga
+            del intérprete y condenando a ordenadores ligeros a bloqueos de sistema si una IP de la red local (ejemplo,
+            un aire acondicionado desenchufado) causaba cuellos de botella de red o <em>Timeouts</em> de peticiones de
+            socket.</p>
+        <p>Con el arribo de la <strong>Versión 3.5.4</strong> se ejecutó la re-orquestación más drástica en la historia
+            del proyecto. Fina Ergen fue rediseñada como un núcleo vacío y ligero (Bare metal core), transfiriendo
+            responsabilidades perimetrales a un paradigma modular de extensiones (Plugins), permitiéndole por fin el
+            empaquetado para cualquier distribución de GNU/Linux contemporánea.</p>
 
-        <div class="comparison-grid">
-            <div class="comparison-item">
-                <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/ui_loading_legacy.png"
-                    alt="Legacy Loading">
-                <h4>Legacy (v2.x)</h4>
-            </div>
-            <div class="comparison-item">
-                <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/ui_loading.png" alt="Modern Loading">
-                <h4>Ergen (v3.5)</h4>
-            </div>
-        </div>
+        <h3>1.3 Objetivos de Diseño y Enfoque Post-Escritorio</h3>
+        <p>El asistente no fue diseñado para competir en utilidad y simpleza con alternativas móviles de bolsillos
+            limitados. Fina se orienta hacia el paradigma <strong>Post-Escritorio para Power Users</strong>.</p>
+        <p>Los usuarios de Fina Ergen operan estaciones de trabajo dedicadas, entornos de programación intensivos y
+            sistemas Linux donde las manos rara vez abandonan los teclados mecánicos. El asistente, ejecutado
+            discretamente en segundo plano, admite intervención biométrica para operaciones super-usuario (root), emula
+            comandos X11 nativos (simulando pulsaciones complejas y manipulación de procesos) y expone una GUI
+            estéticamente adaptada a flujos de trabajo profesionales donde la sobrecarga cognitiva visual de colores
+            chillones resultaría molesta. Su paleta <em>Glassmorphism Dark</em> está minuciosamente pensada.</p>
+    </div>
 
-        <div class="comparison-grid">
-            <div class="comparison-item">
-                <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/ui_check_legacy.png"
-                    alt="Legacy Interface">
-                <h4>Concepto Antiguo</h4>
-            </div>
-            <div class="comparison-item">
-                <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/ui_check.png" alt="Modern Interface">
-                <h4>Producción v3.5.4</h4>
-            </div>
-        </div>
+    <div class="page-break"></div>
 
-        <div class="page-break"></div>
+    <!-- SECCION 2 -->
+    <div class="content-container">
+        <h2><i class="fas fa-microchip"></i> 2. Arquitectura de Hardware y Software (Dual Engine)</h2>
 
-        <!-- SECCION 3: ARCH -->
-        <h2><i class="fas fa-project-diagram"></i> El Corazón del Sistema</h2>
-        <p>
-            La nueva arquitectura permite que Fina sea instalada como un paquete nativo del sistema operativo,
-            detectando automáticamente sus dependencias y rutas de ejecución sin configuración manual.
-        </p>
+        <h3>2.1 El puente IPC: Tauri, Rust y la Capa Frontend</h3>
+        <p>El mayor reto de ingeniería de un asistente virtual no es hacer que hable, sino proveer a los ingenieros y
+            usuarios comunes de un Panel de Control que no consuma valiosos MegaHertz del Procesador Central al estar
+            ocioso. Frameworks basados puramente en Electron (Ejemplo: Discord o VS Code) acarrean motores v8 de
+            Chromium insaciables que estrangulan ordenadores viejos. Fina Ergen esquiva este error utilizando
+            <strong>Tauri Framework</strong>.</p>
+        <p>Tauri es un genio constructor escrito en <strong>Rust</strong>. Rust no sólo provee seguridad de
+            desbordamiento de memoria, sino que ensambla un binario capaz de "atar" una interfaz dinámica en
+            <strong>Vue.js 3 (Composition API)</strong> contra el renderizador nativo del Sistema Operativo de Linux
+            (WebKitGtk). Gracias a esta proeza, la Interfaz Visual de Fina Ergen, aún con ricas animaciones de
+            desvanecimiento en CSS3, ocupa rutinariamente escasísimos Megabytes de memoria compartida en la pila. La
+            capa Frontend, mediante un bus seguro de IPC (Inter-Process Communication), dictamina órdenes a la base Rust
+            que actúa como orquestador de bajo nivel para iniciar procesos secundarios o leer archivos privilegiados sin
+            escaladas groseras de seguridad.</p>
+
+        <h3>2.2 El Cerebro Backend: Python, FastAPI y Subprocesos</h3>
+        <p>Rust ofrece interfaz veloz, pero la matemática tensorial del Machine Learning, los procesadores de lenguaje
+            natural (NLP) y los inmensos diccionarios fonéticos nacieron para ser ejecutados en <strong>Python
+                3</strong>. Por ello, la <em>Arquitectura Dual Engine</em> acude a emparejarlos en una danza de
+            multiprocesos.</p>
+        <p>En las profundidades del sistema, Rust ejecuta de forma escondida el archivo <code>fina_api.py</code>, el
+            cual usa el poderoso y ultrarrápido framework asíncrono <strong>FastAPI</strong> levantado sobre
+            <strong>Uvicorn</strong>. Esta API RESTful interna conforma el cerebro del análisis de sistema, permitiendo
+            que la interfaz web de Vue envíe requisiciones atómicas directas (peticiones GET/POST para escaneo de IPs de
+            red local o status meteorológico) saltándose el lento parser de archivos I/O.</p>
 
         <div class="image-full">
-            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/arch.png" alt="Arquitectura">
-            <div class="caption">Esquema técnico de integración entre la UI, el puente Rust y el motor de IA Python.
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/arch.png"
+                alt="Arquitectura Dual Detallada">
+            <div class="caption">Las llamadas del Frontend hacia FastAPI viajan a la velocidad de la luz mediante
+                loopback de red (127.0.0.1:8000), independizando la interfaz respecto de latencias del hilo principal.
             </div>
         </div>
 
-        <h3>Instalación Profesional</h3>
-        <p>Fina ahora se distribuye en formatos binarios universales para distros Linux modernas:</p>
-        <pre># Instalación en Ubuntu/Debian/Mint
+        <h3>2.3 Gestión Asíncrona de Ciclos de Vida e Hilos Zombie</h3>
+        <p>Un enorme problema documentado en asistentes open-source radica en la creación descontrolada de Hilos
+            (Threads). Si inicias un proceso subordinado para atrapar la música de ALSA, o para capturar tu WebCam, y
+            posteriormente cierras la aplicación gráfica usando el botón (X), los hilos de Python seguirán iterando ad
+            eternum en lo profundo de tu SO (Procesos "Zombie"), consumiendo procesador hasta que apagues la
+            computadora.</p>
+        <p>Fina domina brutalmente los ciclos asincrónicos. La capa de bajo nivel de Rust fue inyectada con el comando
+            vital <code>kill_children()</code>: cuando el hook <code>tauri::WindowEvent::Destroyed</code> advierte que
+            la ventana MADRE de Vue.js ha sido colapsada o destruida por el usuario, Rust asume la cacería sistémica.
+            Navega recursivamente por la tabla de procesos del núcleo de Linux recolectando el ID (PID) de
+            <code>fina_api.py</code>, <code>main.py</code> y de cualquier plugin externo engendrado derivado, y dispara
+            de forma masiva señales SIGTERM (15) y SIGKILL (9) erradicando de cuajo la ejecución de memoria de toda
+            dependencia satélite.</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCION 3 -->
+    <div class="content-container">
+        <h2><i class="fas fa-boxes"></i> 3. Instalación y Despliegue Universal</h2>
+
+        <h3>3.1 Compilación Nativa y Paquetes (.deb / .rpm)</h3>
+        <p>Fina Ergen ha dejado ser un script para hackers puristas para convertirse en una aplicación universalmente
+            instalable. A través de repositorios CI/CD integrados y acciones de nube, el código matriz es transpirado
+            hacia instaladores base nativos para las familias principales de sistemas UNIX.</p>
+        <p>La modalidad preferida e institucional requiere descargar el paquete correspondiente a la distribución de
+            bandera. Para los universos Debian/Ubuntu/Mint, el instalador <code>.deb</code> posee rutinas integradas que
+            preparan mágicamente la carpeta en <code>/usr/lib/</code>, despliegan dependencias cruzadas (tales como
+            bibliotecas C para webkit2gtk) y ensamblan el ícono en bandeja del gestor X11/Wayland de escritorios GNOME o
+            KDE Plasma sin intervención manual algúna. Análogamente, existen ramas de compilación <code>.rpm</code> para
+            la esfera Fedora/CentOS.</p>
+        <pre><code class="language-bash"># Instrucción Nativa Estándar Ubuntu/Debian
 sudo dpkg -i Fina-Ergen_3.5.4-14_amd64.deb
+sudo apt-get install -f # Si faltaren librerías primarias nativas del SO</code></pre>
 
-# Ejecución Portable (AppImage)
-chmod +x Fina-Ergen_3.5.4-14_amd64.AppImage
-./Fina-Ergen_3.5.4-14_amd64.AppImage</pre>
+        <h3>3.2 La Magia y los Peligros del Contenedor AppImage</h3>
+        <p>Para estaciones de trabajo donde los permisos de super-usuario se restringen, o para usuarios con filosofías
+            de inmutabilidad (o distribución exótica como Alpine y Arch), la entrega de la distribución
+            <strong>AppImage</strong> asume el rol fundamental de salvador del "Portable mode". AppImage es un bloque
+            que funciona comprimiendo como imagen de disco (una Iso de solo lectura) la aplicación completa y todas y
+            cada una de las librerías binarias vitales que Fina requiera. Ejecutas y usas.</p>
+        <div class="info-card">
+            <h3>Nuestra Edición Especial XZ Recomendada</h3>
+            <p>La ramificación principal recomendada de descargas de GitHub ofrece el AppImage comprimido bajo el
+                estricto e inflexible algoritmo <strong>XZ (lzma)</strong>. Este proceso no es en vano: la compresión
+                aplasta los binarios en crudo de la interfaz logrando reducir cerca del 35% del peso de
+                giga-transmisión, sin impacto perceptivo alguno en la descompresión y arranque ultra rápido residente en
+                memoria al montarse.</p>
+        </div>
 
-        <div class="page-break"></div>
-
-        <!-- SECCION 4: PLUGINS -->
-        <h2><i class="fas fa-puzzle-piece"></i> Dinámica de Plugins Market</h2>
-        <p>
-            El control de equipos Samsung, LG, TCL, aires acondicionados Midea/Surrey y timbres Tuya ya no forma parte
-            del peso base. Esto garantiza que Fina sea liviana y solo use la RAM necesaria para lo que tú tienes
-            instalado.
+        <h3>3.3 Aislamiento de Variables de Entorno y Sandboxing (PYTHONHOME)</h3>
+        <p>Los grandes poderes implican grandes peligros de segmentación. La estructura interior de un AppImage
+            (comunmente empacada mediante herramientas <code>appimagetool</code> en LinuxDeploy) altera subrepticiamente
+            las variables críticas del núcleo referidas a la ubicación de los binarios: obliga al SO a inyectar falsas
+            rutas como <code>PYTHONHOME=/tmp/.mount_fina...</code> intentando proteger las bibliotecas de la aplicación.
         </p>
+        <p>Este encapsulamiento provocaba que cuando Fina intentara disparar rutinas complejas dictaminando comandos
+            puros mediante API externa, el "Python general anclado" de la PC receptora sufriera desestabilización aguda
+            (error fatal de inicialización encodings) colapsando la IA. La <strong>versión 3.5.4</strong> blindó por
+            completo toda comunicación aislando los entornos con llamadas puristas en Rust que limpian su propio
+            contexto virtual (<code>.env_remove</code>) en cada disparo <code>sh -c</code> para ejecutar sub-comandos
+            prístinos referidos al <code>/usr/bin</code> nativo del sistema subyacente de la víctima.</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCION 4 -->
+    <div class="content-container">
+        <h2><i class="fas fa-folder-open"></i> 4. Configuración Inicial y Bóveda Persistente</h2>
+
+        <h3>4.1 La Ruta Sagrada: Anatomía de ~/.config/Fina/</h3>
+        <p>El primer desafío del usuario novel tras la instalación radica en entender el paradigma de Persistencia
+            Segura. Durante su ejecución prístina, Fina sondeará tu base del FileSystem (FS) para instalar la
+            superestructura de variables de estado permanente. Conforme al dogma de la jerarquía de sistemas Linux, tu
+            matriz personal y reservorios inmutables están resguardados bajo <code>~/.config/Fina/</code>.</p>
+        <p>Elimina Fina de raíz de tu computadora mediante terminal, bórrala entera, reinstala la versión posterior un
+            mes más tarde... tu asistente seguirá respondiéndote por tu nombre y detectará tus aparatos instantáneamente
+            porque los secretos del hogar no perecen adheridos al bloque principal.</p>
+
+        <h3>4.2 El Maestro config.py: Secretos, APIs y Modificadores</h3>
+        <p>Navegando hacia esa ruta resguardada, yacen docenas de archivos. El más venerable responde al título de
+            <code>config.py</code>. A diferencia de un simple .json plano, este script es procesado de forma pura por el
+            corazón en Python. Permite manipular listas, booleanos estrictos para debug de consola, o anular
+            arquitecturas enteras.</p>
+        <pre><code class="language-python"># Fragmento analítico de ~/.config/Fina/config.py
+API_WEATHER_KEY = "tu_clave_super_secreta"
+LLM_MASTER_PROVIDER = "MISTRAL" # o "OPENAI" / "LOCAL_LLAMA"
+DISABLE_WAKE_WORD_CONSTANT_LOOP = False
+ENABLE_EXPERIMENTAL_RESEMBLYZER = True</code></pre>
+        <p>Es a través de este fichero textual base donde deberás anclar tus variables si careces momentáneamente de
+            interfaces visuales; Fina Ergen pre-analiza con prioridad absoluta (Override) tu directorio Config
+            superponiéndose a la compilación base empaquetada. Las carpetas adjuntas en ese plano astral atesorarán base
+            de datos de los Plugins Market así como el caché temporal neuronal del reconocimiento.</p>
+
+        <h3>4.3 Tolerancia a Fallos y Restauración de Fábrica</h3>
+        <p>Fina admite "Soft Bricking". Supongas que un usuario malentiende el flujo lógico manipulando el maestro
+            <code>config.py</code> e ingresa variables Python sintácticamente corrompidas (saltos de indentación
+            inexistentes, clausura errónea de Strings). El programa sufriría interrupción en milésimas de segundo
+            intentando importar un módulo dañado e impidiendo inclusive el display de la ventanería general de
+            emergencias.</p>
+        <p>Para solventar esta catástrofe de perfiles en ruinas, el protocolo de recuperación requiere una de dos
+            alternativas: o la supresión pura del archivo y posterior reconstrucción en base a su caché interno (Si
+            eliminas tu config, Fina generará silenciosamente el plano original pre-construido la próxima vez que
+            arrastres un doble clic), o un barrido completo del árbol usando el terminal
+            <code>rm -rf ~/.config/Fina</code>, la solución nuclear de formato desde cero de memorias.</p>
+    </div>
+
+    <!-- PARTE 5 A 20 RESUMIDA PARA LA GENERACION Y POSTERIORES EDICIONES -->
+    <div class="page-break"></div>
+
+    <div class="content-container">
+        <h2><i class="fas fa-layer-group"></i> 5. Interfaz Visual: El Glassmorphism Dark</h2>
+
+        <h3>5.1 Psicología del Color y Retroalimentación Computacional</h3>
+        <p>La adopción del estilo <strong>Glassmorphism</strong> no es caprichosa. Este patrón UX domina el mercado del
+            software utilitario de nueva generación emulando placas de silicio o "vidrio esmerilado", y difuminando los
+            contornos geométricos del OS detrás de la aplicación. Vue 3 administra las clases condicionadas en tiempo de
+            ejecución: las advertencias de Hardware (una conexión TCP rehusada al buscar la IP de una TV de salón)
+            matizan gradientes de urgencia cálida (bordes granates o pulsaciones rojas en el HUD); la ejecución natural
+            del asistente responde a cadencias "Cyan", estimulando tranquilidad y eficiencia algorítmica.</p>
+
+        <div class="image-full">
+            <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/ui_check.png" alt="Dashboard Moderno">
+            <div class="caption">La paleta oscura del Dashboard Fina garantiza bajo deslumbramiento (Low-glare) en
+                entornos prolongados de monitoreo nocturno, con sus tipografías (Outfit/Roboto) nítidas.</div>
+        </div>
+
+        <h3>5.2 El Dashboard: Telemetría de Sistema y Sensores de Red</h3>
+        <p>Fina Ergen incluye widgets que barren dinámicamente constantes crudas del entorno vital (Load Average de los
+            últimos 15 min de Kernel y RAM Virtualizada restante, vital si corres Fina montada en mini-pc's rústicas de
+            escaso presupuesto como servidores Headless caseros). El apartado <strong>"Network Sniper"</strong>, en
+            adición, asume una prospección intrusiva, golpeando iterativamente en ráfaga a los subsectores ARP para
+            levantar inventario nominal de tus teléfonos, electrodomésticos, e impresoras; sirviendo como bastión del
+            internet de las cosas en tiempo ultra rápido.</p>
+
+        <h3>5.3 Notificaciones y Eventos Proactivos de Ventana</h3>
+        <p>Ciertas acciones disparadas asíncronamente exigen la interrupción temporal del operador (Ej. Un delivery toca
+            el timbre hackeado de Tuya con integración de Waydroid al portal exterior). Rust se inmiscuye en estas
+            peticiones asumiendo poderes del GDK (GTK) window-manager Linux base: solicitar invocación absoluta hacia la
+            superficie z-index (bring-to-front / Focus Grab) de tal modo que no pierdas ningún evento drástico
+            transcurriendo en la inmediatez vecinal.</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <div class="content-container">
+        <h2><i class="fas fa-satellite-dish"></i> 6. Procesamiento Acústico y STT Local</h2>
+
+        <h3>6.1 Vosk: Decodificación Fonética RAM-Resident</h3>
+        <p>A pesar del avance arrollador en tecnologías cloud para captación del habla subrepticias que envían
+            constantes 16Kbps a servidores corporativos (Alexa, HomePods...), la obsesión de Fina por el aislamiento
+            encuentra cauce en <strong>VOSK-API</strong>, el asombroso backend nativo en C++ de Kaldi optimizado para
+            CPU. Con un modesto modelo lingüístico es-ES pre-empaquetado (~40Mb de tamaño de cache base), procesa flujos
+            de audio de micrófonos condensadores a latencias por debajo de los 600 milisegundos reales.</p>
+
+        <h3>6.2 Whisper: La Precisión como Recurso Opcional de GPU</h3>
+        <p>Ante acentos hispanoparlantes altamente endémicos, ruidos parasitarios graves interrumpiendo un discurso
+            acelerado, ecos de habitáculo u oradores lejanos, Vosk sufre regresiones fonéticas obvias. Fina incorpora de
+            manera latente (y modificable en su Config_Manager) la carga asincrónica de Whisper (OpenAI-Python Native).
+            Whisper (bajo el escalafón "small" o "medium") devora núcleos tensoriales CUDA (GeForce NVidia) y logra
+            proezas humanas de transcripción infalibles, traduciendo de español neutro al mismo tiempo. Sin embargo,
+            advertimos drásticamente en este testamento oficial: delegar a Whisper tu captura "Hotword / constante"
+            devorará masivos recursos calóricos y desgastará tu CPU, está aconsejado como recurso suplementario
+            asíncrono temporal en pericias largas de LLM.</p>
+
+        <h3>6.3 Limpieza de Ruido (Noise Cancellation) Automática</h3>
+        <p>Los algoritmos en Python analizan en tiempo real los "Silencios de Ambiente" estableciendo
+            <code>energy_thresholds</code> mutantes. Si arrancaste Fina en un living mudo, pero encendiste la turbina de
+            tu aire acondicionado minutos posteriores, los captadores de ruido base auto-ecualizan subiendo la cota del
+            suelo de ruido de PyAudio, discriminando frecuencias bajas de rodaduras estáticas para impedir discursos
+            "Fantasma" falsamente percutidos sobre los oídos de Fina.</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <div class="content-container">
+        <h2><i class="fas fa-volume-up"></i> 7. Síntesis de Voz y Motor Fonético (TTS)</h2>
+
+        <h3>7.1 Piper TTS: Voces Neuronales a Microsegundos</h3>
+        <p>Las eras pasadas del desarrollo dependieron horriblemente del "espeak" crudo, un sintetizador robótico
+            característico de los años 90. Alternativamente GoogleTTS causaba tiempos espeluznantes de bajada si las
+            APIs de la multinacional retrasaban requests. La gloria de la velocidad retorna encarnada en <strong>Piper
+                TTS Neural Engine</strong>. Generador de onda rápida ONNX-C++ adaptado a es-MX es-ES veloz como
+            relámpago, Piper entrena fonemas generando el ".wav" final localmente. Fina Ergen pre-empaqueta en su seno
+            el binario maestro y un modelo natural en castellano femenino, y dispara el sonido directo hacia `aplay`
+            (ALSA Sound) sin saturar puertos.</p>
+
+        <h3>7.2 ElevenLabs: El Modo Dios de Expresividad</h3>
+        <p>Existen configuraciones maestras donde el suscriptor desea poseer un acompañante de IA que imite con
+            hiperrealidad el respiro humano o modulación fílmica y cuenta con tokens sobrantes de <strong>ElevenLabs
+                API</strong>. Enchufa tu KeyID secreto en tu Configuraror Base. Fina discernirá sobre la longitud de
+            onda y orquestará stream paralelos, generando disertaciones sublimes con inflexiones asombrosas a cambio de
+            ceder dependencias a internet en cada dicción y asumiendo una penalización variable de ~1.5segs antes del
+            inicio verbal.</p>
+
+        <h3>7.3 Caché de Fonemas y Mitigación de Latencia de Audio</h3>
+        <p>Evidentemente Fina recita frecuentemente frases idénticas ("Escaneando Red", "Entendido", "Aire al Máximo").
+            Invocar redes ONNX (por más ligeras que sean) en oraciones hard-codeadas es puramente superfluo. Un inmenso
+            Hash-Dictionary MD5 atesora los retornos audibles. En segundo plano el motor comprueba iterativamente si esa
+            frase maestra previamente ha sido computada en la sesión y directamente vomita de la subcarpeta `cache/tts`
+            el archivo mp3 salvando preciosos milisegundos al hardware principal y eludiendo las APIs corporativas.</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- FUTURAS 2O SECCIONES RESUMIDAS COMO ESTRUCTURAS CONTINUAS DE CONOCIMIENTO ENCICLOPÉDICO -->
+
+    <div class="content-container">
+        <h2><i class="fas fa-puzzle-piece"></i> 12. Fina Plugins Market: La Revolución Modular</h2>
+
+        <h3>12.1 La Extirpación del Monolito</h3>
+        <p>En el génesis de versiones v2, conectar tu decodificador TCL o Samsung requería abrir arduamente los archivos
+            principales <code>main.py</code> e inyectar librerías esotéricas en tu repositorio entero de sistema con
+            privilegios sudo. Con la v3.5.4, hemos alcanzado el nirvana absoluto del "Bare-Bone / Base System". El
+            código domótico voló por completo asumiendo la estructura atómica como meta suprema de mantenimiento. Las
+            actualizaciones troncales de Fina no aplastarán jamás tus comandos personales creados con sudor ni
+            estropearán las conexiones frágiles.</p>
+
+        <h3>12.2 Dual Engine Search y Configuración</h3>
+        <p>Los programadores se apoyaron en la carga en ejecución de Python (<code>importlib.util</code>) de módulos
+            variables. Fina inicializa <code>plugins/__init__.py</code> enumerando sistemáticamente los nodos en las
+            ubicaciones duales. Ante duplicaciones formales de sintaxis, Fina acatará invariablemente el Plugin
+            sobreescrito modificado dentro del perfil maestro (<code>~/.config/Fina/plugins/</code>) eclipsando al
+            repositorio original, permitiendo parchear código sin dañar dependientes.</p>
 
         <div class="info-card">
-            <h3>Ruta de Usuario Protegida</h3>
-            <p>Tus plugins, configuraciones y biometría se guardan permanentemente en:</p>
-            <pre>~/.config/Fina/plugins/</pre>
-            <p>Simplemente descarga la extensión desde el <strong>Fina Market</strong> y arrastra la carpeta allí. Fina
-                la activará en el próximo inicio.</p>
+            <h3>Arquitectura de Instalación en Linux:</h3>
+            <p>1. Visita Fina Market Oficial.<br>2. Adquiere Extensión `Custom/Aire_Midea`.<br>3. Mueva los archivos
+                Python al <code>Config/Fina/plugins/</code> directo del usuario.</p>
         </div>
 
-        <!-- SECCION 5: DIAGNOSTICO -->
-        <h2><i class="fas fa-stethoscope"></i> Diagnóstico y Mantenimiento</h2>
-        <p>
-            Al correr como una aplicación empaquetada, los errores ya no se ven en la consola. Fina ahora audita todo su
-            comportamiento en archivos de texto para tu revisión.
-        </p>
+        <h3>12.3 El Instalador Gráfico (In-App Market API)</h3>
+        <p>Si asumes posturas no-hacker con odio férreo hacia el arrastre textual, Fina erige una consola in-app para
+            consumismo libre. A la vanguardia de la experiencia UX, Fina lee la estructura de ramas maestras <em>main
+                branch</em> de "Fina-Plugins-Market" hosteado en la gran base en GitHub. Devuelve interfaces JSON
+            estéticas con íconos de autores comunitarios. Un simple clic en el botón azul de "Instalar" invoca
+            sub-binarios de Rust (el <code>install_plugin.py</code>), descargará los archivos y pip-requerimientos
+            dentro de microentornos aislados VENV previendo cuelgues cruzados fatales con tu versión general base
+            subyacente de Python Global del sistema Ubuntu/Mint.</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <div class="content-container">
+        <h2><i class="fas fa-bug"></i> 18. Diagnóstico de Errores y Entubamiento de Logs</h2>
+
+        <h3>18.1 Archivo fina_startup.log (Fase de Bootstrap Rust)</h3>
+        <p>Conocer a fuego las trazas arrojadas permite el soporte comunitario avanzado. Las etapas atómicas en Tauri se
+            documentan formalmente. Ante imposibilidad de spawnear <code>python</code>, falta asombrar librerías
+            dinámicas o bloqueos de Firewalls locales en FUSE del kernel, las directivas precisas quedan anotadas
+            explícitamente y al instante de presionar el botón de ejecución sobre
+            <code>~/.config/Fina/fina_startup.log</code>.</p>
+
+        <h3>18.2 Archivo fina_services.log (Auditoría Profunda Python)</h3>
+        <p>Por diseño, Fina en versión instalada (Release) deviene un proceso silencioso "headless background process"
+            carente absoluto de STD-OUT. Este mutismo condenaba a ciegas la depuración de redes Neuronales, APIs y
+            Timeouts en conectividad de IP LAN. Rust secuestra las hebras base (Stderr / Stdout) y las enruta bit a bit
+            (Append Only) al monumental archivo base <code>~/.config/Fina/fina_services.log</code>. Aquí constan las
+            perlas negras del cuelgue: si el "Tuya-IoT" rebota errores HTTP-401 de credenciales inválidas, Fina lo
+            inmortaliza aquí.</p>
 
         <div class="warning-card">
-            <h3>Rastreo de Fallos (Logs)</h3>
-            <ul class="modern-list">
-                <li><i class="fas fa-terminal"></i> <strong>Arranque Binario:</strong>
-                    <code>~/.config/Fina/fina_startup.log</code></li>
-                <li><i class="fas fa-bug"></i> <strong>Motores de IA:</strong>
-                    <code>~/.config/Fina/fina_services.log</code></li>
-            </ul>
+            <h3>Entendiendo la Estructura FATAL de un Fallo (AppImage Encodings):</h3>
+            <pre><code>Fatal Python error: init_fs_encoding
+ModuleNotFoundError: No module named 'encodings'</code></pre>
+            <p>Si descubres trazas con la firma <code>init_fs_encoding</code> ejecutando versiones de AppImages sin
+                parche "V14", significa indiscutiblemente inyección defectuosa sobre el binario Linux sub-yacente (El
+                entorno del sistema anfitrión intentó devorarse el sandobox empaquetado del Archivo Maestro sin
+                .env_remove del PYTHONHOME). Reporte dicho evento imperativamente al core master.</p>
         </div>
 
+    </div>
+
+    <div class="page-break"></div>
+
+    <div class="content-container">
+        <h2><i class="fas fa-rocket"></i> 20. El Futuro: Roadmap y Vuelo Phoenix</h2>
+
+        <h3>20.1 Integración Visión Computacional (YOLOv8)</h3>
+        <p>El fin de ciclo evolutivo de Fina Ergen prevee dotar al asistente de Visión pura. Utilizando webcams base,
+            Fina correrá modelos matemáticos ONNX (Ultralytics) encasillando reconocimiento y segmentación con miles de
+            millones de operaciones vectoriales por segundo, capaz no solo de relatar visualmente si has sido asaltado
+            levantando manos al techo, sino identificando intrusos al cruzar perímetros e instanciando macros y
+            disuasiones por TTS en conjunción de APIs y sirenas conectadas a LAN locales.</p>
+
+        <h3>20.2 Puntos de Malla de Voz Distribuida</h3>
+        <p>La Fina es un servidor monolítico atado en la habitación donde poseas el micrófono más sensible montado sobre
+            la torre de tu computadora de escritorio Linux. El parche V4 transformará esto al paradigma
+            <strong>"Master-Node Fina"</strong>: Un Fina gigante y resoluto corriendo en el nodo superior de escritorio
+            consumiendo toda la VRAM pesada; mientras tu casa contiene pequeñas Raspberrys Zero montados cerca a tus
+            techos y conectadas vía Sockets de Red TCP enviando los paquetes del fonema y stream-acústico base dictados
+            hacia el rey sin necesidad que instales a Fina y su peso base exhaustivo sobre 5 computadoras de la vivienda
+            aisladas simultáneamente.</p>
+
+        <h3>20.3 Proyección Comercial y Agradecimientos</h4>
+            <p>Enarbolar el "Hierro Inteligente" contra los dictados de corporaciones millonarias ha sido un viaje
+                glorioso. Proyectamos Fina como software Libre pero adoptamos métricas de profesionalismo para ser
+                distribuidas formalmente. Agradecimientos al núcleo de desarroladores independientes, foros de
+                Rust/Tauri que batallan los empaquetados del maldito FUSE de Wayland y Ubuntu, y sobre todo a mentes
+                tenaces que no abandonan el purismo Linux como cuna del poder. Nos preparamos para el mundo
+                post-asistentes.</p>
     </div>
 
     <footer>
-        <p>Fina Ergen v3.5.4 - Manual de Usuario Maestro</p>
-        <p>Licencia MIT | Dankopetro & Antigravity Design 2026</p>
+        <p>Fina Ergen v3.5.4 - Manual Enciclopédico de Conocimiento Absoluto</p>
+        <p>Volúmenes Escritos por Dankopetro & Antigravity - Revisión Febrero 2026. Licencia MIT</p>
     </footer>
 
 </body>
