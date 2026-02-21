@@ -30,7 +30,8 @@ if root.handlers:
     for handler in root.handlers:
         root.removeHandler(handler)
 
-log_dir = os.path.join(ERGEN_ROOT, "Logs", datetime.now().strftime("%Y-%m-%d"))
+log_base_config_dir = os.path.join(os.path.expanduser("~"), ".config", "Fina", "Logs")
+log_dir = os.path.join(log_base_config_dir, datetime.now().strftime("%Y-%m-%d"))
 os.makedirs(log_dir, exist_ok=True)
 log_filename = f"ergen_session_{datetime.now().strftime('%H-%M-%S')}.log"
 log_path = os.path.join(log_dir, log_filename)
