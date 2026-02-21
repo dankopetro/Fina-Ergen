@@ -64,25 +64,15 @@ from utils import (
     translate_text, close_app, open_app, turn_on_tv, turn_off_tv, music_volume_up,
     tv_volume_up_cmd, tv_volume_down_cmd, tv_channel_up_cmd, tv_channel_down_cmd, 
     tv_open_app_cmd, tv_exit_app_cmd, tv_set_channel_cmd, tv_mute_cmd, is_tv_on, 
-    ensure_tv_is_on, tv_set_input_cmd, get_doorbell_status_cmd, show_doorbell_image, 
-    show_doorbell_stream, send_ui_command
+    ensure_tv_is_on,    tv_set_input_cmd, get_doorbell_status_cmd, show_doorbell_image, 
+    show_doorbell_stream, send_ui_command,
+    CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config
 )
 from auth.fingerprint_auth import authenticate_user
 from auth.voice_auth import VoiceAuthenticator
 from fina_plugin_integration import setup_plugins
 # --- CONFIG LOADING [SAFE] ---
-try:
-    import config
-    CONFIG_FOUND = True
-except ImportError:
-    print("⚠️ [WARN] config.py no encontrado. Iniciando en MODO CONFIGURACIÓN.")
-    # Crear un objeto config dummy para evitar errores de atributo
-    class DummyConfig:
-        def __getattr__(self, name): return None
-    config = DummyConfig()
-    CONFIG_FOUND = False
-
-from secondaryClassifier import is_code_worthy
+config, CONFIG_FOUND = load_config()
 
 # update_ui_state removido (ahora importado de utils)
 
@@ -246,31 +236,6 @@ def get_current_voice_info():
     voice_name = voice_model_names[current_voice_index]
     voice_path = VOICE_MODELS[voice_name]
     return voice_path, voice_name
-
-# --- Emergency Rescue Sync (Definitive Version Feature) ---
-# If critical files are missing here but exist in the root, we auto-sync them once to allow startup
-def emergency_rescue_sync():
-    import shutil
-    # Autonomía total: buscar en el padre si hace falta, pero preferir local
-    root_dir = PROJECT_ROOT 
-    
-    sync_map = {
-        "config.py": os.path.join(root_dir, "config.py"),
-        "config/contact.json": os.path.join(root_dir, "config", "contact.json"),
-        "config/settings.json": os.path.join(root_dir, "config", "settings.json")
-    }
-    
-    for local_file, source_path in sync_map.items():
-        if not os.path.exists(local_file) and os.path.exists(source_path):
-            try:
-                os.makedirs(os.path.dirname(local_file), exist_ok=True) if "/" in local_file else None
-                shutil.copy2(source_path, local_file)
-                print(f"💡 SISTEMA: Archivo {local_file} recuperado desde el núcleo.")
-            except:
-                pass
-
-# Ejecutar rescate antes de los checks
-emergency_rescue_sync()
 
 # --- Setup checks for required files ---
 if not CONFIG_FOUND:

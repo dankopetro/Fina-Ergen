@@ -43,14 +43,21 @@ app.add_middleware(
 )
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-SETTINGS_PATH = os.path.join(PROJECT_ROOT, "config", "settings.json") # Estandarizamos ruta config
-if not os.path.exists(os.path.dirname(SETTINGS_PATH)):
-    os.makedirs(os.path.dirname(SETTINGS_PATH), exist_ok=True)
-CHANNELS_PATH = os.path.join(PROJECT_ROOT, "channels.json")
-CONFIG_PATH = os.path.join(PROJECT_ROOT, "config.py")
-USER_DATA_PATH = os.path.join(PROJECT_ROOT, "user_data.json")
 
-print(f"✅ Rutas configuradas. Root: {PROJECT_ROOT}", flush=True)
+# --- CONFIG DIRECTORY [CENTRALIZED] ---
+CONFIG_DIR = os.path.expanduser("~/.config/Fina")
+if not os.path.exists(CONFIG_DIR):
+    os.makedirs(CONFIG_DIR, exist_ok=True)
+
+# Inyectar CONFIG_DIR al inicio de sys.path para que 'import config' lo encuentre allí
+if CONFIG_DIR not in sys.path:
+    sys.path.insert(0, CONFIG_DIR)
+
+SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
+CHANNELS_PATH = os.path.join(PROJECT_ROOT, "channels.json") # Mantener canales en root por ahora
+USER_DATA_PATH = os.path.join(CONFIG_DIR, "user_data.json")
+
+print(f"✅ Rutas configuradas. Config Dir: {CONFIG_DIR}", flush=True)
 
 # --- Models ---
 class TV(BaseModel):
@@ -150,6 +157,16 @@ async def get_user_data():
     except Exception as e:
         print(f"❌ Error cargando user_data: {e}", flush=True)
         return {"notes": [], "reminders": []}
+
+@app.get("/api/system/info")
+async def get_system_info():
+    """Devuelve rutas críticas para que el frontend sepa qué usar"""
+    return {
+        "python_path": sys.executable,
+        "project_root": PROJECT_ROOT,
+        "config_dir": CONFIG_DIR,
+        "version": "3.5.4"
+    }
 
 # --- Static ---
 if os.path.exists(os.path.join(PROJECT_ROOT, "static")):

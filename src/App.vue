@@ -29,6 +29,24 @@ const invoke = async (cmd, args = {}) => {
     return await tauriInvoke(cmd, args);
 };
 
+// --- RECURSOS DINÁMICOS ---
+const pythonExecutable = ref("python3");
+
+const syncSystemInfo = async () => {
+    if (!isTauri) return;
+    try {
+        const res = await fetch("http://127.0.0.1:8000/api/system/info");
+        const data = await res.json();
+        if (data.python_path) {
+            pythonExecutable.value = data.python_path;
+            console.log("✅ Fina Python Detectado:", pythonExecutable.value);
+        }
+    } catch (e) {
+        // Backend no listo, reintentar en 5s
+        setTimeout(syncSystemInfo, 5000);
+    }
+};
+
 const getCurrentWindow = () => {
     if (!isTauri) {
         return {
@@ -239,7 +257,7 @@ const filteredTvApps = computed(() => {
 });
 
 const getSystemStats = async () => {
-    const pyPath = "python3";
+    const pyPath = pythonExecutable.value;
     const scriptPath = "./plugins/system/get_stats.py";
     try {
         const output = await invoke("execute_shell_command", { command: `timeout 3 ${pyPath} "${scriptPath}"` });
@@ -288,6 +306,7 @@ onMounted(() => {
     startSentinelDemo();
     updateNeuralState();
     syncAllDevices(true);
+    syncSystemInfo();
 });
 
 const handleSentinelCommand = async () => {
@@ -304,8 +323,8 @@ const handleSentinelCommand = async () => {
     } else if (cmd === 'scan' || cmd === 'escanear') {
         addSentinelLog("[SCAN] ESCANEANDO RED LOCAL (NMAP)...");
         try {
-            const py = "python3";
-            const script = "./plugins/system/network_guardian.py";
+            const py = pythonExecutable.value;
+            const script = "plugins/system/network_guardian.py";
             const output = await invoke("execute_shell_command", { command: `${py} "${script}" scan` });
             const res = JSON.parse(output);
             if (res.status === 'success') {
@@ -343,7 +362,7 @@ const addSentinelLog = (msg) => {
 // LOGGING SYSTEM
 const logVoice = async (cmd) => {
     try {
-        const py = "python3";
+        const py = pythonExecutable.value;
         const script = "./plugins/system/log_manager.py";
         await invoke("execute_shell_command", { command: `${py} "${script}" log_cmd "${cmd}"` });
         addSentinelLog(`[VOZ] ${cmd}`);
@@ -352,7 +371,7 @@ const logVoice = async (cmd) => {
 
 const logError = async (err) => {
     try {
-        const py = "python3";
+        const py = pythonExecutable.value;
         const script = "./plugins/system/log_manager.py";
         await invoke("execute_shell_command", { command: `${py} "${script}" log_err "${err}"` });
         addSentinelLog(`[ERROR] ${err}`);
@@ -361,7 +380,7 @@ const logError = async (err) => {
 
 const fetchSystemLogs = async () => {
     try {
-        const py = "python3";
+        const py = pythonExecutable.value;
         const script = "./plugins/system/log_manager.py";
         const output = await invoke("execute_shell_command", { command: `${py} "${script}" read` });
         if (output) {
@@ -419,7 +438,7 @@ const fetchRecentEmails = async () => {
     isFetchingMails.value = true;
     mailError.value = ""; // Limpiar error previo
     try {
-        const py = "python3";
+        const py = pythonExecutable.value;
         const script = "./scripts/mail_reader.py";
         // Timeout de 15s para evitar cuelgues de red/auth
         const output = await invoke("execute_shell_command", { command: `timeout 15 ${py} "${script}"` });
@@ -492,7 +511,7 @@ const sendMobileSMS = async (number, msg, forceApp = null) => {
                 }
             }
 
-            const py = "python3";
+            const py = pythonExecutable.value;
             const script = "./plugins/system/mobile_hub.py";
 
             // 2. Ejecutar envío y CAPTURAR salida
@@ -542,13 +561,12 @@ const sendMobileSMS = async (number, msg, forceApp = null) => {
                 notifyFina("WHATSAPP ENVIADO");
                 addChatMessage(`WhatsApp enviado a ${number}: "${msg}"`);
                 invoke("execute_shell_command", {
-                    command: `python3 ./utils.py speak "Mensaje de WhatsApp enviado correctamente."`
+                    command: `${pythonExecutable.value} ./utils.py speak "Mensaje de WhatsApp enviado correctamente."`
                 }).catch(() => { });
             } else {
-                notifyFina("ERROR ENVIANDO WHATSAPP");
-                console.error("Error WhatsApp:", result.error);
-                invoke("execute_shell_command", {
-                    command: `python3 ./utils.py speak "No pude enviar el mensaje de WhatsApp. Revisa los logs."`
+                await logMsg(`ERROR EN ENVÍO: ${result.error}`, "ERROR");
+                await invoke("execute_shell_command", {
+                    command: `${pythonExecutable.value} ./utils.py speak "No pude enviar el mensaje de WhatsApp. Revisa los logs."`
                 }).catch(() => { });
             }
 
@@ -636,7 +654,7 @@ const generatePairingQR = async () => {
 
         const hint = "Escanea el código QR desde tu celular para emparejar.";
         invoke("execute_shell_command", {
-            command: `python3 ./utils.py speak "${hint}"`
+            command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
         }).catch(() => { });
 
         return true;
@@ -644,7 +662,7 @@ const generatePairingQR = async () => {
         console.error("Error generando QR:", e);
         const hint = "No pude generar el código QR. Verifica la conexión de red.";
         invoke("execute_shell_command", {
-            command: `python3 ./utils.py speak "${hint}"`
+            command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
         }).catch(() => { });
         return false;
     }
@@ -774,7 +792,7 @@ const retryMobileConnection = async () => {
             finaState.value.process = "ESPERANDO AUTORIZACIÓN EN EL CELULAR...";
             const hint = "Por favor, acepta la autorización de depuración USB en la pantalla de tu celular.";
             invoke("execute_shell_command", {
-                command: `python3 ./utils.py speak "${hint}"`
+                command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
             }).catch(() => { });
 
             let authorized = false;
@@ -811,7 +829,7 @@ const retryMobileConnection = async () => {
             detectMessagingApps(); // Detectar apps al conectar
             const hint = `Conexión restablecida. Ya puedes desconectar el cable USB.`;
             invoke("execute_shell_command", {
-                command: `python3 ./utils.py speak "${hint}"`
+                command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
             }).catch(() => { });
 
             addChatMessage(`Conexión con ${dev.name} restablecida. Puedes quitar el cable.`);
@@ -834,7 +852,7 @@ const retryMobileConnection = async () => {
                 showPairingModal.value = true;
                 const hint = `${dev.name} usa Android ${androidVersion}. La conexión automática falló. Escanea el QR.`;
                 invoke("execute_shell_command", {
-                    command: `python3 ./utils.py speak "${hint}"`
+                    command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
                 }).catch(() => { });
                 return;
             }
@@ -867,7 +885,7 @@ const initiateMobileCall = async (number) => {
     finaState.value.process = `LLAMANDO VÍA ${dev.name.toUpperCase()}...`;
 
     try {
-        const py = "python3";
+        const py = pythonExecutable.value;
         const script = "./plugins/system/mobile_hub.py";
 
         // 1. Try Connection (Blocking wait con timeout)
@@ -895,7 +913,7 @@ const initiateMobileCall = async (number) => {
         // Vocal feedback e instrucciones
         const hint = `No puedo iniciar la llamada porque el celular ${dev.name} está fuera de línea. Revisa la guía de conexión en pantalla.`;
         invoke("execute_shell_command", {
-            command: `python3 ./utils.py speak "${hint}"`
+            command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
         }).catch(() => { });
 
         // MOSTRAR AYUDA VISUAL PROACTIVA
@@ -1083,7 +1101,7 @@ const scanNetwork = async () => {
     finaState.value.process = "ESCANEANDO RED...";
     isScanningNetwork.value = true;
     try {
-        const cmd = "./iot/network_scan.py";
+        const cmd = `${pythonExecutable.value} iot/network_scan.py`;
         const output = await invoke("execute_shell_command", { command: cmd });
         scannedDevices.value = JSON.parse(output);
         console.log("Red escaneada:", scannedDevices.value);
@@ -1298,7 +1316,7 @@ const handleMessagingClick = () => {
     if (!linkedMobileDevice.value) {
         const hint = `Hola ${userSettings.value.apis.USER_NAME || 'Usuario'}. No veo un celular por cable, pero puedes usar las aplicaciones de mensajería vinculadas.`;
         invoke("execute_shell_command", {
-            command: `python3 ./utils.py speak "${hint}"`
+            command: `${pythonExecutable.value} ./utils.py speak "${hint}"`
         }).catch(() => { });
     }
 };
@@ -1346,7 +1364,7 @@ const updateWeather = async () => {
             return;
         }
 
-        const pyPath = "python3";
+        const pyPath = pythonExecutable.value;
         const scriptPath = "./iot/clima_api.py";
 
         // Ejecutar script con argumentos
@@ -1410,7 +1428,7 @@ const weatherIcon = computed(() => {
         finaState.value.process = "Conectando con el timbre...";
 
         // Disparar secuencia de backend (Wake + Cast TV) - ASÍNCRONO REAL
-        const pyPath = "python3";
+        const pyPath = pythonExecutable.value;
         const scriptPath = "./plugins/doorbell/monitor.py";
         invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --trigger` }).catch(e =>
             console.error("Error trigger:", e));
@@ -1425,7 +1443,7 @@ const weatherIcon = computed(() => {
 const hangUp = async () => {
     try {
         // Usar script Python inteligente (detecta IP dinámica + No mata streamer)
-        const pyPath = "python3";
+        const pyPath = pythonExecutable.value;
         const hangupScript = "./plugins/doorbell/hangup_doorbell.py";
 
         await invoke("spawn_shell_command", { command: `${pyPath} "${hangupScript}"` });
@@ -1493,7 +1511,7 @@ const notifyFina = (msg, duration = 4000) => {
 
 // --- REFRESH SYSTEMS ---
 const refreshAcStatus = async (silent = false) => {
-    const pyPath = "python3";
+    const pyPath = pythonExecutable.value;
     const scriptPath = "./iot/clima.py";
     const ac_ip = userSettings.value.apis.AC_IP || "";
     let command = `${pyPath} "${scriptPath}" --status`;
@@ -1527,7 +1545,7 @@ const refreshAcStatus = async (silent = false) => {
 };
 
 const refreshDoorbellStatus = async () => {
-    const pyPath = "python3";
+    const pyPath = pythonExecutable.value;
     const scriptPath = "./plugins/doorbell/doorbell_status.py";
     const command = `${pyPath} "${scriptPath}"`;
     try {
@@ -1545,7 +1563,7 @@ const refreshDoorbellStatus = async () => {
 
 const fetchSettings = async () => {
     try {
-        const pyPath = "python3";
+        const pyPath = pythonExecutable.value;
         const script = `import json, os; print(json.dumps(json.load(open("./config/settings.json"))))`;
         const output = await invoke("execute_shell_command", { command: `${pyPath} -c '${script}'` });
 
@@ -1581,7 +1599,7 @@ const fetchSettings = async () => {
 
 const fetchContacts = async () => {
     try {
-        const pyPath = "python3";
+        const pyPath = pythonExecutable.value;
         const script = `import json, os; p="./config/contact.json"; print(json.dumps(json.load(open(p)))) if os.path.exists(p) else print("{}")`;
         const output = await invoke("execute_shell_command", { command: `${pyPath} -c '${script}'` });
         contacts.value = JSON.parse(output);
@@ -1614,7 +1632,7 @@ const syncContactsFromMobile = async (force = false) => {
     }
 
     try {
-        const pyPath = "python3";
+        const pyPath = pythonExecutable.value;
         const script = "./plugins/system/sync_contacts.py";
 
         console.log("🔄 Sincronizando contactos desde el móvil...");
@@ -1661,7 +1679,7 @@ const saveSettings = async () => {
         // Escapamos comillas simples para que no rompa el argumento de bash '...'
         const safeJson = jsonContent.replace(/'/g, "'\\''");
 
-        const pyPath = "python3";
+        const pyPath = pythonExecutable.value;
         const scriptPath = "./iot/save_settings.py";
 
         // Pasamos el JSON como argumento único entre comillas simples
@@ -1705,7 +1723,7 @@ const sendTvCommand = async (script, args = "") => {
     const modelFolder = activeTv?.type || 'tcl_32s60a';
     const mac = activeTv?.mac || "";
 
-    const pyPath = "python3";
+    const pyPath = pythonExecutable.value;
     const tvScript = `./plugins/tv/${modelFolder}/${script}`;
 
     let command = `${pyPath} "${tvScript}" --ip ${ip}`;
@@ -2227,7 +2245,7 @@ onMounted(async () => {
 const tvChannels = ref({});
 const loadTvChannels = async () => {
     try {
-        const pyPath = "python3";
+        const pyPath = pythonExecutable.value;
         // Escolher arquivo baseado na sala
         const channelFile = activeTvRoom.value === 'Deco' ? 'channels_telecentro.json' : 'channels.json';
         const script = `import json, os; print(json.dumps(json.load(open("./config/${channelFile}"))))`;
@@ -2290,7 +2308,7 @@ const scanChannels = async () => {
     const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
     const modelFolder = activeTv?.type || 'tcl_32s60a';
 
-    const pyPath = "python3";
+    const pyPath = pythonExecutable.value;
     const scriptPath = `./plugins/tv/${modelFolder}/scan_ultra_fast.py`;
     try {
         await invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --ip ${ip}` });
@@ -2321,7 +2339,7 @@ const tuneChannel = (val) => {
 
 const sendAcCommand = async (args, msg) => {
     finaState.value.process = msg.toUpperCase();
-    const pyPath = "python3";
+    const pyPath = pythonExecutable.value;
     const scriptPath = "./iot/clima.py";
     const command = `${pyPath} "${scriptPath}" ${args}`;
     try {
@@ -2342,7 +2360,7 @@ const launchTvApp = async (pkg) => {
     const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
     const modelFolder = activeTv?.type || 'tcl_32s60a';
 
-    const pyPath = "python3";
+    const pyPath = pythonExecutable.value;
     const scriptPath = `./plugins/tv/${modelFolder}/launch_app.py`;
 
     try {
@@ -2366,7 +2384,7 @@ const scanTvApps = async () => {
     const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
     const modelFolder = activeTv?.type || 'tcl_32s60a';
 
-    const pyPath = "python3";
+    const pyPath = pythonExecutable.value;
     const scriptPath = `./plugins/tv/${modelFolder}/list_tv_apps.py`;
 
     try {
@@ -2395,7 +2413,7 @@ const toggleAcSwing = () => sendAcCommand(`--swing ${acState.value.swing ? 'off'
 const enrollVoice = () => {
     finaState.value.process = "ENTRENANDO VOZ...";
     const interactive = "./plugins/biometria/run_interactive.sh";
-    const py = "python3";
+    const py = pythonExecutable.value;
     const script = "./plugins/biometria/train_voice.py";
     invoke("spawn_shell_command", { command: `${interactive} "${py} ${script}"` }).catch(e => console.error(e));
 };
@@ -2403,7 +2421,7 @@ const enrollVoice = () => {
 const enrollFace = () => {
     finaState.value.process = "ENTRENANDO CARA...";
     const interactive = "./plugins/biometria/run_interactive.sh";
-    const py = "python3";
+    const py = pythonExecutable.value;
     const script = "./plugins/biometria/train_face.py";
     invoke("spawn_shell_command", { command: `${interactive} "${py} ${script}"` }).catch(e => console.error(e));
 };
@@ -5315,7 +5333,7 @@ const registerMasterPassword = () => {
                                         </div>
                                         <span
                                             class="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[10px] font-black text-cyan-400 uppercase tracking-widest">{{
-                                            plugin.category }}</span>
+                                                plugin.category }}</span>
                                     </div>
 
                                     <div>

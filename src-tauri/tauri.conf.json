@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "fina-ergen",
-  "version": "3.5.4-6",
+  "version": "3.5.4-7",
   "identifier": "com.admin.fina-ergen",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -42,7 +42,8 @@
         "scope": [
           "$APPDATA/*",
           "$RESOURCE/*",
-          "$CONFIG/*"
+          "$CONFIG/*",
+          "$HOME/.config/Fina/*"
         ]
       }
     },
@@ -52,7 +53,7 @@
     "active": true,
     "targets": "all",
     "category": "Utility",
-    "shortDescription": "Fina Voice Assistant for Linux",
+    "shortDescription": "Fina Ergen AI Assistant",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -65,6 +66,15 @@
       "binaries/brain"
     ],
     "linux": {
+      "deb": {
+        "depends": [
+          "python3",
+          "python3-venv",
+          "nmap",
+          "adb",
+          "libsciter-gtk"
+        ]
+      },
       "appimage": {
         "bundleMediaFramework": false
       }

@@ -1,34 +1,66 @@
-#!/bin/bash
 # Brain Sidecar - Fina Ergen
-# FORZAR EJECUCIÓN DEL MAIN.PY DE ERGEN
+# GESTIÓN AUTOMÁTICA DE ENTORNO VIRTUAL Y DEPENDENCIAS
 
-ERGEN_MAIN="/home/claudio/Descargas/Fina-Ergen/main.py"
+# Directorio donde se encuentra este script
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ERGEN_ROOT="$(realpath "$SCRIPT_DIR/../../../")"
+ERGEN_MAIN="$ERGEN_ROOT/main.py"
 
+# En caso de no encontrarlo (ej: AppImage), fallback a carpeta actual
 if [ ! -f "$ERGEN_MAIN" ]; then
-  echo "Error: No se encontró main.py de Ergen en $ERGEN_MAIN" >&2
-  exit 1
+    ERGEN_ROOT="$(pwd)"
+    ERGEN_MAIN="$ERGEN_ROOT/main.py"
+fi
+
+# Ubicación del VENV (Priorizamos .venv local, sino uno en el HOME del usuario para evitar problemas de permisos)
+USER_VENV="$HOME/.local/share/Fina/venv"
+LOCAL_VENV="$ERGEN_ROOT/.venv"
+
+if [ -f "$LOCAL_VENV/bin/python3" ]; then
+    PYTHON_BIN="$LOCAL_VENV/bin/python3"
+else
+    PYTHON_BIN="$USER_VENV/bin/python3"
+fi
+
+# --- INICIALIZACIÓN AUTOMÁTICA DEL ENTORNO ---
+if [ ! -f "$PYTHON_BIN" ]; then
+    echo "🛠️ Preparando entorno virtual por primera vez..." >&2
+    mkdir -p "$(dirname "$USER_VENV")"
+    python3 -m venv "$USER_VENV"
+    PYTHON_BIN="$USER_VENV/bin/python3"
+    
+    # Instalación inicial de requerimientos si existen
+    if [ -f "$ERGEN_ROOT/requirements.txt" ]; then
+        echo "📦 Instalando dependencias de Fina (esto puede tardar unos minutos)..." >&2
+        "$PYTHON_BIN" -m pip install --upgrade pip
+        "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt"
+    fi
+fi
+
+# Verificar si se necesitan nuevas dependencias (comparando fecha de requirements.txt)
+# Solo si el directorio es escribible
+if [ -w "$ERGEN_ROOT" ] && [ -f "$ERGEN_ROOT/requirements.txt" ]; then
+    # Un check simple para no re-instalar siempre: si requirements es mas nuevo que el venv
+    if [ "$ERGEN_ROOT/requirements.txt" -nt "$PYTHON_BIN" ]; then
+        echo "🔄 Actualizando dependencias detectadas..." >&2
+        "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt"
+        touch "$PYTHON_BIN" # Actualizar fecha del binario como marcador
+    fi
 fi
 
 # Ejecutar desde el directorio de Ergen
-cd "$(dirname "$ERGEN_MAIN")"
+cd "$ERGEN_ROOT"
 
-# Asegurar que procesos antiguos mueran (importante para AppImage)
+# Asegurar que procesos antiguos mueran
 pkill -f "fina_api.py"
 pkill -f "$ERGEN_MAIN"
 pkill -f "monitor_ergen.py"
-pkill -f "mem_watchdog.py"
 
-echo "🔌 [Brain Wrapper] Iniciando fina_api.py..." >&2
-/home/claudio/.venv/bin/python3 -u fina_api.py &
-API_PID=$!
+echo "🔌 [Brain Wrapper] Iniciando servicios core..." >&2
+"$PYTHON_BIN" -u fina_api.py &
 
-echo "🔌 [Brain Wrapper] Iniciando monitor_ergen.py..." >&2
 if [ -f "plugins/doorbell/monitor_ergen.py" ]; then
-    /home/claudio/.venv/bin/python3 -u plugins/doorbell/monitor_ergen.py &
-fi
-
-if [ -f "mem_watchdog.py" ]; then
-    /home/claudio/.venv/bin/python3 -u mem_watchdog.py &
+    "$PYTHON_BIN" -u plugins/doorbell/monitor_ergen.py &
 fi
 
 # Cleanup global at exit
@@ -38,5 +70,5 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-echo "🚀 [Brain Wrapper] Iniciando main.py con -u (Unbuffered)..." >&2
-exec /home/claudio/.venv/bin/python3 -u "$ERGEN_MAIN"
+echo "🚀 [Brain Wrapper] Iniciando CEREBRO..." >&2
+exec "$PYTHON_BIN" -u "$ERGEN_MAIN"

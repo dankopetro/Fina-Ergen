@@ -12,7 +12,7 @@ const logMsg = async (msg, level = 'INFO') => {
     if (isTauri) {
         try {
             await invoke("execute_shell_command", {
-                command: `echo "${logLine}" >> /home/claudio/Descargas/Fina-Ergen/Logs/messaging_debug.log`
+                command: `echo "${logLine}" >> Logs/messaging_debug.log`
             });
         } catch (e) {
             console.error("Failed to write log:", e);

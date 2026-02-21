@@ -99,6 +99,7 @@ MAC_VENDORS = {
 }
 
 def get_local_ip():
+    # Intento 1: Socket UDP (Muy rápido)
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
@@ -106,7 +107,19 @@ def get_local_ip():
         s.close()
         return local_ip
     except:
-        return "192.168.0.100"
+        pass
+    
+    # Intento 2: Comando ip (Linux estándar)
+    try:
+        res = subprocess.run(["ip", "route", "get", "1"], capture_output=True, text=True)
+        # Formato: 1.0.0.0 via 192.168.0.1 dev wlan0 src 192.168.0.100 uid 1000
+        match = re.search(r"src\s+([\d\.]+)", res.stdout)
+        if match:
+            return match.group(1)
+    except:
+        pass
+        
+    return "192.168.0.100"
 
 def get_subnet(ip):
     # Assumes /24

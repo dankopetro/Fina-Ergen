@@ -58,8 +58,54 @@ logger = logging.getLogger("ErgenUtils")
 logger.info(f"--- SESIÓN INICIADA: {datetime.now()} ---")
 logger.info(f"Log path: {log_path}")
 
+# --- CONFIG DIRECTORY [CENTRALIZED] ---
+CONFIG_DIR = os.path.expanduser("~/.config/Fina")
+if not os.path.exists(CONFIG_DIR):
+    os.makedirs(CONFIG_DIR, exist_ok=True)
+
+# Definir rutas absolutas para archivos de datos
+SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
+USER_DATA_PATH = os.path.join(CONFIG_DIR, "user_data.json")
+CONTACTS_PATH = os.path.join(CONFIG_DIR, "contact.json")
+CONFIG_PY_PATH = os.path.join(CONFIG_DIR, "config.py")
+
+def _ensure_config_exists():
+    """Migrar o crear archivos base si no existen en .config/Fina"""
+    migration_map = {
+        os.path.join(ERGEN_ROOT, "config", "settings.json"): SETTINGS_PATH,
+        os.path.join(ERGEN_ROOT, "user_data.json"): USER_DATA_PATH,
+        os.path.join(ERGEN_ROOT, "config", "contact.json"): CONTACTS_PATH,
+        os.path.join(ERGEN_ROOT, "config.py"): CONFIG_PY_PATH,
+    }
+    for src, dst in migration_map.items():
+        if not os.path.exists(dst) and os.path.exists(src):
+            try:
+                shutil.copy2(src, dst)
+                print(f"📦 Migrado: {os.path.basename(src)} -> {CONFIG_DIR}")
+            except: pass
+
+_ensure_config_exists()
+
+# Inyectar CONFIG_DIR al inicio de sys.path para que 'import config' lo encuentre primero
+if CONFIG_DIR not in sys.path:
+    sys.path.insert(0, CONFIG_DIR)
+
 # Local Imports
 import config
+
+def load_config():
+    """Carga config.py desde ~/.config/Fina con fallback seguro"""
+    try:
+        if CONFIG_DIR not in sys.path:
+            sys.path.insert(0, CONFIG_DIR)
+        import config as cfg
+        import importlib
+        importlib.reload(cfg)
+        return cfg, True
+    except ImportError:
+        class DummyConfig:
+            def __getattr__(self, name): return None
+        return DummyConfig(), False
 
 # Caching for Lazy Loading
 vosk_model = None
@@ -398,9 +444,8 @@ def send_email(user, pwd, to, subj, body, attachment=None):
         return "Fallo envío."
 
 def load_contacts():
-    p = os.path.join(ERGEN_ROOT, "config/contact.json")
     try:
-        with open(p, "r") as f: return json.load(f)
+        with open(CONTACTS_PATH, "r") as f: return json.load(f)
     except: return {}
 
 # --- WEATHER & NEWS ---
@@ -408,7 +453,7 @@ def load_contacts():
 def _get_w_conf():
     import json
     try:
-        with open(os.path.join(ERGEN_ROOT, "config", "settings.json")) as f:
+        with open(SETTINGS_PATH) as f:
             d = json.load(f)
             return d.get("apis", {}).get("WEATHER_API_KEY"), d.get("apis", {}).get("WEATHER_CITY_ID")
     except: return None, None
@@ -497,10 +542,14 @@ def update():
     subprocess.run("sudo pacman -Syu --noconfirm", shell=True)
 
 def get_ip(): 
-    try: 
-        return f"IP: {socket.gethostbyname(socket.gethostname())}"
-    except: 
-        return "IP no disponible."
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except:
+        return socket.gethostbyname(socket.gethostname())
 
 def get_battery_status():
     import psutil
@@ -770,7 +819,7 @@ def translate_text(t, d="en"):
 # --- REAL IMPLEMENTATIONS OF TOOLS ---
 
 def _get_data_file():
-    target = os.path.join(ERGEN_ROOT, "user_data.json")
+    target = USER_DATA_PATH
     if not os.path.exists(target):
         with open(target, "w") as f: json.dump({"notes": [], "reminders": []}, f)
     return target

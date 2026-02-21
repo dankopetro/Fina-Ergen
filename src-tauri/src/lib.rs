@@ -69,8 +69,9 @@ fn spawn_shell_command(command: &str) -> Result<String, String> {
 }
 
 #[tauri::command]
-fn start_streamer() -> Result<String, String> {
+fn start_streamer(app_handle: tauri::AppHandle) -> Result<String, String> {
     use std::process::Command;
+    use tauri::Manager;
     println!("[RUST] Iniciando streamer desde frontend...");
     let check_output = Command::new("pgrep")
         .args(&["-f", "streamer.py"])
@@ -80,9 +81,13 @@ fn start_streamer() -> Result<String, String> {
         return Ok("Streamer ya está corriendo".to_string());
     }
     
-    // Ajustado ruta a Fina-Ergen
+    // Obtener ruta dinámica de recursos
+    let resource_path = app_handle.path().resource_dir()
+        .map_err(|e| format!("Error obteniendo ruta de recursos: {}", e))?
+        .join("plugins/doorbell/streamer.py");
+
     let _child = Command::new("python3")
-        .args(&["/home/claudio/Descargas/Fina-Ergen/plugins/doorbell/streamer.py"])
+        .arg(resource_path)
         .spawn()
         .map_err(|e| format!("Error iniciando streamer: {}", e))?;
     println!("[RUST] Streamer iniciado exitosamente");
@@ -139,11 +144,17 @@ async fn execute_js_in_window(
 }
 
 #[tauri::command]
-fn install_market_plugin(category: &str, subpath: &str) -> Result<String, String> {
+fn install_market_plugin(app_handle: tauri::AppHandle, category: &str, subpath: &str) -> Result<String, String> {
     use std::process::Command;
+    use tauri::Manager;
     println!("[RUST] Instalando plugin de market: {}/{}", category, subpath);
+    
+    let script_path = app_handle.path().resource_dir()
+        .map_err(|e| format!("Error obteniendo ruta de recursos: {}", e))?
+        .join("scripts/install_plugin.py");
+
     let output = Command::new("python3")
-        .args(&["/home/claudio/Descargas/Fina-Ergen/scripts/install_plugin.py", category, subpath])
+        .args(&[script_path.to_str().unwrap(), category, subpath])
         .output()
         .map_err(|e| format!("Error ejecutando instalador: {}", e))?;
     
