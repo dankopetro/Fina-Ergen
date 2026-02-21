@@ -70,8 +70,14 @@
         "depends": [
           "python3",
           "python3-venv",
+          "python3-pip",
           "nmap",
-          "adb"
+          "adb",
+          "ffmpeg",
+          "libportaudio2",
+          "scrcpy",
+          "libvlc5",
+          "xclip"
         ]
       },
       "appimage": {
