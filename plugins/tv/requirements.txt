@@ -1,3 +1,0 @@
-androidtvremote2        # Control de Android TV y Decodificadores
-pychromecast            # Soporte de transmisión para dispositivos Chromecast
-zeroconf                # Descubrimiento de dispositivos en red local para Chromecast
