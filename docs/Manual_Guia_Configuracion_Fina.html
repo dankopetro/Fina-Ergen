@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Guía Oficial de Configuración y Puesta en Marcha - Fina Ergen</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        :root {
+            --bg-body: #000000;
+            --bg-card: #0c0c0c;
+            --primary: #3b82f6;
+            --accent: #22d3ee;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --gradient: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%);
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+            background: #000000;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.8;
+            font-size: 11pt;
+        }
+
+        .cover-page {
+            height: 297mm;
+            width: 210mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            position: relative;
+            page-break-after: always;
+        }
+
+        .cover-logo {
+            width: 280px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.3));
+        }
+
+        h1.main-title {
+            font-size: 50pt;
+            font-weight: 800;
+            margin: 0;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 18pt;
+            font-weight: 400;
+            letter-spacing: 5px;
+            color: var(--text-main);
+            margin-top: 15px;
+            text-transform: uppercase;
+        }
+        
+        .version-badge {
+            margin-top: 40px;
+            padding: 10px 30px;
+            border: 1px solid var(--accent);
+            border-radius: 50px;
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 12pt;
+            background: rgba(34, 213, 238, 0.05);
+        }
+
+        .content-container {
+            padding: 20mm 20mm;
+            background-color: var(--bg-body);
+        }
+
+        h2 {
+            font-size: 22pt;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 800;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            font-size: 15pt;
+            color: var(--accent);
+            margin-top: 25px;
+            font-weight: 600;
+            page-break-after: avoid;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+            color: #d1d5db;
+        }
+
+        .info-card, .warning-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        .info-card { border-left: 6px solid var(--primary); }
+        .warning-card { background: #1a0a0a; border-left: 6px solid #ef4444; border-color: #3d1a1a; }
+        
+        pre {
+            background: #0d1117;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            color: #e6edf3;
+            font-family: 'Consolas', monospace;
+            font-size: 9.5pt;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            page-break-inside: avoid;
+        }
+
+        a { color: var(--accent); text-decoration: none; font-weight: 600; }
+        .page-break { page-break-after: always; }
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 10pt;
+            border-top: 1px solid var(--border);
+            background: #050505;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PORTADA -->
+    <div class="cover-page">
+        <h1 class="main-title">Configuración Experta</h1>
+        <div class="subtitle">Guía de Puesta en Marcha</div>
+        <div class="version-badge">APIs, Voces Locales y Redes (IoT)</div>
+        <div style="position: absolute; bottom: 30mm; color: #94a3b8;">Fina Ergen © 2026</div>
+    </div>
+
+    <!-- SECCION 1: config.py y APIs -->
+    <div class="content-container">
+        <h2><i class="fas fa-key"></i> 1. El cerebro: Archivo config.py y APIs</h2>
+        <p>Para que Fina alcance su máximo potencial, es indispensable conectarla a motores de Inteligencia Artificial y servicios meteorológicos. Todo este poder se controla desde un único archivo llamado <code>config.py</code>. Si usas la versión persistente, este archivo suele resguardarse en <code>~/.config/Fina/config.py</code>.</p>
+        
+        <h3>Obtención de Claves Maestras (APIs)</h3>
+        <p>Abre el archivo `config.py` con tu editor de texto favorito. Verás campos vacíos o temporales que debes rellenar con tus propias credenciales. A continuación, te indicamos dónde obtener cada una de manera gratuita:</p>
+        
+        <div class="info-card">
+            <p><strong>☁️ Clima (OpenWeatherMap)</strong><br>
+            Para que Fina responda consultas meteorológicas, necesitas una API_KEY de OpenWeather.<br>
+            <strong>Obtener aquí:</strong> <a href="https://openweathermap.org/api">https://openweathermap.org/api</a> (Regístrate y ve a "My API Keys").<br>
+            <em>Ejemplo en código:</em> <code>WEATHER_API_KEY = "tu_clave_larga_aqui"</code></p>
+        </div>
+
+        <div class="info-card">
+            <p><strong>🧠 Inteligencia Artificial (Mistral / OpenAI)</strong><br>
+            Si la consulta supera las habilidades locales de Fina, ella lo derivará a un LLM avanzado.<br>
+            <strong>GitHub Models (Gratis temporalmente):</strong> Genera un PAT (Personal Access Token) en GitHub y colócalo en <code>GITHUB_TOKEN</code>.<br>
+            <strong>OpenAI (ChatGPT):</strong> <a href="https://platform.openai.com/api-keys">https://platform.openai.com/api-keys</a> (Colócalo en <code>OPENAI_API_KEY</code>).</p>
+        </div>
+
+        <div class="info-card">
+            <p><strong>🗣️ Voces en la Nube (ElevenLabs)</strong><br>
+            Si deseas que Fina suene extremadamente realista (a costa de depender de internet), puedes inyectar su API.<br>
+            <strong>Obtener aquí:</strong> <a href="https://elevenlabs.io/">https://elevenlabs.io/</a> (Colócalo en <code>ELEVENLABS_API_KEY</code>).</p>
+        </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCION 2: Modelos de Voz Físicos -->
+    <div class="content-container">
+        <h2><i class="fas fa-microphone-alt"></i> 2. Modelos de Voz Locales (Piper TTS)</h2>
+        <p>La filosofía de Fina dicta que debe poder hablarte incluso si cortan el internet de tu casa. Para esto usa el motor <strong>Piper TTS</strong>. Sin embargo, los archivos acústicos pesados (como su voz) no vienen pre-empaquetados y te enseñaremos cómo descargarlos.</p>
+
+        <h3>El caso de "Daniela" (Voz Argentina Femenina)</h3>
+        <p>Dentro del proyecto, proveemos un script automático en la carpeta <code>voice_models/voice_setup.sh</code>. Este script descarga gratuitamente la increíble voz de "Daniela" directamente desde Hugging Face.</p>
+        <pre><code># Si tienes el código fuente, simplemente ejecuta:
+cd /home/tu_usuario/Fina-Ergen/voice_models
+./voice_setup.sh</code></pre>
+
+        <h3>Los Archivos Generados</h3>
+        <p>El script descargará dos cosas fundamentales:<br>
+        1. <code>es_AR-daniela-high.onnx</code> (La neurona acústica)<br>
+        2. <code>es_AR-daniela-high.onnx.json</code> (El archivo de configuración fonética)</p>
+
+        <h3>⚠️ Dónde colocar las voces (El caso del AppImage)</h3>
+        <p>Una consulta muy normal es: <em>"¿Pero si descargué el AppImage que es un solo archivo cuadrado, donde meto a Daniela?"</em></p>
+        <div class="warning-card">
+            <p><strong>Regla de Hierro:</strong> Nunca intentes inyectar archivos DENTRO de un AppImage, ya que es un "disco duro sellado de solo lectura".</p>
+            <p><strong>Solución:</strong> Debes colocar los dos archivos de Daniela en la carpeta persistente designada de tu Computadora. Dependiendo el sistema será <code>~/.config/Fina/voice_models/</code> o <code>~/piper_voices/</code> (puedes corroborar esta ruta revisando tu propio archivo `config.py` en la variable <code>VOICE_MODELS_PATH</code>).</p>
+        </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCION 3: Escaneo de Red -->
+    <div class="content-container">
+        <h2><i class="fas fa-network-wired"></i> 3. Escaneo de Red y Registro de Equipos (IoT)</h2>
+        <p>Una vez Fina esté hablando fluidamente y su configuración base sea funcional, el siguiente paso es dotarla de ojos sobre su propia conectividad. Fina es capaz de manipular Televisores, Decodificadores y Aires Acondicionados en tu casa.</p>
+
+        <h3>Proceso de Escaneo In-App</h3>
+        <p>1. Ingresa al Dashboard Visual de Fina.<br>
+        2. Dirígete a la pestaña <strong>Dispositivos / Red Local</strong>.<br>
+        3. Fina ejecutará un misil (ARP Scan) y te poblará una lista entera de todo aparato conectado en tu casa a tu Wi-Fi, mostrando direcciones IP y direcciones Físicas MAC.</p>
+
+        <h3>Asignación Inteligente de Nombres y Habitaciones</h3>
+        <p>Al identificar la IP de uno de tus equipos de salón (Por ejemplo: un Chromecast o un Aire Midea IP: 192.168.1.15), debes hacer clic sobre él para registrarlo en el sistema. Se abrirá una pequeña ventana visual emergente pidiéndote cómo quieres "bautizar" a ese dispositivo.</p>
+        
+        <div class="info-card" style="border-left-color: #f59e0b;">
+            <h3 style="margin-top:0; color: #f59e0b;"><i class="fas fa-tv"></i> ¿Tienes 2 o más Televisores en casa?</h3>
+            <p>Ponerle como nombre "Teléfono" o "Televisor" a todo el IoT resulta en catástrofes domóticas por solapamiento ("Mezcla de identidades"). Fina asume su inteligencia con <strong>Nomenclaturas Relacionales</strong>.</p>
+            <p>Al momento de darle nombre a tus aparatos (Ej: <em>TV Samsung</em> o <em>Aire TCL</em>), fíjate que <strong>un poco más abajo en ese mismo lugar del guardado visual, figura una caja de asignación para la Habitacion a la que corresponde.</strong></p>
+            <p>Es <strong>crucial para el éxito</strong> que detalles "Habitación: Living" para el dispositivo 1 y "Habitación: Cuarto Principal" para el dispositivo 2. De este modo, tú le ordenarás a Fina: <em>"Fina, prende el televisor del Living"</em> y Fina computará el discriminador exacto de red evitando encender televisores a terceras personas durmiendo.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Fina Ergen - Documentación de Configuración Base v3.5.5 (Próximo Release)</p>
+    </footer>
+
+</body>
+</html>
