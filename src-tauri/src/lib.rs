@@ -232,10 +232,29 @@ pub fn run() {
         })
         .setup(|app| {
             use tauri::Manager;
-            use std::process::Command;
+            use std::process::{Command, Stdio};
+            use std::fs::{OpenOptions, create_dir_all};
+            use std::path::PathBuf;
 
             let resource_dir = app.path().resource_dir()
                 .expect("No se pudo obtener la carpeta de recursos");
+
+            // --- Preparamos Log para los procesos ocultos ---
+            let config_dir = std::env::var("HOME").map(PathBuf::from)
+                .unwrap_or_else(|_| PathBuf::from("/tmp"))
+                .join(".config/Fina");
+            let _ = create_dir_all(&config_dir);
+            let log_path = config_dir.join("fina_services.log");
+            
+            // Función auxiliar para obtener el archivo de log mode append
+            let get_log_file = || -> std::fs::File {
+                OpenOptions::new()
+                    .create(true)
+                    .append(true)
+                    .open(&log_path)
+                    .unwrap_or_else(|_| OpenOptions::new().create(true).append(true).open("/tmp/fina_services.log").unwrap())
+            };
+
 
             // Detectar python disponible en el sistema
             let python = if Command::new("python3").arg("--version").output().is_ok() {
@@ -253,6 +272,8 @@ pub fn run() {
                     .env_remove("PYTHONPATH")
                     .arg("-u")
                     .arg(&api_script)
+                    .stdout(Stdio::from(get_log_file()))
+                    .stderr(Stdio::from(get_log_file()))
                     .spawn();
             } else {
                 println!("[RUST] ⚠ fina_api.py no encontrado en {:?}", api_script);
@@ -267,6 +288,8 @@ pub fn run() {
                     .env_remove("PYTHONPATH")
                     .arg("-u")
                     .arg(&brain_script)
+                    .stdout(Stdio::from(get_log_file()))
+                    .stderr(Stdio::from(get_log_file()))
                     .spawn();
             } else {
                 println!("[RUST] ⚠ main.py no encontrado en {:?}", brain_script);
