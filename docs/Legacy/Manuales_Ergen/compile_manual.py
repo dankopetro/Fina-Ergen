@@ -4,8 +4,8 @@ from weasyprint import HTML
 
 # Configuración
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-HTML_FILE = os.path.join(BASE_DIR, "Manual_Pro_Ergen_v2.5.html")
-PDF_FILE = os.path.join(BASE_DIR, "Manual_Usuario_Fina_Ergen_PRO_MIX.pdf")
+HTML_FILE = os.path.join(BASE_DIR, "../../Manual_Fina_Ergen_v3.5.4.html")
+PDF_FILE = os.path.join(BASE_DIR, "../../Manual_Usuario_Fina_Ergen_v3.5.4.pdf")
 
 def generate_pdf():
     print(f"📖 Leyendo HTML: {HTML_FILE}...")

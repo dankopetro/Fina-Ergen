@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Manual Definitivo - Fina Ergen v3.5.4</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+            @bottom-right {
+                content: "Página " counter(page);
+                color: #888;
+                font-family: sans-serif;
+                font-size: 10pt;
+            }
+        }
+        body {
+            background-color: #121212;
+            color: #E0E0E0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            font-size: 12pt;
+        }
+        h1, h2, h3, h4 { color: #FFFFFF; }
+        h1 { font-size: 30pt; border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 0; }
+        h2 { font-size: 20pt; margin-top: 40px; color: #4DA8DA; border-bottom: 1px solid #333; padding-bottom: 5px;}
+        h3 { font-size: 16pt; margin-top: 30px; color: #82C0E8; }
+        p { text-align: justify; }
+        .cover { text-align: center; margin-top: 20mm; page-break-after: always; }
+        .cover img { max-width: 90%; border-radius: 12px; }
+        .cover h1 { border: none; font-size: 40pt; margin-top: 30px; margin-bottom: 0;}
+        .cover h2 { border: none; font-size: 20pt; color: #4DA8DA; margin-top: 10px; }
+        .cover p { text-align: center; font-size: 14pt; color: #AAA; }
+        
+        .image-container { text-align: center; margin: 30px 0; }
+        .image-container img { max-width: 100%; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.8); border: 1px solid #333; }
+        .caption { font-size: 10pt; color: #888; font-style: italic; margin-top: 8px; }
+        
+        .grid-comparison { 
+            width: 100%; 
+            margin: 30px 0;
+            border-spacing: 15px;
+            border-collapse: separate;
+        }
+        .grid-comparison td { width: 50%; vertical-align: top; text-align: center; }
+        .grid-comparison img { max-width: 100%; border-radius: 8px; border: 1px solid #444; }
+        .grid-comparison h4 { margin-top: 10px; color: #AAA; }
+
+        .feature-box { background-color: #1c2227; border-left: 5px solid #4DA8DA; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        .warning-box { background-color: #2E1A1A; border-left: 5px solid #FF4444; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        
+        code { background-color: #2A2A2A; color: #F8F8F2; padding: 2px 5px; border-radius: 3px; font-family: 'Courier New', monospace; }
+        pre { background-color: #1A1A1A; color: #F8F8F2; padding: 15px; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', monospace; border: 1px solid #333;}
+        
+        .page-break { page-break-before: always; }
+        ul.toc-list { list-style-type: none; padding-left: 0; }
+        ul.toc-list li { margin-bottom: 12px; font-size: 14pt; border-bottom: 1px dotted #444; padding-bottom: 5px;}
+        ul.toc-list li a { color: #E0E0E0; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <!-- PORTADA -->
+    <div class="cover">
+        <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/cover.png" alt="Cover Fina Ergen">
+        <h1>Fina Ergen</h1>
+        <h2>Manual del Sistema e Instalación Universaal</h2>
+        <p>Versión 3.5.4 (Arquitectura Modular y Desacoplada)</p>
+        <br><br><br><br>
+        <p><i>"El hierro inteligente, adaptado para la dominancia local en Linux."</i></p>
+    </div>
+
+    <!-- INDICE -->
+    <h2>Índice de Contenidos</h2>
+    <ul class="toc-list">
+        <li>1. Introducción y Filosofía del Sistema</li>
+        <li>2. Evolución Gráfica (Legado vs Moderno)</li>
+        <li>3. Arquitectura y Componentes (El Dual Engine)</li>
+        <li>4. Guía de Instalación Universal (Debian, AppImage)</li>
+        <li>5. Módulos de Inteligencia y Biometría</li>
+        <li>6. Instalación de Plugins desde el Market</li>
+        <li>7. Logs, Troubleshooting y Diagnóstico</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <!-- SECCION 1 -->
+    <h2>1. Introducción y Filosofía del Sistema</h2>
+    <p>
+        <strong>Fina Ergen</strong> nació como un ambicioso asistente de voz y hoy es el centro neurálgico domótico más robusto para escritorio Linux. En su versión 3.5.4, el código ha llegado a un nivel corporativo: todo el sistema es puramente modular, logrando que el núcleo central ocupe una fracción de su peso anterior al haber externalizado el soporte de aparatos (Aires Acondicionados, Smart TVs, Timbres Tuya) a extensiones descargables ("Plugins").
+    </p>
+    <div class="feature-box">
+        <strong>¡100% Offline by Design!</strong> Fina no envía la voz a los servidores de Google ni de Amazon para procesar tus comandos. Utiliza motores residentes en el hardware (Vosk, Whisper) garantizando anonimato y reacción inmediata.
+    </div>
+
+    <!-- SECCION 2 -->
+    <h2>2. Evolución Gráfica (Legado vs Moderno)</h2>
+    <p>
+        El paso del tiempo exigió que Fina pasara de interfaces de comando toscas a un entorno gráfico maduro, oscuro y premium desarrollado en Vue3 y empaquetado asíncronamente con Rust (Tauri). 
+    </p>
+
+    <!-- Comparativa Pantalla de Carga -->
+    <table class="grid-comparison">
+        <tr>
+            <td>
+                <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/ui_loading_legacy.png" alt="Arranque Viejo">
+                <h4>Era V2 (Carga de Módulos Monolítica)</h4>
+            </td>
+            <td>
+                <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/ui_loading.png" alt="Arranque Nuevo">
+                <h4>Fina v3.5.4 (Carga Desacoplada)</h4>
+            </td>
+        </tr>
+    </table>
+    <p>
+        La antigua Fina cargaba todo el inventario de software secuencialmente. Si el servidor de clima se caía, el arranque se "frizaba". Hoy, Fina Ergen inicia en microsegundos disparando los hilos IoT en segundo plano paralelo.
+    </p>
+
+    <!-- Comparativa Estado Normal -->
+    <table class="grid-comparison">
+        <tr>
+            <td>
+                <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/ui_check_legacy.png" alt="UI Vieja">
+                <h4>Interfaz Primitiva (Sin Market nativo)</h4>
+            </td>
+            <td>
+                <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/ui_check.png" alt="UI Nueva">
+                <h4>V3 UI Glassmorphism Interactiva</h4>
+            </td>
+        </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- SECCION 3 -->
+    <h2>3. Arquitectura y Componentes (El Dual Engine)</h2>
+    <p>
+        El núcleo ya no contiene rutas duras, lo que posibilitó el empaquetado en formatos instalables como `.deb` o `.AppImage`.
+    </p>
+    
+    <div class="image-container">
+        <img src="file:///home/claudio/Descargas/Fina-Ergen/manual_images/arch.png" alt="Esquema Arquitectónico">
+        <div class="caption">Esquema modular de alto nivel de comunicación entre UI (Vue), Backend Tauri (Rust) y el Cerebro (Python).</div>
+    </div>
+    
+    <p>
+        Al estar unificados bajo el <strong>Dual Engine</strong>, tu interfaz gráfica escrita en tecnologías Web se comunica con el hardware y la ejecución de macros Python usando puentes IPC de alta velocidad creados en Rust. Por debajo, el motor de Backend (API REST) provee datos del escaneo de redes LAN, estado del aire Midea/Surrey y conectividad Android.
+    </p>
+
+    <!-- SECCION 4 -->
+    <h2>4. Guía de Instalación Universal</h2>
+    <p>Atrás quedó la era de usar <code>git clone</code>. Fina hoy se distribuye como software comercial de código abierto nativo.</p>
+    
+    <h3>Método A: Instalación DEB/RPM (Recomendado)</h3>
+    <pre><code># Para sistemas basados en Debian (Ubuntu, Mint)
+sudo dpkg -i Fina-Ergen_3.5.4-14_amd64.deb</code></pre>
+
+    <h3>Método B: Autocontenido (AppImage)</h3>
+    <p>Si deseas evitar instalar nada en tu sistema raíz, el formato AppImage es un contenedor portátil. Se proveen versiones altamente comprimidas utilizando el estándar <strong>XZ</strong> o estándar genérico. Asegúrate de darle atributo ejecutable:</p>
+    <pre><code>chmod +x Fina-Ergen_3.5.4-14_amd64.AppImage
+./Fina-Ergen_3.5.4-14_amd64.AppImage</code></pre>
+
+    <div class="page-break"></div>
+
+    <!-- SECCION 5 -->
+    <h2>5. Módulos de Inteligencia y Biometría</h2>
+    <p>
+        Fina asocia la seguridad por capas. 
+    </p>
+    <ul>
+        <li><strong>Autenticación Dual:</strong> Usando sensores biométricos de tu PC de huellas digitales encriptados y evaluando constantemente las frecuencias únicas en tu tono de voz acústico para evitar grabaciones engañosas (Resemblyzer Voice ID).</li>
+        <li><strong>Fusión LLM:</strong> El modelo base detectará y responderá a comandos del hogar de manera matemática (prender la luz). Si realizas una pregunta abstracta ("¿Qué es el silicio?"), delegará la consulta internamente hacia los motores del LLM local, o GPT/Mistral.</li>
+        <li><strong>Notificaciones Proactivas:</strong> Al activarse el plugin de <i>Doorbell Sniper</i> y utilizar el entorno Waydroid subyacente, Fina te alertará presencialmente cuando alguien toque a tu puerta de rejas sin que mires el teléfono.</li>
+    </ul>
+
+    <!-- SECCION 6 -->
+    <h2>6. Instalación de Plugins desde el Market</h2>
+    <p>Tus extensiones domóticas, por ejemplo el control del aire Midea/Surrey, ya no se inyectan a la fuerza en el código fuente. Se integran elegantemente en el entorno protegido humano:</p>
+    
+    <div class="feature-box">
+        <strong>Directorio Raíz de Configuración</strong><br>
+        Todos tus datos personales, bases de modelos de rostros, claves maestras y extensiones Market residen y sobrevivirán en:<br>
+        <code>~/.config/Fina/</code>
+    </div>
+
+    <p>Para añadir funciones, accede al <strong>Fina Plugins Market</strong> desde GitHub y descarga un paquete. Simplemente colócalo dentro de:</p>
+    <pre><code>~/.config/Fina/plugins/[Categoria_del_Plugin]/[Tu_Plugin]</code></pre>
+    <p>Fina detectará el recurso mágicamente en su próximo arranque y habilitará comandos como <i>"Pon el aire a 24 grados"</i>.</p>
+
+    <!-- SECCION 7 -->
+    <h2>7. Logs, Troubleshooting y Diagnóstico</h2>
+    <p>
+        Ya que Fina se ejecuta como AppImage o proceso de fondo <code>.deb</code>, carece de terminal abierta para escupir errores visuales. Para la depuración (Debugging), Fina captura enteramente la desviación estándar I/O del subsistema informando eventos y cuelgues dentro del archivo de auditoría del usuario.
+    </p>
+    <div class="warning-box">
+        <strong>Si algo sale mal, ve directo a los Logs:</strong><br><br>
+        1. Examina el historial de arranque binario de Rust:<br> 
+        <code>~/.config/Fina/fina_startup.log</code><br><br>
+        2. Examina fallos subyacentes de las redes y los motores Python API:<br>
+        <code>~/.config/Fina/fina_services.log</code>
+    </div>
+    
+    <p>
+        Cualquier error de desincronización <code>PYTHONHOME</code> en las burbujas AppImage ha sido resuelto a nivel capa (Rust .env_remove), garantizando arranques resilientes en cualquier distro moderna.
+    </p>
+
+    <br><br><br>
+    <p style="text-align: center; color: #888; font-size: 10pt;">
+        Creado con amor por la comunidad. Fina Ergen V3 (Licencia MIT)
+    </p>
+</body>
+</html>
