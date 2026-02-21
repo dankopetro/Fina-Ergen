@@ -11,7 +11,7 @@ Antes de empaquetar la aplicación para distribución (v1.0 Pública), se deben 
 - [ ] Botón de "Auto-Detectar Hardware" inicial.
 
 ## 2. Eliminación de Hardcoding
-- [ ] Revisar todos los scripts Python en `iot/` y `plugins/` buscando strings "Claudio" o rutas absolutas a `/home/claudio/`.
+- [ ] Revisar todos los scripts Python en `iot/` y `plugins/` buscando strings "Claudio" o rutas absolutas a `./`.
 - [ ] Reemplazar rutas fijas por `os.path.expanduser("~")` o relativas al proyecto.
 - [ ] Asegurarse de que `settings.json` no venga pre-cargado con mis datos personales (crear un `settings.template.json`).
 

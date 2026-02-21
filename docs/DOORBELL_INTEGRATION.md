@@ -51,10 +51,10 @@ Garantizar que cuando alguien toque el timbre (o cuando se simule con el script 
 
 ## ARCHIVOS MODIFICADOS
 
-1. **`/home/claudio/Descargas/Fina-Ergen/src/App.vue`**
+1. **`./src/App.vue`**
    - Lógica añadida en el `setInterval` de polling para procesar `cmd.name === 'doorbell-ring'` y `doorbell-hangup`.
 
-2. **`/home/claudio/Descargas/Fina-Ergen/plugins/doorbell/monitor_ergen.py`**
+2. **`./plugins/doorbell/monitor_ergen.py`**
    - Notificación vía requests HTTP a la API.
    - Secuencia de "sacudida" inicial.
    - Reestructuración de bloque Try-Catch para asegurar el colgado.
@@ -62,7 +62,7 @@ Garantizar que cuando alguien toque el timbre (o cuando se simule con el script 
    - Limpieza (`force-stop` y `Home`) al finalizar.
    - Tiempos de espera ajustados (3s estabilización, 20s visualización).
 
-3. **`/home/claudio/Descargas/Fina-Ergen/plugins/doorbell/test_doorbell.py`**
+3. **`./plugins/doorbell/test_doorbell.py`**
    - Actualizado con exactamente el mismo flujo, tiempos, sacudidas y limpiezas que el monitor real para garantizar simulaciones fidedignas al 100%.
 
 ---
@@ -72,11 +72,11 @@ Garantizar que cuando alguien toque el timbre (o cuando se simule con el script 
 **Para simular una llamada sin tener que salir a tocar el timbre:**
 1. Iniciar Fina con su entorno completo:
    ```bash
-   bash /home/claudio/Descargas/Fina-Ergen/lanzar_fina_simple.sh
+   bash ./lanzar_fina_simple.sh
    ```
 2. Desde otra terminal, lanzar el simulador:
    ```bash
-   python3 /home/claudio/Descargas/Fina-Ergen/plugins/doorbell/test_doorbell.py
+   python3 ./plugins/doorbell/test_doorbell.py
    ```
 
 **Flujo esperado en la simulación:**

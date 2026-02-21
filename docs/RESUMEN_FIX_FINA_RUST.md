@@ -42,7 +42,7 @@
 
 ### **Ejecución**
 ```bash
-cd /home/claudio/Descargas/Fina - Asistente de Voz para Linux/test/fina-rust/src-tauri
+cd ./test/fina-rust/src-tauri
 cargo tauri dev
 ```
 

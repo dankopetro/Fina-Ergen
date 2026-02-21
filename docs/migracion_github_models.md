@@ -7,7 +7,7 @@ Se migró exitosamente el asistente de voz Jarvis de **Mistral API** a **GitHub 
 
 ### 1. Configuración
 **Archivos modificados:**
-- [`config_template.py`](file:///home/claudio/Descargas/Jarvis-Voice-Assistant/config_template.py)
+- [`config_template.py`](file://./Descargas/Jarvis-Voice-Assistant/config_template.py)
 - `config.py` (archivo del usuario)
 
 **Cambios:**
@@ -15,7 +15,7 @@ Se migró exitosamente el asistente de voz Jarvis de **Mistral API** a **GitHub 
 - ✅ Actualizada función `validate_config()` para verificar `GITHUB_TOKEN`
 
 ### 2. Lógica de IA
-**Archivo modificado:** [`utils.py`](file:///home/claudio/Descargas/Jarvis-Voice-Assistant/utils.py)
+**Archivo modificado:** [`utils.py`](file://./Descargas/Jarvis-Voice-Assistant/utils.py)
 
 **Cambios:**
 - ✅ Actualizado endpoint: `https://models.inference.ai.azure.com/chat/completions`
@@ -23,7 +23,7 @@ Se migró exitosamente el asistente de voz Jarvis de **Mistral API** a **GitHub 
 - ✅ Headers actualizados para usar `Bearer {GITHUB_TOKEN}`
 
 ### 3. Script Principal
-**Archivo modificado:** [`backmain.py`](file:///home/claudio/Descargas/Jarvis-Voice-Assistant/backmain.py)
+**Archivo modificado:** [`backmain.py`](file://./Descargas/Jarvis-Voice-Assistant/backmain.py)
 
 **Cambios:**
 - ✅ Actualizado mensaje de error para mencionar `GITHUB_TOKEN`

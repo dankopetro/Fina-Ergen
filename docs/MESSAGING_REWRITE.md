@@ -28,7 +28,7 @@ skipTaskbar: true      // No aparece en la barra de tareas
 ```
 
 ### 3. LOGS EXHAUSTIVOS (Espías en cada paso)
-**Archivo de logs:** `/home/claudio/Descargas/Fina-Ergen/Logs/messaging_debug.log`
+**Archivo de logs:** `./Logs/messaging_debug.log`
 
 Cada acción queda registrada:
 - Cuándo se crea la ventana
@@ -41,7 +41,7 @@ Cada acción queda registrada:
 
 **Cómo ver los logs:**
 ```bash
-tail -f /home/claudio/Descargas/Fina-Ergen/Logs/messaging_debug.log
+tail -f ./Logs/messaging_debug.log
 ```
 
 ### 4. SCRIPT DE WHATSAPP ROBUSTO
@@ -79,21 +79,21 @@ tail -f /home/claudio/Descargas/Fina-Ergen/Logs/messaging_debug.log
 
 ## ARCHIVOS MODIFICADOS
 
-1. `/home/claudio/Descargas/Fina-Ergen/src/App.vue`
+1. `./src/App.vue`
    - Eliminada lógica de vinculación manual
    - Detección live pura
    - Integración con nuevo sistema invisible
 
-2. `/home/claudio/Descargas/Fina-Ergen/plugins/web_apps/messaging.js`
+2. `./plugins/web_apps/messaging.js`
    - Reescritura completa
    - Sistema de logs
    - Ventana invisible
    - Script robusto
 
-3. `/home/claudio/Descargas/Fina-Ergen/config/settings.json`
+3. `./config/settings.json`
    - Limpiado `linked_apps: []`
 
-4. `/home/claudio/Descargas/Fina-Ergen/Logs/messaging_debug.log`
+4. `./Logs/messaging_debug.log`
    - Nuevo archivo de logs dedicado
 
 ---
@@ -114,7 +114,7 @@ tail -f /home/claudio/Descargas/Fina-Ergen/Logs/messaging_debug.log
 
 **Si algo falla:**
 ```bash
-cat /home/claudio/Descargas/Fina-Ergen/Logs/messaging_debug.log
+cat ./Logs/messaging_debug.log
 ```
 
 Verás exactamente en qué paso falló.
@@ -153,16 +153,16 @@ WhatsApp Web guarda la sesión. Después del primer login, la ventana invisible 
 
 ```bash
 # Ver logs en tiempo real
-tail -f /home/claudio/Descargas/Fina-Ergen/Logs/messaging_debug.log
+tail -f ./Logs/messaging_debug.log
 
 # Limpiar logs
-> /home/claudio/Descargas/Fina-Ergen/Logs/messaging_debug.log
+> ./Logs/messaging_debug.log
 
 # Verificar apps detectadas
 adb shell pm list packages | grep -E "whatsapp|telegram|instagram"
 
 # Recompilar después de cambios
-cd /home/claudio/Descargas/Fina-Ergen && npm run build
+cd . && npm run build
 ```
 
 ---

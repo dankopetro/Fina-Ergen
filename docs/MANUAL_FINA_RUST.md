@@ -42,13 +42,13 @@ test/fina-rust/src-tauri/
 
 ### **Método 1: Manual**
 ```bash
-cd /home/claudio/Descargas/Fina - Asistente de Voz para Linux/test/fina-rust/src-tauri
+cd ./test/fina-rust/src-tauri
 cargo tauri dev
 ```
 
 ### **Método 2: Script Automático**
 ```bash
-cd /home/claudio/Descargas/Fina - Asistente de Voz para Linux/test
+cd ./test
 python launch_fina_rust.py
 ```
 

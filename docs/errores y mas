@@ -20,7 +20,7 @@ asyncio.exceptions.CancelledError
 During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
-  File "/home/claudio/Descargas/Fina - Asistente de Voz para Linux/main.py", line 608, in <module>
+  File "~/Descargas/Fina - Asistente de Voz para Linux/main.py", line 608, in <module>
     asyncio.run(main())
   File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
     return runner.run(main)

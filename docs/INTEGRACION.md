@@ -147,7 +147,7 @@ Probar la integración:
 
 ```bash
 # 1. Iniciar Phoenix
-cd /home/claudio/Descargas/Fina-Ergen
+cd .
 npm run dev
 
 # 2. En otra terminal, probar colgar manualmente

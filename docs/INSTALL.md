@@ -93,7 +93,7 @@ piper --version
 ### 4. Configurar Entorno Virtual de Python
 
 ```bash
-cd "/home/claudio/Descargas/Fina - Asistente de Voz para Linux"
+cd "."
 
 # Crear entorno virtual
 python3 -m venv venv
@@ -186,7 +186,7 @@ python3 -c "import whisper; whisper.load_model('tiny')"
 
 ```bash
 # Asegúrate de estar en el directorio del proyecto
-cd "/home/claudio/Descargas/Fina - Asistente de Voz para Linux"
+cd "."
 
 # Activar entorno virtual
 source venv/bin/activate

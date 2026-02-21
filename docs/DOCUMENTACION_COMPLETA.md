@@ -75,7 +75,7 @@
 
 ```bash
 # Actualizar manual de usuario
-cd /home/claudio/Descargas/Fina - Asistente de Voz para Linux/scripts
+cd ./scripts
 python generate_manual.py
 
 # Actualizar manual de desarrollo
