@@ -5,7 +5,7 @@ cd "$ROOT_DIR" || exit 1
 
 FECHA=$(date +%Y-%m-%d)
 HORA=$(date +%H-%M-%S)
-LOG_DIR="$ROOT_DIR/Logs/$FECHA"
+LOG_DIR="$HOME/.config/Fina/Logs/$FECHA"
 mkdir -p "$LOG_DIR"
 
 LOG_API="$LOG_DIR/api_$HORA.log"
