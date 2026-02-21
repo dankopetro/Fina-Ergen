@@ -54,3 +54,6 @@ plugins/custom/
 plugins/*/node_modules/
 plugins/*/venv/
 plugins/*/.env
+plugins/tv/
+plugins/doorbell/
+plugins/clima/
