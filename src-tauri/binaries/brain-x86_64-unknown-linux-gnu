@@ -12,7 +12,7 @@ if [ ! -f "$ERGEN_MAIN" ]; then
     ERGEN_MAIN="$ERGEN_ROOT/main.py"
 fi
 
-# Ubicación del VENV (Priorizamos .venv local, sino uno en el HOME del usuario para evitar problemas de permisos)
+# Ubicación del VENV (Priorizamos .venv local, sino uno en el HOME del usuario)
 USER_VENV="$HOME/.local/share/Fina/venv"
 LOCAL_VENV="$ERGEN_ROOT/.venv"
 
@@ -25,15 +25,24 @@ fi
 # --- INICIALIZACIÓN AUTOMÁTICA DEL ENTORNO ---
 if [ ! -f "$PYTHON_BIN" ]; then
     echo "🛠️ Preparando entorno virtual por primera vez..." >&2
-    mkdir -p "$(dirname "$USER_VENV")"
-    python3 -m venv "$USER_VENV"
-    PYTHON_BIN="$USER_VENV/bin/python3"
     
-    # Instalación inicial de requerimientos si existen
-    if [ -f "$ERGEN_ROOT/requirements.txt" ]; then
-        echo "📦 Instalando dependencias de Fina (esto puede tardar unos minutos)..." >&2
-        "$PYTHON_BIN" -m pip install --upgrade pip
-        "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt"
+    # Verificar si python3 y venv están instalados
+    if ! python3 -c "import venv" &>/dev/null; then
+        echo "❌ ERROR: El módulo 'python3-venv' no está instalado." >&2
+        echo "💡 Por favor, ejecuta: sudo apt install python3-venv (en Debian/Ubuntu/Mint)" >&2
+        # Intentamos seguir con el python del sistema como último recurso
+        PYTHON_BIN="$(which python3)"
+    else
+        mkdir -p "$(dirname "$USER_VENV")"
+        python3 -m venv "$USER_VENV" || { echo "❌ Error creando venv" >&2; exit 1; }
+        PYTHON_BIN="$USER_VENV/bin/python3"
+        
+        # Instalación inicial de requerimientos
+        if [ -f "$ERGEN_ROOT/requirements.txt" ]; then
+            echo "📦 Instalando dependencias de Fina (esto puede tardar unos minutos)..." >&2
+            "$PYTHON_BIN" -m pip install --upgrade pip &>/dev/null
+            "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" || echo "⚠️ Algunos paquetes fallaron, se intentarán cargar bajo demanda." >&2
+        fi
     fi
 fi
 

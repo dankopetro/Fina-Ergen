@@ -74,6 +74,9 @@ from fina_plugin_integration import setup_plugins
 # --- CONFIG LOADING [SAFE] ---
 config, CONFIG_FOUND = load_config()
 
+# --- SYSTEM CHECK ---
+check_system_dependencies()
+
 # update_ui_state removido (ahora importado de utils)
 
 def speak(text, model=None, sink=None):

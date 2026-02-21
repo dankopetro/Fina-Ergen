@@ -107,6 +107,29 @@ def load_config():
             def __getattr__(self, name): return None
         return DummyConfig(), False
 
+def check_system_dependencies():
+    """Verifica si faltan herramientas críticas en el sistema"""
+    deps = {
+        "ffmpeg": "Procesamiento de audio/video",
+        "adb": "Control de móvil y timbre",
+        "scrcpy": "Visualización de cámara",
+        "vlc": "Reproductor de música",
+        "nmap": "Escaneo de red IoT",
+        "xclip": "Portapapeles (X11)"
+    }
+    missing = []
+    for cmd, desc in deps.items():
+        if shutil.which(cmd) is None:
+            # Caso especial: wl-clipboard
+            if cmd == "xclip" and shutil.which("wl-paste"): continue
+            missing.append(f"{cmd} ({desc})")
+    
+    if missing:
+        print("\n\x1b[33m⚠️ ADVERTENCIA: Faltan dependencias de sistema:\x1b[0m")
+        for m in missing: print(f"  - {m}")
+        print("\x1b[33m💡 Algunas funciones podrían no estar disponibles.\x1b[0m\n")
+    return missing
+
 # Caching for Lazy Loading
 vosk_model = None
 vosk_recognizer = None
