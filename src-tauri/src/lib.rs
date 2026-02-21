@@ -45,6 +45,8 @@ fn check_adb_status() -> Result<String, String> {
 fn execute_shell_command(command: &str) -> Result<String, String> {
     use std::process::Command;
     let output = Command::new("sh")
+        .env_remove("PYTHONHOME")
+        .env_remove("PYTHONPATH")
         .arg("-c")
         .arg(command)
         .output()
@@ -81,6 +83,8 @@ fn scan_network_devices(app_handle: tauri::AppHandle) -> Result<String, String> 
     println!("[RUST] Escaneando red con: {:?}", script);
 
     let output = Command::new(python)
+        .env_remove("PYTHONHOME")
+        .env_remove("PYTHONPATH")
         .arg("-u")
         .arg(&script)
         .output()
@@ -102,6 +106,8 @@ fn spawn_shell_command(command: &str) -> Result<String, String> {
     use std::process::Command;
     println!("[RUST] Lanzando comando background: {}", command);
     Command::new("sh")
+        .env_remove("PYTHONHOME")
+        .env_remove("PYTHONPATH")
         .arg("-c")
         .arg(command)
         .spawn()
@@ -128,6 +134,8 @@ fn start_streamer(app_handle: tauri::AppHandle) -> Result<String, String> {
         .join("plugins/doorbell/streamer.py");
 
     let _child = Command::new("python3")
+        .env_remove("PYTHONHOME")
+        .env_remove("PYTHONPATH")
         .arg(resource_path)
         .spawn()
         .map_err(|e| format!("Error iniciando streamer: {}", e))?;
@@ -195,6 +203,8 @@ fn install_market_plugin(app_handle: tauri::AppHandle, category: &str, subpath: 
         .join("scripts/install_plugin.py");
 
     let output = Command::new("python3")
+        .env_remove("PYTHONHOME")
+        .env_remove("PYTHONPATH")
         .args(&[script_path.to_str().unwrap(), category, subpath])
         .output()
         .map_err(|e| format!("Error ejecutando instalador: {}", e))?;
@@ -239,6 +249,8 @@ pub fn run() {
             if api_script.exists() {
                 println!("[RUST] Arrancando backend API: {:?}", api_script);
                 let _ = Command::new(python)
+                    .env_remove("PYTHONHOME")
+                    .env_remove("PYTHONPATH")
                     .arg("-u")
                     .arg(&api_script)
                     .spawn();
@@ -251,6 +263,8 @@ pub fn run() {
             if brain_script.exists() {
                 println!("[RUST] Arrancando cerebro: {:?}", brain_script);
                 let _ = Command::new(python)
+                    .env_remove("PYTHONHOME")
+                    .env_remove("PYTHONPATH")
                     .arg("-u")
                     .arg(&brain_script)
                     .spawn();
