@@ -1,0 +1,76 @@
+========== PARA LA VERSIÓN v3.5.4-15 ==========
+
+## 🚀 Fina Ergen v3.5.4-15 - Documentación Maestra y Estabilidad
+
+Esta actualización se enfoca en brindar al usuario el nivel de soporte documental más alto de la historia de Fina y asegurar la estabilidad de diagnóstico del sistema.
+
+### 🛠️ Novedades de esta Versión:
+* **📖 Manual Enciclopédico (20 Páginas)**: Se incluye en el bundle el "Manual Maestro Definitivo" en PDF (Premium Dark). Un tratado profundo que cubre cada rincón de la arquitectura Dual Engine, Plugins Market y Configuración Avanzada.
+* **📸 Manual Visual de Usuario**: Una nueva guía de 10 páginas basada íntegramente en capturas de pantalla reales, explicando paso a paso el uso de cada widget y botón del Dashboard.
+* **✍️ Auditoría y Registro (Services Logs)**: Fina ahora escribe automáticamente todos los eventos, errores y "prints" de sus servicios de fondo (IA y API) en el archivo `~/.config/Fina/fina_services.log`. ¡Ya no más diagnóstico a ciegas!
+* **🔄 Sincronización de Tags**: Alineación total del repositorio para el despliegue automático de la documentación en la rama maestra.
+
+========== PARA LA VERSIÓN v3.5.4-14 ==========
+
+## 🚀 Fina Ergen v3.5.4-14 - Parche Crítico AppImage y Auto-Arranque
+
+Esta versión resuelve las últimas fricciones de portabilidad en sistemas Linux modernos y automatiza la puesta en marcha de los servicios.
+
+### 🛠️ Novedades de esta Versión:
+* **🔧 Blindaje AppImage (Fix PYTHONHOME)**: Se resolvió el error fatal "init_fs_encoding" en entornos portables. Ahora Fina purga las variables de entorno conflictivas antes de invocar a Python, garantizando un funcionamiento fluido en cualquier distribución.
+* **⚡ Auto-Backend Launch**: Ya no necesitas scripts externos. Al abrir Fina (ya sea vía .deb o AppImage), la aplicación detecta y arranca por sí sola el Cerebro (IA) y la API REST en hilos aislados.
+* **🛰️ Escaneo de Red Nativo**: El comando de búsqueda de dispositivos IoT ahora es una instrucción nativa de Rust/Tauri. Esto acelera el arranque y garantiza la visibilidad de tus equipos Smart TV y Aires Acondicionados desde el segundo uno.
+
+========== PARA LA VERSIÓN v3.5.4-12 ==========
+
+## 🚀 Fina Ergen v3.5.4-12 - Edición Universal
+
+Esta versión marca un hito en el ciclo de vida de Fina Ergen, convirtiéndola en una aplicación 100% autodependiente e independiente de la ubicación donde se empaquete e instale.
+
+### 🛠️ Novedades de esta Versión:
+* **Universalidad Total**: Fina ya no depende de rutas de código estáticas (como `/home/usuario/Descargas/Fina`). Ahora todas las rutas internas de ejecución (Python path, Root, Carpetas Temporales) se detectan de forma dinámica.
+* **Persistencia Segura**: Los datos personales del usuario, el archivo maestro de configuración (`config.py`), los recordatorios, la biometría (firmas de voz) y los tokens han sido mudados a la carpeta `~/.config/Fina/`. Permite borrar o actualizar el programa sin perder tus datos.
+* **Gestor de Plugins Avanzado (Dual Engine)**: Ahora Fina soporta y busca plugins en la carpeta del usuario `~/.config/Fina/plugins`. Esto permite a los usuarios "tunear" o instalar nuevas extensiones (como las descargadas del Market).
+* **Inteligencia en VENV**: Nuevo sistema de detección de entorno en el script de arranque (`lanzar_fina_simple.sh`). Busca tu motor de Python en modo descendiente, y compila un entorno virtual salvaguardado.
+* **Optimización Extrema de Recursos (IoT)**: Fina no lanzará la máquina virtual Android de fondo de Waydroid si no tienes configurado un timbre. Esto salva un 25% de RAM extra.
+* **Fast-Clima**: Ahora apenas Fina carga, se ejecuta su primer ciclo meteorológico de OpenWeather y actualiza el Widget frontal al instante.
+
+### 📦 ¿Qué archivo descargar?
+Encontrarás dos versiones de AppImage en los assets:
+
+1.  **fina-ergen_v..._amd64.AppImage (RECOMENDADO)**: Versión optimizada con compresión **XZ** (pesa 35% menos) y parches de compatibilidad para Iconos en sistemas modernos (Ubuntu 24.04+, Mint 22). 
+2.  **fina-ergen_v..._x86_64.AppImage**: Versión estándar cruda generada por el compilador base.
+
+
+========== PARA LAS VERSIONES v3.5.4-8 hasta v3.5.4-11 ==========
+
+## 🚀 Fina Ergen (Refactor UI-Backend)
+
+Esta versión forma parte del ciclo de actualizaciones hacia la portabilidad y experiencia universal de Fina Ergen.
+
+### 🛠️ Novedades de esta Versión:
+* **Desacoplamiento IPC:** Se comenzó el proceso paulatino de desconexión entre Tauri IPC Hard-shells (Comandos en Bash puros en la UI) y Arquitecturas de Larga Duración de API Rest.
+* **Backend Unificado:** Integración del Backend Fina_API (`fina_api.py`) sirviendo JSON y estado unificado a todo el motor Tauri Frontend en simultáneo, volviendo la interfaz mucho más rápida y libre de bloqueos.
+
+### 📦 ¿Qué archivo descargar?
+Encontrarás dos versiones de AppImage en los assets:
+
+1.  **fina-ergen_v..._amd64.AppImage (RECOMENDADO)**: Versión optimizada con compresión **XZ** (más liviana) y parches de compatibilidad para Iconos y sistemas modernos (Ubuntu 24.04+, Mint 22). 
+2.  **fina-ergen_v..._x86_64.AppImage**: Versión estándar generada por el compilador base.
+
+
+========== PARA LAS VERSIONES v3.5.4-5 hasta v3.5.4-7 ==========
+
+## 🚀 Fina Ergen (Mejoras Domóticas Base)
+
+Esta versión forma parte del ciclo de actualizaciones hacia la portabilidad y experiencia universal de Fina Ergen.
+
+### 🛠️ Novedades de esta Versión:
+* **Hilos Desacoplados Domóticos:** Las arquitecturas de Plugins del Timbre y el Clima pasaron sus pruebas iniciales y se incorporaron al sistema dinámicamente como hilos estables desacoplados de la rama principal.
+* **Prevención de Cuelgues:** Este nuevo aislamiento previene los cuelgues de las hebras maestras ante fallos o latencias altas en la conexión WiFi de tu red local al intentar contactar los servidores IoT.
+
+### 📦 ¿Qué archivo descargar?
+Encontrarás dos versiones de AppImage en los assets:
+
+1.  **fina-ergen_v..._amd64.AppImage (RECOMENDADO)**: Versión optimizada con compresión **XZ** (más liviana) y parches de compatibilidad para Iconos y sistemas modernos (Ubuntu 24.04+, Mint 22). 
+2.  **fina-ergen_v..._x86_64.AppImage**: Versión estándar generada por el compilador base.
