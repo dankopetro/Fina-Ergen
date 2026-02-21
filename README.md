@@ -61,13 +61,18 @@ Si prefieres no instalar nada a nivel sistema, descarga una de nuestras versione
 
 ## 🧩 Plugins y Extensiones (Market)
 
-Fina viene "pelada" de fábrica para ser rapidísima. Todo el control de aparatos IoT, TV y automatizaciones de terceros se descarga por separado.
+Fina viene "pelada" de fábrica para ser rapidísima. Todo el control de aparatos IoT, TV y automatizaciones de terceros se descarga por separado mediante un Market. Tienes dos maneras de hacerlo:
 
-1. Visita nuestro Repositorio Oficial de Extensiones: **[Fina Plugins Market](https://github.com/dankopetro/Fina-Plugins-Market)**
+### Vía Interfaz (Recomendada)
+1. Abre Fina Ergen y dirígete al botón **Market de Plugins** (actualmente visible en la sección *Agenda / Inteligencia*).
+2. Explora el repertorio, haz clic en **Instalar** al plugin que desees y Fina se encargará de descargarlo, inyectarlo en tu perfil de usuario y encenderlo automáticamente.
+
+### Vía Manual
+1. Visita nuestro Repositorio Oficial de Extensiones en la web: **[Fina Plugins Market](https://github.com/dankopetro/Fina-Plugins-Market)**
 2. Descarga la carpeta de la extensión que te interese (ej: `AirConditioning/Midea-Surrey`).
-3. Cópiala en la nueva carpeta de configuraciones de tu usuario de Linux:
+3. Cópiala en la carpeta de configuraciones de tu usuario de Linux:
    `~/.config/Fina/plugins/` *(Ej: `~/.config/Fina/plugins/AirConditioning/Midea-Surrey/`)*
-4. Reinicia Fina Ergen. Mágicamente absorberá la extensión para siempre.
+4. Reinicia Fina Ergen para cargarla.
 ## 📚 Documentación
 
 Hemos reestructurado toda la información técnica para ti:
