@@ -68,22 +68,3 @@ jobs:
             Descarga el archivo `.deb` o `.AppImage` e instálalo normalmente. Fina te guiará en el primer arranque.
           releaseDraft: false
           prerelease: false
-
-      - name: Build Slim XZ AppImage
-        run: |
-          wget -q "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
-          chmod +x appimagetool-x86_64.AppImage
-
-          APP_DIR=src-tauri/target/release/bundle/appimage/fina-ergen.AppDir
-          VERSION=$(node -p "require('./package.json').version")
-
-          cd "$APP_DIR"
-          rm -f fina-ergen.desktop .DirIcon
-          ln -s usr/share/applications/fina-ergen.desktop fina-ergen.desktop
-          ln -s fina-ergen.png .DirIcon
-          cd ../../../../../../
-
-          echo "📦 Generando AppImage XZ (Slim)..."
-          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-xz.AppImage
-
-          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#"fina-ergen_${VERSION}_amd64.AppImage" --clobber
