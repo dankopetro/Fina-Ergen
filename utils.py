@@ -61,8 +61,8 @@ logger.info(f"Log path: {log_path}")
 
 # --- CONFIG DIRECTORY [CENTRALIZED] ---
 CONFIG_DIR = os.path.expanduser("~/.config/Fina")
-if not os.path.exists(CONFIG_DIR):
-    os.makedirs(CONFIG_DIR, exist_ok=True)
+for folder in ["", "voice_models", "voice_profiles", "temp_audio", "plugins"]:
+    os.makedirs(os.path.join(CONFIG_DIR, folder), exist_ok=True)
 
 # Definir rutas absolutas para archivos de datos
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
@@ -213,9 +213,7 @@ def _voice_engine_worker():
     if not aplay_path or not os.path.exists(aplay_path):
         logger.error(f"FATAL: Aplay no encontrado (paquete alsa-utils insuficiente).")
     
-    # Crear directorio temporal si no existe (Ruta segura en el perfil del usuario)
-    temp_dir = os.path.join(os.path.expanduser("~"), ".config", "Fina", "temp_audio")
-    os.makedirs(temp_dir, exist_ok=True)
+    temp_dir = os.path.join(CONFIG_DIR, "temp_audio")
 
     while True:
         try:
