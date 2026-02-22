@@ -13,6 +13,7 @@ Este documento es de lectura OBLIGATORIA antes de cada modificación de código.
 2.  **Entorno Virtual (VENV)**: El código debe buscar siempre el ejecutable de Python dentro de un entorno virtual (`.venv` o similar) antes de recurrir al sistema.
 3.  **Configuración en XDG**: Todos los archivos de persistencia (`settings.json`, `contacts.json`) deben residir en `~/.config/Fina/` (siguiendo el estándar XDG).
 4.  **Híbrido X11/Wayland**: Siempre que interactúes con el portapapeles o capturas, verifica si el usuario está en X11 o Wayland.
+5.  **Protocolo de Release**: Es OBLIGATORIO seguir el formato visual y estructural definido en `.agent/workflows/publicar-release.md` para cualquier publicación en GitHub.
 
 ### 📋 CHECKLIST PRE-COMMIT
 - [ ] ¿He verificado que no hay rutas absolutas a mi carpeta personal?

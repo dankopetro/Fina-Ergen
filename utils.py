@@ -59,24 +59,47 @@ logger = logging.getLogger("ErgenUtils")
 logger.info(f"--- SESIÓN INICIADA: {datetime.now()} ---")
 logger.info(f"Log path: {log_path}")
 
-# --- CONFIG DIRECTORY [CENTRALIZED] ---
-CONFIG_DIR = os.path.expanduser("~/.config/Fina")
+# --- CONFIG DIRECTORY [CENTRALIZED & ROBUST] ---
+def get_config_dir():
+    # 1. Prioridad: XDG_CONFIG_HOME
+    xdg_config = os.environ.get("XDG_CONFIG_HOME")
+    if xdg_config:
+        return os.path.join(xdg_config, "Fina")
+    # 2. Rescate: Home del usuario real
+    try:
+        from pathlib import Path
+        return os.path.join(str(Path.home()), ".config", "Fina")
+    except:
+        return os.path.expanduser("~/.config/Fina")
+
+CONFIG_DIR = get_config_dir()
 for folder in ["", "voice_models", "voice_profiles", "temp_audio", "plugins"]:
-    os.makedirs(os.path.join(CONFIG_DIR, folder), exist_ok=True)
+    path = os.path.join(CONFIG_DIR, folder)
+    try:
+        os.makedirs(path, exist_ok=True)
+    except Exception as e:
+        logger.error(f"❌ Error creando carpeta {path}: {e}")
 
 # Definir rutas absolutas para archivos de datos
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
 USER_DATA_PATH = os.path.join(CONFIG_DIR, "user_data.json")
-# Soporte para ambos nombres (singular y plural)
-CONTACTS_PATH = os.path.join(CONFIG_DIR, "contact.json")
-if not os.path.exists(CONTACTS_PATH):
-    CONTACTS_PATH = os.path.join(CONFIG_DIR, "contacts.json")
+CONTACTS_PATH_PRIMARY = os.path.join(CONFIG_DIR, "contact.json")
+CONTACTS_PATH_SECONDARY = os.path.join(CONFIG_DIR, "contacts.json")
+
+# Determinar CONTACTS_PATH real
+CONTACTS_PATH = CONTACTS_PATH_PRIMARY if os.path.exists(CONTACTS_PATH_PRIMARY) else CONTACTS_PATH_SECONDARY
 CONFIG_PY_PATH = os.path.join(CONFIG_DIR, "config.py")
 
-logger.info(f"📂 [DIAGNÓSTICO] Config Dir: {CONFIG_DIR}")
-logger.info(f"📄 [DIAGNÓSTICO] Settings: {SETTINGS_PATH} (Existe: {os.path.exists(SETTINGS_PATH)})")
-logger.info(f"👥 [DIAGNÓSTICO] Contacts: {CONTACTS_PATH} (Existe: {os.path.exists(CONTACTS_PATH)})")
-logger.info(f"🐍 [DIAGNÓSTICO] Config.py Path: {CONFIG_PY_PATH} (Existe: {os.path.exists(CONFIG_PY_PATH)})")
+# DIAGNÓSTICO DE PERMISOS (Crítico para AppImage)
+import getpass
+current_user = getpass.getuser()
+logger.info(f"👤 Usuario Actual: {current_user}")
+logger.info(f"📂 Config Dir: {CONFIG_DIR} (Acceso R: {os.access(CONFIG_DIR, os.R_OK)}, W: {os.access(CONFIG_DIR, os.W_OK)})")
+
+for label, p in [("Settings", SETTINGS_PATH), ("Contacts", CONTACTS_PATH), ("Config.py", CONFIG_PY_PATH)]:
+    exists = os.path.exists(p)
+    readable = os.access(p, os.R_OK) if exists else "N/A"
+    logger.info(f"📄 {label}: {p} (Existe: {exists}, Lectura: {readable})")
 
 def _ensure_config_exists():
     """Migrar o crear archivos base si no existen en .config/Fina"""

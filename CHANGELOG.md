@@ -21,6 +21,7 @@ Esta versión perfecciona la portabilidad y la experiencia de primer usuario ("O
 * **Auto-Bootstrap de IA (Full)**: Inclusión de `resemblyzer` en el instalador silencioso. Ahora la biometría de voz funciona en PCs nuevas sin necesidad de ejecutar comandos de terminal.
 
 ### Arreglado
+* **🔧 Corección Crítica de Rutas (API)**: Se reparó un error que impedía a la API de Fina detectar correctamente la configuración del usuario dentro de AppImages.
 * **Diagnóstico de Rutas Robusto**: Mejora en la detección y logueo de archivos de configuración (`channels.json`, `contacts.json`) para facilitar migraciones entre máquinas.
 * **Sincronización de Entornos Virtuales**: Se unificó la ubicación del `venv` entre el Cerebro (Sidecar) y la UI en una ruta persistente única (`~/.config/Fina/venv`).
 * **Optimización de Interfaz (UX)**: El botón del **Market de Plugins** ha sido movido a la sección de **Ajustes -> Nódulos**, su lugar lógico definitivo para la gestión de dispositivos.

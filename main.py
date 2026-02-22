@@ -66,6 +66,9 @@ if "venv" not in sys.executable:
             best_py = get_best_python()
     
     if "venv" in best_py and best_py != sys.executable:
+        print(f"🔄 Relanzando Fina con entorno detectado: {best_py}")
+        import getpass
+        print(f"👤 Ejecutado por: {getpass.getuser()}")
         os.execl(best_py, best_py, *sys.argv)
 # --------------------------------------------------
 

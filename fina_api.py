@@ -11,12 +11,26 @@ from typing import List, Optional, Dict
 # Dejamos que el script de bash maneje los logs (tee)
 print(f"\n--- [ARRANQUE API] {time.strftime('%Y-%m-%d %H:%M:%S')} ---", flush=True)
 
-# --- CONFIG DIRECTORY [CENTRALIZED] ---
-CONFIG_DIR = os.path.expanduser("~/.config/Fina")
-if not os.path.exists(CONFIG_DIR):
-    os.makedirs(CONFIG_DIR, exist_ok=True)
+# --- CONFIG DIRECTORY [CENTRALIZED & ROBUST] ---
+def get_config_dir():
+    # 1. XDG_CONFIG_HOME
+    xdg_config = os.environ.get("XDG_CONFIG_HOME")
+    if xdg_config:
+        return os.path.join(xdg_config, "Fina")
+    # 2. Pathlib Home
+    try:
+        from pathlib import Path
+        return os.path.join(str(Path.home()), ".config", "Fina")
+    except:
+        return os.path.expanduser("~/.config/Fina")
 
-# Inyectar CONFIG_DIR al inicio de sys.path para que 'import config' lo encuentre allí
+CONFIG_DIR = get_config_dir()
+if not os.path.exists(CONFIG_DIR):
+    try:
+        os.makedirs(CONFIG_DIR, exist_ok=True)
+    except: pass
+
+# Inyectar CONFIG_DIR al inicio de sys.path
 if CONFIG_DIR not in sys.path:
     sys.path.insert(0, CONFIG_DIR)
 
@@ -55,36 +69,51 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
 USER_DATA_PATH = os.path.join(CONFIG_DIR, "user_data.json")
+
 # Soporte para ambos nombres (singular y plural)
 CONTACTS_PATH_PRIMARY = os.path.join(CONFIG_DIR, "contact.json")
 CONTACTS_PATH_SECONDARY = os.path.join(CONFIG_DIR, "contacts.json")
-
-# Estrategia para Canales: 1. Usuario, 2. Interno/Config, 3. Raíz
-CHANNELS_PATH_USER = os.path.join(CONFIG_DIR, "channels.json")
-CHANNELS_PATH_INTERNAL = os.path.join(PROJECT_ROOT, "config", "channels.json")
-CHANNELS_PATH_FALLBACK = os.path.join(PROJECT_ROOT, "channels.json")
 
 if os.path.exists(CONTACTS_PATH_PRIMARY):
     CONTACTS_PATH = CONTACTS_PATH_PRIMARY
 else:
     CONTACTS_PATH = CONTACTS_PATH_SECONDARY
 
+# Estrategia para Canales: 1. Usuario, 2. Interno/Config, 3. Raíz
+CHANNELS_PATH_USER = os.path.join(CONFIG_DIR, "channels.json")
+CHANNELS_PATH_INTERNAL = os.path.join(PROJECT_ROOT, "config", "channels.json")
+CHANNELS_PATH_FALLBACK = os.path.join(PROJECT_ROOT, "channels.json")
+
+if os.path.exists(CHANNELS_PATH_USER):
+    CHANNELS_PATH = CHANNELS_PATH_USER
+elif os.path.exists(CHANNELS_PATH_INTERNAL):
+    CHANNELS_PATH = CHANNELS_PATH_INTERNAL
+else:
+    CHANNELS_PATH = CHANNELS_PATH_FALLBACK
+
 CHANNELS_PATH_TELECENTRO_USER = os.path.join(CONFIG_DIR, "channels_telecentro.json")
 CHANNELS_PATH_TELECENTRO_INTERNAL = os.path.join(PROJECT_ROOT, "config", "channels_telecentro.json")
 
-print(f"📂 [DIAGNÓSTICO] Config Dir: {CONFIG_DIR}", flush=True)
-print(f"📄 [DIAGNÓSTICO] Settings: {SETTINGS_PATH} (Existe: {os.path.exists(SETTINGS_PATH)})", flush=True)
-print(f"👥 [DIAGNÓSTICO] Contacts: {CONTACTS_PATH} (Existe: {os.path.exists(CONTACTS_PATH)})", flush=True)
-print(f"📺 [DIAGNÓSTICO] Channels Standard: {CHANNELS_PATH} (Existe: {os.path.exists(CHANNELS_PATH)})", flush=True)
+if os.path.exists(CHANNELS_PATH_TELECENTRO_USER):
+    CHANNELS_PATH_TELECENTRO = CHANNELS_PATH_TELECENTRO_USER
+else:
+    CHANNELS_PATH_TELECENTRO = CHANNELS_PATH_TELECENTRO_INTERNAL
+
+# DIAGNÓSTICO DE PERMISOS (Crítico para AppImage Sidecar)
+import getpass
+current_user = getpass.getuser()
+print(f"👤 API Corriendo como: {current_user}", flush=True)
+print(f"📂 Config Dir: {CONFIG_DIR} (Acceso R:{os.access(CONFIG_DIR, os.R_OK)})", flush=True)
+print(f"📄 Settings: {SETTINGS_PATH} (Existe: {os.path.exists(SETTINGS_PATH)}, Readable: {os.access(SETTINGS_PATH, os.R_OK) if os.path.exists(SETTINGS_PATH) else 'N/A'})", flush=True)
+print(f"👥 Contacts: {CONTACTS_PATH} (Existe: {os.path.exists(CONTACTS_PATH)})", flush=True)
+print(f"📺 Channels Standard: {CHANNELS_PATH} (Existe: {os.path.exists(CHANNELS_PATH)})", flush=True)
 
 if os.path.exists(CHANNELS_PATH_TELECENTRO_USER):
-    print(f"📡 [DIAGNÓSTICO] Channels Telecentro: {CHANNELS_PATH_TELECENTRO_USER} (Encontrado en USUARIO)", flush=True)
+    print(f"📡 Canales Telecentro: {CHANNELS_PATH_TELECENTRO_USER} (USUARIO)", flush=True)
 elif os.path.exists(CHANNELS_PATH_TELECENTRO_INTERNAL):
-    print(f"📡 [DIAGNÓSTICO] Channels Telecentro: {CHANNELS_PATH_TELECENTRO_INTERNAL} (Encontrado en CONFIG)", flush=True)
-else:
-    print(f"📡 [DIAGNÓSTICO] Channels Telecentro: NO ENCONTRADO", flush=True)
+    print(f"📡 Canales Telecentro: {CHANNELS_PATH_TELECENTRO_INTERNAL} (INTERNO)", flush=True)
 
-print(f"✅ Rutas de usuario activas: {CONFIG_DIR}", flush=True)
+print(f"✅ Rutas unificadas: {CONFIG_DIR}", flush=True)
 
 # --- Models ---
 class TV(BaseModel):
