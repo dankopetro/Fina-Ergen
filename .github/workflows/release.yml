@@ -48,10 +48,10 @@ jobs:
       - uses: tauri-apps/tauri-action@v0.5.15
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPIMAGE_EXTRACT_AND_RUN: 1
         with:
           tagName: v__VERSION__
           releaseName: "Fina Ergen v__VERSION__"
+          args: --bundles deb,rpm
           releaseBody: |
             ## 🚀 Fina Ergen v__VERSION__ - Edición "Cero Terminal" y Guía Proactiva
 
@@ -69,29 +69,30 @@ jobs:
           releaseDraft: false
           prerelease: false
 
-      - name: Build Second AppImage with XZ compression (Extreme Slim Edition)
+      - name: Build Manual AppImages (Standard & Slim XZ)
         run: |
+          sudo apt-get install -y libfuse2
           wget -q "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
           chmod +x appimagetool-x86_64.AppImage
 
-          # Localizar el AppDir generado por Tauri
+          # Generar AppDir (Tauri suele fallar al final pero deja el AppDir listo)
+          APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri build -- --bundles appimage || true
+
           APP_DIR=$(ls -d src-tauri/target/release/bundle/appimage/*.AppDir | head -n 1)
           APP_NAME=$(basename "$APP_DIR" .AppDir)
+          VERSION=$(node -p "require('./package.json').version")
 
-          # Limpiar enlaces rotos antes de comprimir
           cd "$APP_DIR"
           rm -f "$APP_NAME.desktop" .DirIcon
           ln -s "usr/share/applications/$APP_NAME.desktop" "$APP_NAME.desktop"
           ln -s "$APP_NAME.png" .DirIcon
           cd ../../../../../../
 
-          # Generar la versión XZ ultra liviana
+          echo "📦 Generando AppImage Estándar..."
+          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage "$APP_DIR" fina-ergen-std.AppImage
+
           echo "📦 Generando AppImage XZ..."
           APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-xz.AppImage
 
-          # Obtener versión para el nombre final
-          VERSION=$(node -p "require('./package.json').version")
-          TARGET_FILENAME="fina-ergen_${VERSION}_amd64.AppImage"
-
-          echo "🚀 Subiendo AppImage XZ a GitHub Releases..."
-          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#${TARGET_FILENAME} --clobber
+          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-std.AppImage#"fina-ergen_${VERSION}_x86_64.AppImage" --clobber
+          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#"fina-ergen_${VERSION}_amd64.AppImage" --clobber
