@@ -14,18 +14,59 @@ if current_dir not in sys.path:
 def get_best_python():
     """Busca el mejor ejecutable de Python disponible"""
     vps = [
+        os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv", "bin", "python"),
         os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"),
         os.path.join(os.path.expanduser("~"), ".venv", "bin", "python"),
-        os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv", "bin", "python"),
-        sys.executable # Fallback al actual
+        sys.executable
     ]
     for p in vps:
         if os.path.exists(p): return p
     return sys.executable
 
+# --- BOOTSTRAP: AUTO-INSTALADOR DE LIBRERÍAS [ZERO TERMINAL] ---
+def bootstrap_fina():
+    """Verifica e instala librerías de IA si faltan, sin terminal"""
+    import subprocess
+    required_libs = ["fastapi", "uvicorn", "vosk", "sounddevice", "torch", "sentence_transformers"]
+    missing = []
+    
+    import importlib.util
+    for lib in required_libs:
+        if importlib.util.find_spec(lib) is None:
+            missing.append(lib)
+    
+    if not missing: return True
+
+    print(f"📦 Fina detectó componentes faltantes: {missing}")
+    print("🛠️ Iniciando auto-configuración silenciosa...")
+    
+    config_venv = os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv")
+    try:
+        if not os.path.exists(config_venv):
+            print(f"📁 Creando entorno virtual en {config_venv}...")
+            subprocess.run([sys.executable, "-m", "venv", config_venv], check=True)
+        
+        pip_exe = os.path.join(config_venv, "bin", "pip")
+        print(f"🚀 Instalando dependencias: {missing} (Esto solo ocurre una vez)...")
+        subprocess.check_call([pip_exe, "install", "--upgrade", "pip"], stdout=subprocess.DEVNULL)
+        subprocess.check_call([pip_exe, "install"] + missing, stdout=subprocess.DEVNULL)
+        print("✅ Auto-configuración completada.")
+        return True
+    except Exception as e:
+        print(f"❌ Error en auto-configuración: {e}")
+        return False
+
 # Si no estamos en un venv y existe uno, relanzar con ese
-if "venv" not in sys.executable and get_best_python() != sys.executable:
-    os.execl(get_best_python(), get_best_python(), *sys.argv)
+# Si NO hay venv, intentar bootstrap primero
+best_py = get_best_python()
+if "venv" not in sys.executable:
+    if "venv" not in best_py:
+        # No hay venv en ningún lado, intentar crearlo
+        if bootstrap_fina():
+            best_py = get_best_python()
+    
+    if "venv" in best_py and best_py != sys.executable:
+        os.execl(best_py, best_py, *sys.argv)
 # --------------------------------------------------
 
 import logging
@@ -259,39 +300,6 @@ def get_current_voice_info():
     voice_path = VOICE_MODELS[voice_name]
     return voice_path, voice_name
 
-# --- BOOTSTRAP: AUTO-INSTALADOR DE LIBRERÍAS [ZERO TERMINAL] ---
-def bootstrap_fina():
-    """Verifica e instala librerías de IA si faltan, sin terminal"""
-    required_libs = ["fastapi", "uvicorn", "vosk", "sounddevice", "torch", "sentence_transformers", "resemblyzer"]
-    missing = []
-    
-    import importlib.util
-    for lib in required_libs:
-        if importlib.util.find_spec(lib) is None:
-            missing.append(lib)
-    
-    if not missing:
-        return True
-
-    print(f"📦 Fina detectó componentes faltantes: {missing}")
-    print("🛠️ Iniciando auto-configuración silenciosa...")
-    
-    venv_dir = os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv")
-    try:
-        if not os.path.exists(venv_dir):
-            print(f"📁 Creando entorno virtual en {venv_dir}...")
-            subprocess.run([sys.executable, "-m", "venv", venv_dir], check=True)
-        
-        pip_exe = os.path.join(venv_dir, "bin", "pip")
-        print(f"🚀 Instalando dependencias: {missing}...")
-        # Instalación silenciosa
-        subprocess.check_call([pip_exe, "install", "--upgrade", "pip"], stdout=subprocess.DEVNULL)
-        subprocess.check_call([pip_exe, "install"] + missing, stdout=subprocess.DEVNULL)
-        print("✅ Auto-configuración completada con éxito.")
-        return True
-    except Exception as e:
-        print(f"❌ Error en auto-configuración: {e}")
-        return False
 
 # Setup checks for required files ---
 if not CONFIG_FOUND:
@@ -308,17 +316,6 @@ logger.info(f"--- FINA ERGEN MAIN INICIADO ---")
 
 async def main():
     """Main interaction loop"""
-    # 0. BOOTSTRAP (Asegurar que las librerías existen o instalarlas)
-    update_ui_state("idle", "Verificando componentes de IA...")
-    if not bootstrap_fina():
-        update_ui_state("idle", "ERROR: Falló la auto-configuración.")
-        # Intentamos seguir igual por si es un falso positivo
-    
-    # RELANZAR SI SE CREÓ EL VENV (para cargar las nuevas librerías)
-    venv_python = os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv", "bin", "python")
-    if os.path.exists(venv_python) and sys.executable != venv_python:
-        print("🔄 Reiniciando con el nuevo entorno configurado...")
-        os.execl(venv_python, venv_python, *sys.argv)
 
     # DEBUG LOG DE ARRANQUE
     with open("/tmp/fina_main_debug.log", "w") as f:
