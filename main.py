@@ -136,6 +136,17 @@ from utils import (
 # --- CONFIG LOADING [SAFE] ---
 config, CONFIG_FOUND = load_config()
 
+# --- DIAGNÓSTICO INICIAL ---
+import getpass
+print(f"--- Fina Ergen Cerebro V3.5.4 ---", flush=True)
+print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
+if os.getuid() == 0:
+    print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)
+    print("   Esto impedirá leer archivos en /home/usuario/.config/Fina si no se configuró así.", flush=True)
+print(f"📂 Carpeta de Configuración detectada: {CONFIG_DIR}", flush=True)
+print(f"📄 Archivo Settings: {'Encontrado' if os.path.exists(SETTINGS_PATH) else 'NOT FOUND'}", flush=True)
+print(f"---------------------------------\n", flush=True)
+
 # --- SYSTEM CHECK ---
 check_system_dependencies()
 

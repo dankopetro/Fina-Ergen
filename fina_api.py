@@ -8,7 +8,10 @@ import time
 from typing import List, Optional, Dict
 
 # --- LOGGING DIAGNÓSTICO ---
-# Dejamos que el script de bash maneje los logs (tee)
+import logging
+for lib in ["httpx", "huggingface_hub", "urllib3"]:
+    logging.getLogger(lib).setLevel(logging.WARNING)
+
 print(f"\n--- [ARRANQUE API] {time.strftime('%Y-%m-%d %H:%M:%S')} ---", flush=True)
 
 # --- CONFIG DIRECTORY [CENTRALIZED & ROBUST] ---
@@ -30,9 +33,12 @@ if not os.path.exists(CONFIG_DIR):
         os.makedirs(CONFIG_DIR, exist_ok=True)
     except: pass
 
-# Inyectar CONFIG_DIR al inicio de sys.path
-if CONFIG_DIR not in sys.path:
-    sys.path.insert(0, CONFIG_DIR)
+# --- DIAGNÓSTICO DE ENTORNO ---
+import getpass
+print(f"👤 API Usuario: {getpass.getuser()}", flush=True)
+print(f"🏠 API HOME: {os.environ.get('HOME')}", flush=True)
+print(f"🌐 API XDG: {os.environ.get('XDG_CONFIG_HOME')}", flush=True)
+print(f"📂 API Config Dir: {CONFIG_DIR}", flush=True)
 
 try:
     from fastapi import FastAPI, HTTPException
@@ -42,15 +48,28 @@ try:
     from pydantic import BaseModel
     import uvicorn
     import locale
-    import getpass
-    # Intentamos importar config, si falla no matamos la API, usamos defaults
-    try:
-        import config
-    except ImportError:
-        print("⚠️ [WARN] config.py no encontrado en .config/Fina. Usando valores por defecto.", flush=True)
-        config = None
+    import importlib.util
+
+    # Carga Robusta de config.py
+    CONFIG_PY_PATH = os.path.join(CONFIG_DIR, "config.py")
+    if os.path.exists(CONFIG_PY_PATH):
+        try:
+            spec = importlib.util.spec_from_file_location("user_config", CONFIG_PY_PATH)
+            config = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(config)
+            print(f"✅ API: config.py cargado desde {CONFIG_PY_PATH}", flush=True)
+        except Exception as e:
+            print(f"⚠️ [WARN] Error en config.py personalizado: {e}. Usando defaults internos.", flush=True)
+            import config
+    else:
+        try:
+            import config
+            print("ℹ️ [INFO] Usando config.py interno (Template).", flush=True)
+        except ImportError:
+            print("⚠️ [WARN] config.py no encontrado ni en .config ni interno.", flush=True)
+            config = None
 except Exception as e:
-    print(f"❌ [CRITICAL] Error importando librerías: {e}", flush=True)
+    print(f"❌ [CRITICAL] Error importando librerías API: {e}", flush=True)
     sys.exit(1)
 
 app = FastAPI(title="Fina API Ergen")

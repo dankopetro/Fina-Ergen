@@ -27,11 +27,17 @@ DEFAULT_DEVICE_ID = 30786325625801
 
 def load_ac_config():
     """Loads AC IP and ID from settings.json in ~/.config/Fina"""
-    xdg_config = os.environ.get("XDG_CONFIG_HOME")
-    if xdg_config:
-        config_dir = os.path.join(xdg_config, "Fina")
-    else:
-        config_dir = os.path.expanduser("~/.config/Fina")
+    def get_config_dir():
+        xdg_config = os.environ.get("XDG_CONFIG_HOME")
+        if xdg_config:
+            return os.path.join(xdg_config, "Fina")
+        try:
+            from pathlib import Path
+            return os.path.join(str(Path.home()), ".config", "Fina")
+        except:
+            return os.path.expanduser("~/.config/Fina")
+    
+    config_dir = get_config_dir()
     
     settings_path = os.path.join(config_dir, "settings.json")
     if os.path.exists(settings_path):

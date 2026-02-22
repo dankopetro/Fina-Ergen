@@ -30,7 +30,20 @@ if root.handlers:
     for handler in root.handlers:
         root.removeHandler(handler)
 
-log_base_config_dir = os.path.join(os.path.expanduser("~"), ".config", "Fina", "Logs")
+def get_config_dir():
+    # 1. Prioridad: XDG_CONFIG_HOME
+    xdg_config = os.environ.get("XDG_CONFIG_HOME")
+    if xdg_config:
+        return os.path.join(xdg_config, "Fina")
+    # 2. Rescate: Home del usuario real
+    try:
+        from pathlib import Path
+        return os.path.join(str(Path.home()), ".config", "Fina")
+    except:
+        return os.path.expanduser("~/.config/Fina")
+
+CONFIG_DIR = get_config_dir()
+log_base_config_dir = os.path.join(CONFIG_DIR, "Logs")
 log_dir = os.path.join(log_base_config_dir, datetime.now().strftime("%Y-%m-%d"))
 os.makedirs(log_dir, exist_ok=True)
 log_filename = f"ergen_session_{datetime.now().strftime('%H-%M-%S')}.log"
@@ -47,6 +60,42 @@ formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s
 file_handler = logging.FileHandler(log_path, mode='w', encoding='utf-8')
 file_handler.setFormatter(formatter)
 
+# --- SILENCIAR LIBRERÍAS RUIDOSAS ---
+for lib in ["httpx", "huggingface_hub", "urllib3", "sentence_transformers"]:
+    logging.getLogger(lib).setLevel(logging.WARNING)
+
+def _clean_old_logs(days=7):
+    """Limpia logs de sesión más viejos que N días"""
+    try:
+        now = time.time()
+        for folder in os.listdir(log_base_config_dir):
+            folder_path = os.path.join(log_base_config_dir, folder)
+            if os.path.isdir(folder_path):
+                # Si la carpeta tiene formato YYYY-MM-DD
+                if re.match(r'\d{4}-\d{2}-\d{2}', folder):
+                    mtime = os.path.getmtime(folder_path)
+                    if (now - mtime) > (days * 86400):
+                        shutil.rmtree(folder_path)
+                        logging.info(f"🧹 Log antiguo borrado: {folder}")
+    except: pass
+
+def _truncate_services_log(max_size_mb=2):
+    """Evita que fina_services.log crezca infinitamente"""
+    services_log = os.path.join(CONFIG_DIR, "fina_services.log")
+    if os.path.exists(services_log):
+        try:
+            size_mb = os.path.getsize(services_log) / (1024 * 1024)
+            if size_mb > max_size_mb:
+                # Truncar dejando solo el final o simplemente vaciarlo
+                with open(services_log, 'w') as f:
+                    f.write(f"--- Log truncado por tamaño ({datetime.now()}) ---\n")
+                logging.info(f"✂️ fina_services.log truncado (era {size_mb:.2f} MB)")
+        except: pass
+
+# Ejecutar dieta digital al inicio
+_clean_old_logs()
+_truncate_services_log()
+
 stream_handler = UnbufferedStreamHandler(sys.stdout)
 stream_handler.setFormatter(formatter)
 
@@ -59,21 +108,8 @@ logger = logging.getLogger("ErgenUtils")
 logger.info(f"--- SESIÓN INICIADA: {datetime.now()} ---")
 logger.info(f"Log path: {log_path}")
 
-# --- CONFIG DIRECTORY [CENTRALIZED & ROBUST] ---
-def get_config_dir():
-    # 1. Prioridad: XDG_CONFIG_HOME
-    xdg_config = os.environ.get("XDG_CONFIG_HOME")
-    if xdg_config:
-        return os.path.join(xdg_config, "Fina")
-    # 2. Rescate: Home del usuario real
-    try:
-        from pathlib import Path
-        return os.path.join(str(Path.home()), ".config", "Fina")
-    except:
-        return os.path.expanduser("~/.config/Fina")
-
-CONFIG_DIR = get_config_dir()
-for folder in ["", "voice_models", "voice_profiles", "temp_audio", "plugins"]:
+# --- CONFIG DIRECTORY LOGIC ALREADY DEFINED AT TOP ---
+for folder in ["", "voice_models", "voice_profiles", "temp_audio", "plugins", "model", "faces", "Logs"]:
     path = os.path.join(CONFIG_DIR, folder)
     try:
         os.makedirs(path, exist_ok=True)
@@ -86,14 +122,16 @@ USER_DATA_PATH = os.path.join(CONFIG_DIR, "user_data.json")
 CONTACTS_PATH_PRIMARY = os.path.join(CONFIG_DIR, "contact.json")
 CONTACTS_PATH_SECONDARY = os.path.join(CONFIG_DIR, "contacts.json")
 
-# Determinar CONTACTS_PATH real
 CONTACTS_PATH = CONTACTS_PATH_PRIMARY if os.path.exists(CONTACTS_PATH_PRIMARY) else CONTACTS_PATH_SECONDARY
 CONFIG_PY_PATH = os.path.join(CONFIG_DIR, "config.py")
+TUYA_CONFIG_PATH = os.path.join(CONFIG_DIR, "tuya_config.json")
 
 # DIAGNÓSTICO DE PERMISOS (Crítico para AppImage)
 import getpass
 current_user = getpass.getuser()
 logger.info(f"👤 Usuario Actual: {current_user}")
+logger.info(f"🏠 HOME: {os.environ.get('HOME')}")
+logger.info(f"🌐 XDG_CONFIG_HOME: {os.environ.get('XDG_CONFIG_HOME')}")
 logger.info(f"📂 Config Dir: {CONFIG_DIR} (Acceso R: {os.access(CONFIG_DIR, os.R_OK)}, W: {os.access(CONFIG_DIR, os.W_OK)})")
 
 for label, p in [("Settings", SETTINGS_PATH), ("Contacts", CONTACTS_PATH), ("Config.py", CONFIG_PY_PATH)]:
@@ -103,27 +141,26 @@ for label, p in [("Settings", SETTINGS_PATH), ("Contacts", CONTACTS_PATH), ("Con
 
 def _ensure_config_exists():
     """Migrar o crear archivos base si no existen en .config/Fina"""
+    # Intentar detectar si estamos en un entorno de desarrollo o AppImage
+    # Si estamos en AppImage, ERGEN_ROOT suele ser algo como /tmp/.mount_XXXX
     migration_map = {
         os.path.join(ERGEN_ROOT, "config", "settings.json"): SETTINGS_PATH,
         os.path.join(ERGEN_ROOT, "user_data.json"): USER_DATA_PATH,
         os.path.join(ERGEN_ROOT, "config", "contact.json"): CONTACTS_PATH,
         os.path.join(ERGEN_ROOT, "config.py"): CONFIG_PY_PATH,
+        os.path.join(ERGEN_ROOT, "tuya_config.json"): TUYA_CONFIG_PATH,
     }
     for src, dst in migration_map.items():
         if not os.path.exists(dst) and os.path.exists(src):
             try:
+                # Solo copiar si el destino no existe, para no pisar ajustes del usuario
                 shutil.copy2(src, dst)
-                print(f"📦 Migrado: {os.path.basename(src)} -> {CONFIG_DIR}")
-            except: pass
+                logger.info(f"📦 Auto-Migración exitosa: {os.path.basename(src)} -> {CONFIG_DIR}")
+            except Exception as e:
+                logger.error(f"❌ Falló auto-migración de {src}: {e}")
 
-# _ensure_config_exists()  # Desactivado para permitir limpieza manual del usuario
-
-# Inyectar CONFIG_DIR al inicio de sys.path para que 'import config' lo encuentre primero
-if CONFIG_DIR not in sys.path:
-    sys.path.insert(0, CONFIG_DIR)
-
-# Local Imports
-import config
+# Ejecutar migración silenciosa para asegurar que el AppImage tenga algo que leer
+_ensure_config_exists()
 
 # --- CONFIGURATION UNIFICATION (UI Priority) ---
 def get_unified_config(key, default=None):
@@ -131,7 +168,7 @@ def get_unified_config(key, default=None):
     # 1. Intentar desde settings.json
     try:
         if os.path.exists(SETTINGS_PATH):
-            with open(SETTINGS_PATH, 'r') as f:
+            with open(SETTINGS_PATH, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 val = data.get("apis", {}).get(key)
                 if val: return val
@@ -140,23 +177,29 @@ def get_unified_config(key, default=None):
                 if val: return val
     except: pass
 
-    # 2. Fallback al config.py tradicional
+    # 2. Fallback al config.py absoluto del usuario
     try:
-        import config
-        return getattr(config, key, default)
+        cfg, _ = load_config()
+        return getattr(cfg, key, default)
     except:
         return default
 
 def load_config():
-    """Carga config.py desde ~/.config/Fina con fallback seguro"""
+    """Carga config.py desde ~/.config/Fina con CARGA ABSOLUTA para evitar colisiones"""
+    import importlib.util
     try:
-        if CONFIG_DIR not in sys.path:
-            sys.path.insert(0, CONFIG_DIR)
-        import config as cfg
-        import importlib
-        importlib.reload(cfg)
-        return cfg, True
-    except ImportError:
+        if os.path.exists(CONFIG_PY_PATH):
+            spec = importlib.util.spec_from_file_location("user_config", CONFIG_PY_PATH)
+            cfg = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(cfg)
+            logger.info(f"✅ config.py cargado desde: {CONFIG_PY_PATH}")
+            return cfg, True
+        else:
+            # Fallback al config.py interno si el del usuario no existe
+            import config as internal_cfg
+            return internal_cfg, False
+    except Exception as e:
+        logger.error(f"❌ Error crítico cargando config.py: {e}")
         class DummyConfig:
             def __getattr__(self, name): return None
         return DummyConfig(), False
@@ -454,7 +497,7 @@ def load_vosk_model(language="es"):
         from vosk import Model, KaldiRecognizer, SetLogLevel
         SetLogLevel(-1)
         # 1. Buscar en ~/.config/Fina/model/ (Ideal para usuarios de .deb)
-        user_config_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "model", "vosk-model-es-0.42")
+        user_config_path = os.path.join(CONFIG_DIR, "model", "vosk-model-es-0.42")
         # 2. Buscar en la raíz del proyecto (Modo desarrollo)
         project_path = os.path.join(ERGEN_ROOT, "model", "vosk-model-es-0.42")
         
