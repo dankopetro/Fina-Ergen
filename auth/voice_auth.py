@@ -1,17 +1,18 @@
 import os
 import numpy as np
+import logging
+from pathlib import Path
+import sounddevice as sd
+import time
+
+logger = logging.getLogger("VoiceAuth")
+
 try:
     from resemblyzer import VoiceEncoder, preprocess_wav
     HAS_RESEMBLYZER = True
 except ImportError:
     HAS_RESEMBLYZER = False
     logger.warning("Resemblyzer no encontrado. La autenticación por voz estará deshabilitada.")
-from pathlib import Path
-import sounddevice as sd
-import logging
-import time
-
-logger = logging.getLogger("VoiceAuth")
 
 class VoiceAuthenticator:
     def __init__(self, storage_path=None):

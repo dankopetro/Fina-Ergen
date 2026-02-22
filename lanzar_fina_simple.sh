@@ -62,7 +62,7 @@ fi
 echo "📦 Verificando dependencias..."
 if [ -f "$ROOT_DIR/requirements.txt" ]; then
     # Un chequeo rápido para no instalar siempre: si falla al importar fastapi, instalamos todo
-    if ! "$PYTHON" -c "import fastapi, resemblyzer" &>/dev/null; then
+    if ! "$PYTHON" -c "import fastapi, uvicorn, pydantic, requests" &>/dev/null; then
         echo "📥 Instalando librerías faltantes (esto solo pasará una vez)..."
         "$PYTHON" -m pip install --upgrade pip &>/dev/null
         "$PYTHON" -m pip install -r "$ROOT_DIR/requirements.txt" || echo "⚠️ Error instalando algunas dependencias."

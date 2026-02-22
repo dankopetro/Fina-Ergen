@@ -58,21 +58,32 @@ fn execute_shell_command(command: &str) -> Result<String, String> {
     Ok(result.to_string())
 }
 
+fn get_python_exe(resource_dir: &std::path::Path) -> String {
+    use std::process::Command;
+    let venv_path = resource_dir.join("_up_/venv/bin/python3");
+    let venv_dot_path = resource_dir.join("_up_/.venv/bin/python3");
+    
+    if venv_path.exists() {
+        venv_path.to_str().unwrap_or("python3").to_string()
+    } else if venv_dot_path.exists() {
+        venv_dot_path.to_str().unwrap_or("python3").to_string()
+    } else if Command::new("python3").arg("--version").output().is_ok() {
+        "python3".to_string()
+    } else {
+        "python".to_string()
+    }
+}
+
 #[tauri::command]
 fn scan_network_devices(app_handle: tauri::AppHandle) -> Result<String, String> {
     use std::process::Command;
     use tauri::Manager;
 
-    // Buscar python3 disponible en el sistema
-    let python = if Command::new("python3").arg("--version").output().is_ok() {
-        "python3"
-    } else {
-        "python"
-    };
-
-    // Obtener ruta real del script desde los recursos empaquetados
+    // Obtener ruta real de recursos
     let resource_dir = app_handle.path().resource_dir()
         .map_err(|e| format!("No se pudo obtener resource_dir: {}", e))?;
+
+    let python = get_python_exe(&resource_dir);
 
     let script = resource_dir.join("_up_/iot/network_scan.py");
 
@@ -129,11 +140,13 @@ fn start_streamer(app_handle: tauri::AppHandle) -> Result<String, String> {
     }
     
     // Obtener ruta dinámica de recursos
-    let resource_path = app_handle.path().resource_dir()
-        .map_err(|e| format!("Error obteniendo ruta de recursos: {}", e))?
-        .join("plugins/doorbell/streamer.py");
+    let resource_dir = app_handle.path().resource_dir()
+        .map_err(|e| format!("Error obteniendo ruta de recursos: {}", e))?;
+    
+    let python = get_python_exe(&resource_dir);
+    let resource_path = resource_dir.join("plugins/doorbell/streamer.py");
 
-    let _child = Command::new("python3")
+    let _child = Command::new(python)
         .env_remove("PYTHONHOME")
         .env_remove("PYTHONPATH")
         .arg(resource_path)
@@ -198,11 +211,13 @@ fn install_market_plugin(app_handle: tauri::AppHandle, category: &str, subpath: 
     use tauri::Manager;
     println!("[RUST] Instalando plugin de market: {}/{}", category, subpath);
     
-    let script_path = app_handle.path().resource_dir()
-        .map_err(|e| format!("Error obteniendo ruta de recursos: {}", e))?
-        .join("scripts/install_plugin.py");
+    let resource_dir = app_handle.path().resource_dir()
+        .map_err(|e| format!("Error obteniendo ruta de recursos: {}", e))?;
+    
+    let python = get_python_exe(&resource_dir);
+    let script_path = resource_dir.join("scripts/install_plugin.py");
 
-    let output = Command::new("python3")
+    let output = Command::new(python)
         .env_remove("PYTHONHOME")
         .env_remove("PYTHONPATH")
         .args(&[script_path.to_str().unwrap(), category, subpath])
@@ -278,12 +293,9 @@ pub fn run() {
             };
 
 
-            // Detectar python disponible en el sistema
-            let python = if Command::new("python3").arg("--version").output().is_ok() {
-                "python3"
-            } else {
-                "python"
-            };
+            // Detectar el mejor motor python disponible (Prioridad: VENV local > Sistema)
+            let python_exe = get_python_exe(&resource_dir);
+            let python = &python_exe;
 
             // --- Arrancar fina_api.py (Backend REST) ---
             let api_script = resource_dir.join("_up_/fina_api.py");

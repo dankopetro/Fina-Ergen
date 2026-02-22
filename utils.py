@@ -241,18 +241,22 @@ def _voice_engine_worker():
                 filepath = os.path.join(temp_dir, filename)
                 
                 # Comando de generación
+                if not piper_path or not model_path or not os.path.exists(model_path):
+                    logger.error(f"TTS abortado: Piper o modelo no válido. Path: {piper_path}, Model: {model_path}")
+                    continue
+
                 safe_text = shlex.quote(clean_text)
                 gen_cmd = f'echo {safe_text} | {piper_path} --model "{model_path}" --length_scale 1.5 --output_file "{filepath}"'
                 
                 # Ejecutar generación (Esto causa la latencia "invisible")
                 gen_success = False
                 try:
-                    subprocess.run(gen_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
+                    subprocess.run(gen_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=12)
                     gen_success = True
                 except subprocess.TimeoutExpired:
-                    logger.error("TTS Timeout generando audio (Piper tardó demasiado)")
+                    logger.error("TTS Timeout: Piper tardó demasiado en generar el audio.")
                 except Exception as e:
-                    logger.error(f"TTS Error: {e}")
+                    logger.error(f"TTS Error ejecutando Piper: {e}")
                 
                 if gen_success and os.path.exists(filepath) and os.path.getsize(filepath) > 0:
                     update_ui_state("speaking", text, 0.8)
