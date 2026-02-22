@@ -87,7 +87,7 @@
       "../tools/**/*",
       "../auth/**/*",
       "../config/**/*",
-      "../docs/Manual_Usuario_Visual_Fina_v3.5.4.pdf"
+      "../docs/*.pdf"
     ],
     "linux": {
       "deb": {
