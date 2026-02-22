@@ -216,12 +216,34 @@ fn install_market_plugin(app_handle: tauri::AppHandle, category: &str, subpath: 
     Ok(result.to_string())
 }
 
+#[tauri::command]
+fn open_manual(app_handle: tauri::AppHandle) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    use tauri::Manager;
+    
+    // Al estar fuera de src-tauri, se empaqueta en _up_/docs/
+    let manual_path = app_handle.path().resource_dir()
+        .map_err(|e| format!("Error en recursos: {}", e))?
+        .join("_up_/docs/Manual_Guia_Configuracion_Fina.pdf");
+        
+    println!("[RUST] Intentando abrir manual en: {:?}", manual_path);
+    
+    if !manual_path.exists() {
+        return Err(format!("Manual no encontrado en la ruta de instalación: {:?}", manual_path));
+    }
+
+    app_handle.opener().open_path(manual_path.to_str().unwrap(), None::<&str>)
+        .map_err(|e| format!("No se pudo abrir el visor de PDF: {}", e))?;
+    
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![exit_app, hangup_doorbell, send_adb_command, start_streamer, execute_shell_command, spawn_shell_command, check_adb_status, execute_js_in_window, install_market_plugin, scan_network_devices])
+        .invoke_handler(tauri::generate_handler![exit_app, hangup_doorbell, send_adb_command, start_streamer, execute_shell_command, spawn_shell_command, check_adb_status, execute_js_in_window, install_market_plugin, scan_network_devices, open_manual])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::Destroyed = event {
                 if window.label() == "main" {

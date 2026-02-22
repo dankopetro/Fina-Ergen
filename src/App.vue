@@ -249,6 +249,14 @@ const appMetadata = {
     'stremio': { icon: 'fa-solid fa-play', color: 'text-purple-400', glow: 'shadow-purple-500/40' }
 };
 
+const openConfigManual = async () => {
+    try {
+        await invoke('open_manual');
+    } catch (e) {
+        addChatMessage("❌ Error: " + e, 5000);
+    }
+};
+
 const filteredTvApps = computed(() => {
     const apps = userSettings.value.tv_apps || {};
     if (!activeTvSearch.value) return apps;
@@ -2595,7 +2603,7 @@ const registerMasterPassword = () => {
                                 {{ msg.text }}</p>
                             <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{
                                 msg.time
-                                }}</span>
+                            }}</span>
                         </div>
                     </transition-group>
                 </div>
@@ -3125,7 +3133,7 @@ const registerMasterPassword = () => {
                                         <span class="text-[9px] font-bold text-slate-500 uppercase">Almacenamiento
                                             (Root)</span>
                                         <span class="text-[9px] font-bold text-white">{{ systemStats.disk.percent
-                                            }}%</span>
+                                        }}%</span>
                                     </div>
                                     <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                         <div class="h-full bg-gradient-to-r from-cyan-600 to-blue-500 transition-all duration-1000"
@@ -3221,7 +3229,7 @@ const registerMasterPassword = () => {
                                                     'border-pink-500/50': index % 3 === 2
                                                 }">
                                                 <span class="text-[11px] font-bold text-white">{{ reminder.task
-                                                }}</span>
+                                                    }}</span>
                                                 <span
                                                     class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{
                                                         reminder.time }}</span>
@@ -3640,6 +3648,15 @@ const registerMasterPassword = () => {
                                             </button>
                                         </template>
                                     </nav>
+
+                                    <!-- Botón de Manual (Persistente en Sidebar de Ajustes) -->
+                                    <div class="mt-auto pt-6 border-t border-white/5 px-2 mb-4">
+                                        <button @click="openConfigManual"
+                                            class="w-full flex items-center gap-3 px-5 py-4 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 border border-indigo-500/20 transition-all text-[8px] font-black uppercase tracking-[0.2em] text-left">
+                                            <i class="fa-solid fa-book-open text-xs"></i>
+                                            Documentación
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- Contenido de Ajustes -->
@@ -4126,7 +4143,7 @@ const registerMasterPassword = () => {
                                                 class="p-4 mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-2">
                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
                                                 <span class="text-xs font-bold text-red-200 uppercase">{{ mobileHubError
-                                                }}</span>
+                                                    }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4600,14 +4617,14 @@ const registerMasterPassword = () => {
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Temperatura</span>
                                                         <span class="text-xs font-mono font-bold text-white">{{
                                                             acState.temp
-                                                            }}°C</span>
+                                                        }}°C</span>
                                                     </div>
                                                     <div class="flex justify-between items-center">
                                                         <span
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Modo</span>
                                                         <span class="text-xs font-black text-white uppercase">{{
                                                             acState.mode
-                                                            }}</span>
+                                                        }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -4861,23 +4878,23 @@ const registerMasterPassword = () => {
                                     <span class="text-xl font-black text-white">{{
                                         Math.round(systemStats.cpu?.percent || 0) }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.cpu?.freq
-                                        }} MHz</span>
+                                    }} MHz</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">RAM</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.ram?.percent
-                                        }}%</span>
+                                    }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.ram?.used
-                                        }} / {{ systemStats.ram?.total }} GB</span>
+                                    }} / {{ systemStats.ram?.total }} GB</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">DISCO</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.disk?.percent
-                                        }}%</span>
+                                    }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.disk?.free
-                                        }} GB Libres</span>
+                                    }} GB Libres</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
