@@ -1579,12 +1579,13 @@ const refreshDoorbellStatus = async () => {
 
 
 
-const fetchSettings = async () => {
-    try {
+const fetchSettings = async (maxRetries = 10, delayMs = 1000) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
         const response = await fetch("http://127.0.0.1:8000/api/settings");
-        if (!response.ok) throw new Error("API Settings Error");
+        if (!response.ok) throw new Error(`API HTTP ${response.status}`);
         const loaded = await response.json();
-        console.log("📂 Loaded Settings from API:", loaded);
+        console.log(`📂 Settings OK (intento ${attempt}):`, loaded);
 
         // MERGE INTELIGENTE (Evita que undefined rompa el UI)
         if (loaded.apis) {
@@ -1607,11 +1608,16 @@ const fetchSettings = async () => {
         }
 
         console.log("✅ Settings Merged:", userSettings.value);
-        // Disparar clima inmediatamente después de tener las keys
         updateWeather();
-    } catch (e) {
-        console.warn("⚠️ Error loading settings (usando defaults):", e);
-        // No sobreescribimos userSettings, usamos los defaults definidos arriba
+        return; // Éxito => salir del loop
+      } catch (e) {
+        if (attempt < maxRetries) {
+          console.warn(`⏳ API no lista aún (intento ${attempt}/${maxRetries}). Reintentando en ${delayMs}ms...`);
+          await new Promise(r => setTimeout(r, delayMs));
+        } else {
+          console.warn("⚠️ API no respondió tras todos los intentos. Usando defaults.");
+        }
+      }
     }
 };
 
@@ -2000,14 +2006,14 @@ onMounted(async () => {
         addChatMessage("Sistemas Ergen V3 en línea.");
 
         // --- VERIFICACIÓN DE PRIMERA CONFIGURACIÓN ---
-        const criticalKeys = ['MISTRAL_API_KEY', 'OPENAI_API_KEY', 'WEATHER_API_KEY'];
-        const isUnconfigured = criticalKeys.every(k => !userSettings.value.apis[k]);
-
-        if (isUnconfigured) {
-            setTimeout(() => {
+        // Esperar 12s: permite que fetchSettings complete sus reintentos (hasta 10s)
+        setTimeout(() => {
+            const criticalKeys = ['MISTRAL_API_KEY', 'OPENAI_API_KEY', 'WEATHER_API_KEY'];
+            const isUnconfigured = criticalKeys.every(k => !userSettings.value.apis[k]);
+            if (isUnconfigured) {
                 addChatMessage("⚠️ Aviso: Parece que es tu primera vez. Por favor, completa tus credenciales en Ajustes según el manual de instalación.", 0);
-            }, 3000);
-        }
+            }
+        }, 12000);
 
         await new Promise(r => setTimeout(r, 1000));
 
