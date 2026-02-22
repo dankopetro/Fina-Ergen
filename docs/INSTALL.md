@@ -123,17 +123,28 @@ Los modelos de voz deben descargarse manualmente desde Hugging Face:
 - `es_AR-daniela-high.onnx`
 - `es_AR-daniela-high.onnx.json`
 
-#### Opción B: Usar wget/curl
+#### Opción B: Usar wget/curl (Recomendado)
 
 ```bash
 cd voice_models/
 
 # Voz femenina (Daniela)
-wget https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_AR/daniela/high/es_AR-daniela-high.onnx
-wget https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_AR/daniela/high/es_AR-daniela-high.onnx.json
+wget -c https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_AR/daniela/high/es_AR-daniela-high.onnx
+wget -c https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_AR/daniela/high/es_AR-daniela-high.onnx.json
 
 cd ..
 ```
+
+---
+
+### 5.5 Descargar Modelo de Reconocimiento de Voz (Vosk)
+
+Fina necesita un modelo para entender lo que dices. Descarga el modelo en español:
+
+1. **Enlace Directo**: [Download vosk-model-es-0.42.zip](https://alphacephei.com/vosk/models/vosk-model-es-0.42.zip) (~400MB)
+2. **Ubicación**: Debes descomprimirlo y renombrar la carpeta resultante a `vosk-model-es-0.42` dentro de la carpeta `model/`.
+
+Estructura requerida: `fina-ergen/model/vosk-model-es-0.42/`
 
 ---
 

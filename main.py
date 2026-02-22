@@ -10,6 +10,24 @@ if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 # -------------------------------------------------------------
 
+# --- DETECCIÓN DE ENTORNO VIRTUAL [UNIVERSAL] ---
+def get_best_python():
+    """Busca el mejor ejecutable de Python disponible"""
+    vps = [
+        os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"),
+        os.path.join(os.path.expanduser("~"), ".venv", "bin", "python"),
+        os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv", "bin", "python"),
+        sys.executable # Fallback al actual
+    ]
+    for p in vps:
+        if os.path.exists(p): return p
+    return sys.executable
+
+# Si no estamos en un venv y existe uno, relanzar con ese
+if "venv" not in sys.executable and get_best_python() != sys.executable:
+    os.execl(get_best_python(), get_best_python(), *sys.argv)
+# --------------------------------------------------
+
 import logging
 import time
 import traceback
@@ -68,9 +86,9 @@ from utils import (
     show_doorbell_stream, send_ui_command, check_system_dependencies,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config
 )
-from auth.fingerprint_auth import authenticate_user
-from auth.voice_auth import VoiceAuthenticator
-from fina_plugin_integration import setup_plugins
+# --- DEFERRED IMPORTS (Lazy Loading to prevent startup crash) ---
+# Moveremos biometría y plugins dentro de main() para que la ventana se abra primero
+# y podamos informar al usuario si algo falta.
 # --- CONFIG LOADING [SAFE] ---
 config, CONFIG_FOUND = load_config()
 
@@ -94,9 +112,10 @@ def speak(text, model=None, sink=None):
     except Exception as e:
         print(f"Error en voz: {e}")
 
-EMAIL_USER = config.EMAIL_USER
-EMAIL_PASSWORD = config.EMAIL_PASSWORD
-imap_server = 'imap.gmail.com' 
+# Acceso seguro a variables de configuración (evita crash si faltan)
+EMAIL_USER = getattr(config, "EMAIL_USER", None)
+EMAIL_PASSWORD = getattr(config, "EMAIL_PASSWORD", None)
+imap_server = getattr(config, "IMAP_SERVER", "imap.gmail.com") 
 
 # Memoria de último contacto para comandos como "mandale otro"
 last_contact_resolved = {"name": None, "number": None}
@@ -240,7 +259,41 @@ def get_current_voice_info():
     voice_path = VOICE_MODELS[voice_name]
     return voice_path, voice_name
 
-# --- Setup checks for required files ---
+# --- BOOTSTRAP: AUTO-INSTALADOR DE LIBRERÍAS [ZERO TERMINAL] ---
+def bootstrap_fina():
+    """Verifica e instala librerías de IA si faltan, sin terminal"""
+    required_libs = ["fastapi", "uvicorn", "vosk", "sounddevice", "torch", "sentence_transformers", "resemblyzer"]
+    missing = []
+    
+    import importlib.util
+    for lib in required_libs:
+        if importlib.util.find_spec(lib) is None:
+            missing.append(lib)
+    
+    if not missing:
+        return True
+
+    print(f"📦 Fina detectó componentes faltantes: {missing}")
+    print("🛠️ Iniciando auto-configuración silenciosa...")
+    
+    venv_dir = os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv")
+    try:
+        if not os.path.exists(venv_dir):
+            print(f"📁 Creando entorno virtual en {venv_dir}...")
+            subprocess.run([sys.executable, "-m", "venv", venv_dir], check=True)
+        
+        pip_exe = os.path.join(venv_dir, "bin", "pip")
+        print(f"🚀 Instalando dependencias: {missing}...")
+        # Instalación silenciosa
+        subprocess.check_call([pip_exe, "install", "--upgrade", "pip"], stdout=subprocess.DEVNULL)
+        subprocess.check_call([pip_exe, "install"] + missing, stdout=subprocess.DEVNULL)
+        print("✅ Auto-configuración completada con éxito.")
+        return True
+    except Exception as e:
+        print(f"❌ Error en auto-configuración: {e}")
+        return False
+
+# Setup checks for required files ---
 if not CONFIG_FOUND:
     print("\n⚠️ AVISO: Fina Ergen está en MODO INICIAL.")
     print("  - No se encontró config.py. Esto es normal si es la primera vez.")
@@ -255,6 +308,18 @@ logger.info(f"--- FINA ERGEN MAIN INICIADO ---")
 
 async def main():
     """Main interaction loop"""
+    # 0. BOOTSTRAP (Asegurar que las librerías existen o instalarlas)
+    update_ui_state("idle", "Verificando componentes de IA...")
+    if not bootstrap_fina():
+        update_ui_state("idle", "ERROR: Falló la auto-configuración.")
+        # Intentamos seguir igual por si es un falso positivo
+    
+    # RELANZAR SI SE CREÓ EL VENV (para cargar las nuevas librerías)
+    venv_python = os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv", "bin", "python")
+    if os.path.exists(venv_python) and sys.executable != venv_python:
+        print("🔄 Reiniciando con el nuevo entorno configurado...")
+        os.execl(venv_python, venv_python, *sys.argv)
+
     # DEBUG LOG DE ARRANQUE
     with open("/tmp/fina_main_debug.log", "w") as f:
         f.write(f"Iniciando Fina Ergen Main...\n")
@@ -267,64 +332,96 @@ async def main():
         print("DEBUG: [1] Inicializando Intents...")
         
         # 1. Precargar Intents (Sentence Transformers es pesado)
-        from intent_classifier import _initialize_model, detect_intent
-        _initialize_model()
-        print("DEBUG: [1] Intents Cargados.")
-        # "Warm-up" del clasificador
-        detect_intent("hola", confidence_threshold=0.1)
+        try:
+            from intent_classifier import _initialize_model, detect_intent
+            _initialize_model()
+            print("DEBUG: [1] Intents Cargados.")
+            # "Warm-up" del clasificador
+            detect_intent("hola", confidence_threshold=0.1)
+        except ImportError as e:
+            logger.error(f"❌ Error en inicialización: {e}")
+            update_ui_state("idle", "ERROR: FALTA TORCH")
         
         # 2. Precargar Vosk
         print("DEBUG: [2] Cargando Vosk...")
         import utils
-        utils.load_vosk_model("es")
-        print("DEBUG: [2] Vosk Cargado.")
-
-        # --- INICIALIZAR PLUGINS ---
-        print("🔌 Inicializando Plugins...")
-        plugin_integration = None
         try:
-            # Usamos una lambda para pasar la voz por defecto y el sink opcional
-            plugin_integration = setup_plugins(speak_callback=lambda text, sink=None: speak(text, DEFAULT_VOICE, sink=sink))
-        except Exception as e:
-            logger.error(f"Error inicializando plugins: {e}")
-        # ---------------------------
+            utils.load_vosk_model("es")
+            print("DEBUG: [2] Vosk Cargado.")
+        except:
+            print("⚠️ Vosk no cargado. Funcionamiento limitado.")
+            
+        # --- VERIFICACIÓN DE MODELOS PARA NOVATOS ---
+        vosk_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "model", "vosk-model-es-0.42")
+        models_missing = not os.path.exists(DEFAULT_VOICE) or not os.path.exists(vosk_path)
         
-        # 3. Saludo inicial una vez todo está en memoria
-        # update_ui_state("speaking", "Sistema listo")
+        if models_missing:
+            msg_novato = "¡HOLA! NECESITO MIS MODELOS (VER MANUAL)"
+            update_ui_state("idle", msg_novato)
+            print(f"💡 Sugerencia para novatos: Mostrando mensaje de configuración inicial.")
+            # Intentar abrir el manual automáticamente solo una vez
+            manual_lock = os.path.join(CONFIG_DIR, ".manual_opened")
+            if not os.path.exists(manual_lock):
+                import webbrowser
+                # Intentar primero el HTML, luego el PDF
+                manual_html = os.path.join(PROJECT_ROOT, "docs", "Manual_Guia_Configuracion_Fina.html")
+                manual_pdf = os.path.join(PROJECT_ROOT, "docs", "Manual_Guia_Configuracion_Fina.pdf")
+                
+                opened = False
+                if os.path.exists(manual_html):
+                    opened = webbrowser.open(f"file://{manual_html}")
+                
+                if not opened and os.path.exists(manual_pdf):
+                    webbrowser.open(f"file://{manual_pdf}")
+                
+                with open(manual_lock, "w") as f: f.write("done")
         
-        # 4. Inicializar motor de Biometría de Voz (Robusto)
-        print("🧠 Inicializando reconocimiento de voz...")
-        voice_auth = None
+        # --- SALUDO INICIAL ---
+        # Solo limpiar si NO estamos en modo novato
+        if not models_missing:
+            update_ui_state("idle", None)
+            
+        if CONFIG_FOUND:
+            greeting = get_time_based_greeting()
+            speak(f"{greeting}. Sistemas listos. Diga Fina para empezar.", DEFAULT_VOICE)
+        else:
+            msg = "Bienvenido. Por favor, consulta el manual para configurarme."
+            speak(msg, DEFAULT_VOICE)
+            
+    except Exception as e:
+        logger.error(f"Error general en arranque: {e}")
+        update_ui_state("idle", "ERROR EN ARRANQUE")
+
+    proactive_briefing_given = False
+    user_is_authenticated = False
+    
+    # --- LAZY LOADING DE MÓDULOS PESADOS ---
+    print("🔌 Inicializando plugins y biometría...")
+    plugin_integration = None
+    voice_auth = None
+    authenticate_user = None
+
+    try:
+        from auth.fingerprint_auth import authenticate_user
+        from auth.voice_auth import VoiceAuthenticator
+        from fina_plugin_integration import setup_plugins
+        
+        # Inicializar plugins
+        plugin_integration = setup_plugins(speak_callback=lambda text, sink=None: speak(text, DEFAULT_VOICE, sink=sink))
+        
+        # Inicializar biometría
         try:
             voice_auth = VoiceAuthenticator()
             print("✅ Biometría cargada.")
         except Exception as e:
             print(f"⚠️ Biometría falló (saltando): {e}")
-        
-        # 5. (Verificación de TV eliminada para mejorar velocidad de arranque)
-        
-        # 6. Watchdog y Monitor de Timbre son gestionados por el script de arranque global
-        # para evitar procesos duplicados.
-
-        
-        # Secuencia de inicialización completa
-        if CONFIG_FOUND:
-            speak("Sistemas listos. Diga Fina para empezar.", DEFAULT_VOICE)
-        else:
-            # Mensaje de bienvenida para usuario nuevo
-            msg = "Bienvenido a Fina Ergen. No detecto tu archivo de configuración. Por favor, consulta el manual de usuario para configurarme por primera vez. Me quedaré en modo de espera limitado."
-            print(f"📢 {msg}")
-            # Intentar usar la primera voz disponible si la de AR no está
-            speak(msg, DEFAULT_VOICE)
             
-        update_ui_state("idle", None)
-    except Exception as e:
-        logger.error(f"Error en inicialización: {e}")
-        # Asegurar que al menos el estado no quede roto
-        update_ui_state("idle", "ERROR EN ARRANQUE")
+    except ImportError as e:
+        msg = f"Faltan dependencias críticas: {e}."
+        print(f"❌ {msg}")
+        update_ui_state("idle", "ALERTA: FALTAN LIBRERÍAS")
+    # ----------------------------------------
 
-    proactive_briefing_given = False
-    user_is_authenticated = False
     while True:
         model = "tiny"
 
@@ -1329,16 +1426,6 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, handle_exit)  # Captura Ctrl+C
     signal.signal(signal.SIGTERM, handle_exit)  # Captura señales de terminación
     
-    try:
-        missing = config.validate_config()
-        if missing:
-            logger.warning(f"Algunas características pueden no funcionar: faltan configuraciones para {missing}")
-            print(f"[ADVERTENCIA] Algunas características pueden no funcionar: faltan configuraciones para {missing}")
-    except Exception as e:
-        logger.error(f"Error en la validación de configuración: {e}")
-        print("Error crítico de configuración: Faltan claves de API o son inválidas. Por favor verifica tu archivo config.py.")
-        sys.exit(1)
-        
     try:
         asyncio.run(main())
     except KeyboardInterrupt:

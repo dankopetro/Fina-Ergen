@@ -184,14 +184,23 @@ def _voice_engine_worker():
     if not piper_path:
         # Buscar en lugares comunes del proyecto
         potential_locations = [
-            os.path.join(ERGEN_ROOT, "assets", "piper"),
             os.path.join(ERGEN_ROOT, "bin", "piper"),
-            os.path.join(ERGEN_ROOT, ".venv", "bin", "piper"),
-            "/usr/local/bin/piper"
+            os.path.join(ERGEN_ROOT, "assets", "piper"),
+            os.path.join(ERGEN_ROOT, "..", "bin", "piper"),
+            "/usr/lib/Fina-Ergen/bin/piper",
+            "/usr/lib/fina-ergen/bin/piper",
+            "/usr/local/bin/piper",
+            os.path.join(os.path.expanduser("~"), ".local", "bin", "piper")
         ]
         for loc in potential_locations:
+            # 1. Intentar el nombre exacto
             if os.path.exists(loc) and os.access(loc, os.X_OK):
                 piper_path = loc
+                break
+            # 2. Intentar con el sufijo de Tauri (sidecar)
+            sidecar = f"{loc}-x86_64-unknown-linux-gnu"
+            if os.path.exists(sidecar) and os.access(sidecar, os.X_OK):
+                piper_path = sidecar
                 break
 
     aplay_path = shutil.which("aplay") or "/usr/bin/aplay"
@@ -356,19 +365,49 @@ def speak(text, selected_model=None, sink=None, wait=True):
 
 
 # --- SPEECH RECOGNITION (VOSK) ---
+# Flag para no saturar el log con errores de modelo
+vosk_error_reported = False
+
 def load_vosk_model(language="es"):
-    global vosk_model, vosk_recognizer, loaded_language
+    global vosk_model, vosk_recognizer, loaded_language, vosk_error_reported
     if vosk_model is not None and loaded_language == language: return
-    from vosk import Model, KaldiRecognizer, SetLogLevel
-    SetLogLevel(-1)
-    path = os.path.join(ERGEN_ROOT, "model", "vosk-model-es-0.42")
-    if os.path.exists(path):
-        vosk_model = Model(path)
-        vosk_recognizer = KaldiRecognizer(vosk_model, 16000)
-        loaded_language = language
+    
+    try:
+        from vosk import Model, KaldiRecognizer, SetLogLevel
+        SetLogLevel(-1)
+        # 1. Buscar en ~/.config/Fina/model/ (Ideal para usuarios de .deb)
+        user_config_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "model", "vosk-model-es-0.42")
+        # 2. Buscar en la raíz del proyecto (Modo desarrollo)
+        project_path = os.path.join(ERGEN_ROOT, "model", "vosk-model-es-0.42")
+        
+        path = user_config_path if os.path.exists(user_config_path) else project_path
+        
+        if os.path.exists(path):
+            vosk_model = Model(path)
+            vosk_recognizer = KaldiRecognizer(vosk_model, 16000)
+            loaded_language = language
+            vosk_error_reported = False
+        else:
+            if not vosk_error_reported:
+                logger.error(f"⚠️ Modelo Vosk no encontrado en {user_config_path} ni en {project_path}. El modo local estará desactivado.")
+                vosk_error_reported = True
+    except ImportError:
+        if not vosk_error_reported:
+            logger.error("❌ Librería 'vosk' no instalada. El reconocimiento de voz no funcionará.")
+            vosk_error_reported = True
+        raise  # Re-lanzar para que main() lo capture amigablemente
 
 def listen(model="tiny", language="es", timeout=None, return_audio=False):
-    load_vosk_model(language)
+    try:
+        load_vosk_model(language)
+    except:
+        return "" # Fallback silencioso si no hay vosk
+    
+    try:
+        import sounddevice as sd
+    except ImportError:
+        logger.error("❌ Librería 'sounddevice' no instalada.")
+        return ""
     if not vosk_recognizer: 
         return (None, None) if return_audio else None
     

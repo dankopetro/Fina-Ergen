@@ -36,8 +36,10 @@
         }
 
         .cover-page {
-            height: 297mm;
-            width: 210mm;
+            min-height: 297mm;
+            width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -81,6 +83,8 @@
         }
 
         .content-container {
+            max-width: 210mm;
+            margin: 0 auto;
             padding: 20mm 20mm;
             background-color: var(--bg-body);
         }
@@ -181,7 +185,7 @@
     <!-- PORTADA -->
     <div class="cover-page">
         <h1 class="main-title">Configuración Total</h1>
-        <div class="subtitle">Guía de Puesta en Marcha V14-F</div>
+        <div class="subtitle">Guía de Puesta en Marcha de Fina Ergen</div>
         <div class="version-badge">APIs, Servicios Pro y Redes IoT</div>
         <div style="position: absolute; bottom: 30mm; color: #94a3b8;">Fina Ergen © 2026</div>
     </div>
@@ -189,13 +193,16 @@
     <!-- SECCION 1: config.py y APIs Completo -->
     <div class="content-container">
         <h2><i class="fas fa-key"></i> 1. El cerebro: Archivo config.py y APIs</h2>
-        <p>Para que Fina logre la omnipotencia funcional, debe estar conectada a múltiples servicios. Todo se gestiona en el archivo <code>config.py</code>.</p>
-        
+        <p>Para que Fina logre la omnipotencia funcional, debe estar conectada a múltiples servicios. Todo se gestiona
+            en el archivo <code>config.py</code>.</p>
+
         <div class="warning-card">
             <p><strong>📍 ¿Dónde está este archivo?</strong><br>
-            Independientemente de si usas AppImage o .DEB, tu archivo de configuración personal se encuentra en:<br>
-            <code>~/.config/Fina/config.py</code><br>
-            (Puedes abrir tu carpeta personal, presionar <code>Ctrl+H</code> para ver carpetas ocultas, entrar a <code>.config</code> y luego a <code>Fina</code>).</p>
+                Independientemente de si usas AppImage o .DEB, tu archivo de configuración personal se encuentra en:<br>
+                <code>~/.config/Fina/config.py</code><br>
+                (Puedes abrir tu carpeta personal, presionar <code>Ctrl+H</code> para ver carpetas ocultas, entrar a
+                <code>.config</code> y luego a <code>Fina</code>).
+            </p>
         </div>
 
         <p>A continuación, la lista completa de webs para obtener tus claves:</p>
@@ -274,14 +281,17 @@
 
         <div class="info-card">
             <p><strong>Modelos de Voz Piper (ONNX):</strong> Aquí es donde Fina busca a "Daniela" y otras voces.<br>
-                <code>VOICE_MODELS_PATH = "/ruta/a/tus/modelos"</code><br>
-                <em>Recomendado:</em> <code>~/.config/Fina/voice_models</code>
+                <strong>Descargas:</strong> <a
+                    href="https://huggingface.co/rhasspy/piper-voices/tree/main/es/es_AR/daniela/high">Daniela
+                    (Argentina)</a><br>
+                <code>VOICE_MODELS_PATH = "~/.config/Fina/voice_models"</code> (Detección automática activa)
             </p>
 
             <p><strong>Modelo de Reconocimiento Vosk:</strong> El motor que "escucha" tus palabras en modo local.<br>
-                <strong>Descargar:</strong> <a
-                    href="https://alphacephei.com/vosk/models">https://alphacephei.com/vosk/models</a><br>
-                <code>VOSK_MODEL_PATH = "/ruta/al/modelo/descomprimido"</code>
+                <strong>Descarga Recomendada (Español):</strong> <a
+                    href="https://alphacephei.com/vosk/models/vosk-model-es-0.42.zip">vosk-model-es-0.42.zip</a><br>
+                <strong>Nota:</strong> Descomprime el ZIP y mueve la carpeta a <code>~/.config/Fina/model/</code>. Fina
+                lo encontrará solo.
             </p>
         </div>
 
@@ -291,7 +301,8 @@
             <p>Si usas el formato **AppImage**, recuerda que es un contenedor de SOLO LECTURA. Si descargas una voz
                 nueva, **NUNCA** intentes meterla dentro del archivo .AppImage.</p>
             <p>Debes guardarla en una carpeta normal de tu disco (como Descargas o Documentos) y luego copiar esa ruta
-                exacta en el `config.py`. Fina leerá los archivos desde afuera sin problemas.</p>
+                exacta en el <code>config.py</code> (ubicado en <code>~/.config/Fina/config.py</code>). Fina leerá los
+                archivos desde afuera sin problemas.</p>
         </div>
     </div>
 
@@ -309,7 +320,8 @@
                 campo llamado **HABITACIÓN**.</p>
             <p><strong>Truco Pro:</strong> Si asignas un televisor a "Cocina" y otro a "Living", podrás decir:
                 <em>"Fina, prende la tele de la cocina"</em> y el sistema sabrá exactamente que IP disparar, evitando
-                encender la del living por error.</p>
+                encender la del living por error.
+            </p>
         </div>
     </div>
 
