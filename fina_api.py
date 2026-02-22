@@ -27,8 +27,28 @@ if "venv" in best_py and "venv" not in sys.executable:
 import logging
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-for lib in ["httpx", "huggingface_hub", "urllib3", "transformers"]:
+os.environ["HF_HUB_OFFLINE"] = "0"  # Permitir descargas si faltan, pero sin avisos
+logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
+logging.getLogger("transformers").setLevel(logging.ERROR)
+
+for lib in ["httpx", "urllib3"]:
     logging.getLogger(lib).setLevel(logging.WARNING)
+
+# --- LIMPIADOR DE PUERTOS (Evita Error 98: Address already in use) ---
+def kill_process_on_port(port):
+    try:
+        import subprocess
+        # Buscar el PID del proceso en el puerto
+        result = subprocess.check_output(["lsof", "-t", f"-i:{port}"]).decode().strip()
+        if result:
+            pids = result.split("\n")
+            for pid in pids:
+                print(f"🧹 API: Limpiando proceso fantasma en puerto {port} (PID: {pid})...", flush=True)
+                subprocess.run(["kill", "-9", pid])
+            time.sleep(1) # Dar tiempo al kernel para liberar el socket
+    except: pass
+
+kill_process_on_port(8000)
 
 print(f"\n--- [ARRANQUE API] {time.strftime('%Y-%m-%d %H:%M:%S')} ---", flush=True)
 
