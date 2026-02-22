@@ -60,9 +60,17 @@ formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s
 file_handler = logging.FileHandler(log_path, mode='w', encoding='utf-8')
 file_handler.setFormatter(formatter)
 
-# --- SILENCIAR LIBRERÍAS RUIDOSAS ---
-for lib in ["httpx", "huggingface_hub", "urllib3", "sentence_transformers"]:
+# --- SILENCIAR LIBRERÍAS RUIDOSAS (DIETA DIGITAL EXTREMA) ---
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+for lib in ["httpx", "huggingface_hub", "urllib3", "sentence_transformers", "transformers", "tqdm"]:
     logging.getLogger(lib).setLevel(logging.WARNING)
+
+try:
+    import transformers
+    transformers.utils.logging.set_verbosity_error()
+except: pass
 
 def _clean_old_logs(days=7):
     """Limpia logs de sesión más viejos que N días"""

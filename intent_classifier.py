@@ -3,12 +3,10 @@ import logging
 import json
 import os
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
-    handlers=[logging.StreamHandler()]
-)
+# Usar el logger del sistema (ya configurado en utils si se importa desde main)
 logger = logging.getLogger("IntentClassifier")
+logging.getLogger('sentence_transformers').setLevel(logging.WARNING)
+logging.getLogger('transformers').setLevel(logging.WARNING)
 
 # Global variables for lazy loading
 embedder = None
@@ -31,7 +29,8 @@ def _initialize_model():
     with open(INTENTS_PATH, 'r') as f:
         intents = json.load(f)
 
-    embedder = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+    embedder = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2', device='cpu')
+    embedder.show_progress_bar = False # Desactivar barras en el cargado si aplica
 
     # Flatten intents into phrases and labels
     intent_phrases = []
@@ -42,8 +41,8 @@ def _initialize_model():
             intent_phrases.append(phrase.lower().strip())
             intent_labels.append(intent)
 
-    # Precompute embeddings
-    phrase_embeddings = embedder.encode(intent_phrases, convert_to_tensor=True)
+    # Precompute embeddings (Silencioso)
+    phrase_embeddings = embedder.encode(intent_phrases, convert_to_tensor=True, show_progress_bar=False)
     logger.info("✅ Intent classifier initialized")
 
 def detect_intent(text, confidence_threshold=0.55):
@@ -79,7 +78,7 @@ def detect_intent(text, confidence_threshold=0.55):
         return "start_timer", 1.0
     import torch
     from sentence_transformers import SentenceTransformer, util
-    query_embedding = embedder.encode(text, convert_to_tensor=True)
+    query_embedding = embedder.encode(text, convert_to_tensor=True, show_progress_bar=False)
     cosine_scores = util.pytorch_cos_sim(query_embedding, phrase_embeddings)[0]
 
     top_score, top_idx = float(cosine_scores.max()), int(cosine_scores.argmax())
