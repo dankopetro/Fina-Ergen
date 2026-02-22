@@ -27,26 +27,52 @@ if "venv" in best_py and "venv" not in sys.executable:
 import logging
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-os.environ["HF_HUB_OFFLINE"] = "0"  # Permitir descargas si faltan, pero sin avisos
-logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
+os.environ["HF_HUB_OFFLINE"] = "0"
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
+# Nivel CRITICAL para HuggingFace: suprime incluso las WARNING de token no autenticado
+logging.getLogger("huggingface_hub").setLevel(logging.CRITICAL)
+logging.getLogger("huggingface_hub.utils._http").setLevel(logging.CRITICAL)
+logging.getLogger("huggingface_hub.utils").setLevel(logging.CRITICAL)
 logging.getLogger("transformers").setLevel(logging.ERROR)
-
 for lib in ["httpx", "urllib3"]:
     logging.getLogger(lib).setLevel(logging.WARNING)
 
-# --- LIMPIADOR DE PUERTOS (Evita Error 98: Address already in use) ---
+# --- LIMPIADOR DE PUERTOS (Multi-Método - No depende de lsof) ---
 def kill_process_on_port(port):
+    killed = False
     try:
-        import subprocess
-        # Buscar el PID del proceso en el puerto
-        result = subprocess.check_output(["lsof", "-t", f"-i:{port}"]).decode().strip()
-        if result:
-            pids = result.split("\n")
-            for pid in pids:
-                print(f"🧹 API: Limpiando proceso fantasma en puerto {port} (PID: {pid})...", flush=True)
-                subprocess.run(["kill", "-9", pid])
-            time.sleep(1) # Dar tiempo al kernel para liberar el socket
+        # Método 1: fuser (disponible en la mayoría de distros Linux)
+        result = subprocess.run(["fuser", "-k", f"{port}/tcp"], 
+                                capture_output=True, timeout=3)
+        if result.returncode == 0:
+            print(f"🧹 API: Puerto {port} liberado con fuser.", flush=True)
+            killed = True
     except: pass
+    
+    if not killed:
+        try:
+            # Método 2: ss + kill manual
+            result = subprocess.check_output(
+                f"ss -tlnp | grep ':{port}' | grep -oP 'pid=\\K[0-9]+'",
+                shell=True, timeout=3
+            ).decode().strip()
+            if result:
+                for pid in result.split():
+                    subprocess.run(["kill", "-9", pid])
+                    print(f"🧹 API: Proceso {pid} en puerto {port} eliminado (ss).", flush=True)
+                killed = True
+        except: pass
+    
+    if not killed:
+        try:
+            # Método 3: pkill directo de uvicorn (el que usa el puerto)
+            subprocess.run(["pkill", "-f", "uvicorn"], timeout=2)
+            subprocess.run(["pkill", "-f", "fina_api"], timeout=2)
+            print(f"🧹 API: Procesos uvicorn/fina_api anteriores terminados.", flush=True)
+        except: pass
+    
+    if killed:
+        time.sleep(1)  # Dar tiempo al kernel para liberar el socket
 
 kill_process_on_port(8000)
 

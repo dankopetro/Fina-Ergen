@@ -64,9 +64,15 @@ file_handler.setFormatter(formatter)
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 
-for lib in ["httpx", "huggingface_hub", "urllib3", "sentence_transformers", "transformers", "tqdm"]:
-    logging.getLogger(lib).setLevel(logging.WARNING)
+# CRITICAL para HuggingFace: suprime el warning "unauthenticated requests"
+for lib in ["huggingface_hub", "huggingface_hub.utils._http", "huggingface_hub.utils",
+            "urllib3", "sentence_transformers", "transformers", "tqdm"]:
+    logging.getLogger(lib).setLevel(logging.CRITICAL)
+
+# Silenciar httpx (baja a WARNING, no hace falta CRITICAL)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 try:
     import transformers
