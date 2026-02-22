@@ -498,6 +498,37 @@ def speak(text, selected_model=None, sink=None, wait=True):
 # Flag para no saturar el log con errores de modelo
 vosk_error_reported = False
 
+def _download_vosk_model(dest_path):
+    """Descarga y extrae el modelo de Vosk automáticamente"""
+    import zipfile
+    import requests
+    from io import BytesIO
+    
+    url = "https://alphacephei.com/vosk/models/vosk-model-small-es-0.42.zip"
+    model_dir = os.path.dirname(dest_path) # ~/.config/Fina/model
+    
+    try:
+        logger.info(f"👂 Fina está preparando su oído (descargando modelo de voz)...")
+        update_ui_state("idle", process="Descargando modelo de voz...")
+        
+        response = requests.get(url, timeout=60)
+        if response.status_code == 200:
+            with zipfile.ZipFile(BytesIO(response.content)) as zip_ref:
+                # El zip contiene una carpeta con el nombre del modelo
+                zip_ref.extractall(model_dir)
+                # Renombramos si el nombre del zip no coincide exactamente con la carpeta interna
+                # (Vosk small zip suele extraerse como vosk-model-small-es-0.42)
+                extracted_dir = os.path.join(model_dir, "vosk-model-small-es-0.42")
+                if os.path.exists(extracted_dir) and extracted_dir != dest_path:
+                    if os.path.exists(dest_path): shutil.rmtree(dest_path)
+                    os.rename(extracted_dir, dest_path)
+                    
+            logger.info("✅ Oído de Fina configurado correctamente.")
+            return True
+    except Exception as e:
+        logger.error(f"❌ No se pudo descargar el oído (Vosk): {e}")
+    return False
+
 def load_vosk_model(language="es"):
     global vosk_model, vosk_recognizer, loaded_language, vosk_error_reported
     if vosk_model is not None and loaded_language == language: return
@@ -518,9 +549,17 @@ def load_vosk_model(language="es"):
             loaded_language = language
             vosk_error_reported = False
         else:
-            if not vosk_error_reported:
-                logger.error(f"⚠️ Modelo Vosk no encontrado en {user_config_path} ni en {project_path}. El modo local estará desactivado.")
-                vosk_error_reported = True
+            # AUTO-DESCARGA SI NO EXISTE
+            logger.info("ℹ️ Modelo no encontrado. Intentando auto-descarga...")
+            if _download_vosk_model(user_config_path):
+                vosk_model = Model(user_config_path)
+                vosk_recognizer = KaldiRecognizer(vosk_model, 16000)
+                loaded_language = language
+                vosk_error_reported = False
+            else:
+                if not vosk_error_reported:
+                    logger.error(f"⚠️ Modelo Vosk no encontrado y la auto-descarga falló.")
+                    vosk_error_reported = True
     except ImportError:
         if not vosk_error_reported:
             logger.error("❌ Librería 'vosk' no instalada. El reconocimiento de voz no funcionará.")
