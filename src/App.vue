@@ -2277,7 +2277,11 @@ const loadTvChannels = async () => {
         const pyPath = pythonExecutable.value;
         // Escolher arquivo baseado na sala
         const channelFile = activeTvRoom.value === 'Deco' ? 'channels_telecentro.json' : 'channels.json';
-        const script = `import json, os; print(json.dumps(json.load(open("./config/${channelFile}"))))`;
+        const script = `import json, os; 
+config_dir = os.path.expanduser("~/.config/Fina")
+path = os.path.join(config_dir, "${channelFile}")
+if not os.path.exists(path): path = os.path.join(".", "config", "${channelFile}")
+print(json.dumps(json.load(open(path))))`;
         const output = await invoke("execute_shell_command", { command: `${pyPath} -c '${script}'` });
         tvChannels.value = JSON.parse(output);
         console.log(`📺 Canales cargados para ${activeTvRoom.value} desde ${channelFile}`);
@@ -2603,7 +2607,7 @@ const registerMasterPassword = () => {
                                 {{ msg.text }}</p>
                             <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{
                                 msg.time
-                                }}</span>
+                            }}</span>
                         </div>
                     </transition-group>
                 </div>
@@ -3133,7 +3137,7 @@ const registerMasterPassword = () => {
                                         <span class="text-[9px] font-bold text-slate-500 uppercase">Almacenamiento
                                             (Root)</span>
                                         <span class="text-[9px] font-bold text-white">{{ systemStats.disk.percent
-                                            }}%</span>
+                                        }}%</span>
                                     </div>
                                     <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                         <div class="h-full bg-gradient-to-r from-cyan-600 to-blue-500 transition-all duration-1000"
@@ -3229,7 +3233,7 @@ const registerMasterPassword = () => {
                                                     'border-pink-500/50': index % 3 === 2
                                                 }">
                                                 <span class="text-[11px] font-bold text-white">{{ reminder.task
-                                                }}</span>
+                                                    }}</span>
                                                 <span
                                                     class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{
                                                         reminder.time }}</span>
@@ -3872,6 +3876,24 @@ const registerMasterPassword = () => {
                                                     </div>
                                                 </div>
 
+                                                <!-- BLOQUE MODELOS (Agregado para Novatos) -->
+                                                <div
+                                                    class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
+                                                    <span
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">Modelos
+                                                        & Heurísticas</span>
+                                                    <div v-for="(label, key) in { VOICE_MODELS_PATH: 'Carpeta de Voces (Piper)', VOSK_MODEL_PATH: 'Modelo Reconocimiento (Vosk)' }"
+                                                        :key="key" class="space-y-2">
+                                                        <label
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
+                                                                label
+                                                            }}</label>
+                                                        <input type="text" v-model="userSettings.apis[key]"
+                                                            placeholder="Ej: /home/usuario/voces/"
+                                                            class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs font-mono focus:border-indigo-500 outline-none transition-all" />
+                                                    </div>
+                                                </div>
+
                                                 <!-- BLOQUE EXTERNOS -->
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
@@ -4145,7 +4167,7 @@ const registerMasterPassword = () => {
                                                 class="p-4 mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-2">
                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
                                                 <span class="text-xs font-bold text-red-200 uppercase">{{ mobileHubError
-                                                }}</span>
+                                                    }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4619,14 +4641,14 @@ const registerMasterPassword = () => {
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Temperatura</span>
                                                         <span class="text-xs font-mono font-bold text-white">{{
                                                             acState.temp
-                                                            }}°C</span>
+                                                        }}°C</span>
                                                     </div>
                                                     <div class="flex justify-between items-center">
                                                         <span
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Modo</span>
                                                         <span class="text-xs font-black text-white uppercase">{{
                                                             acState.mode
-                                                            }}</span>
+                                                        }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -4880,23 +4902,23 @@ const registerMasterPassword = () => {
                                     <span class="text-xl font-black text-white">{{
                                         Math.round(systemStats.cpu?.percent || 0) }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.cpu?.freq
-                                        }} MHz</span>
+                                    }} MHz</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">RAM</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.ram?.percent
-                                        }}%</span>
+                                    }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.ram?.used
-                                        }} / {{ systemStats.ram?.total }} GB</span>
+                                    }} / {{ systemStats.ram?.total }} GB</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">DISCO</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.disk?.percent
-                                        }}%</span>
+                                    }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.disk?.free
-                                        }} GB Libres</span>
+                                    }} GB Libres</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">

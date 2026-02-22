@@ -153,10 +153,34 @@ def speak(text, model=None, sink=None):
     except Exception as e:
         print(f"Error en voz: {e}")
 
-# Acceso seguro a variables de configuración (evita crash si faltan)
-EMAIL_USER = getattr(config, "EMAIL_USER", None)
-EMAIL_PASSWORD = getattr(config, "EMAIL_PASSWORD", None)
-imap_server = getattr(config, "IMAP_SERVER", "imap.gmail.com") 
+# --- CONFIGURATION UNIFICATION (UI Priority) ---
+def get_unified_config(key, default=None):
+    """Prioriza settings.json (UI) sobre config.py (Código)"""
+    # 1. Intentar desde settings.json
+    try:
+        from utils import SETTINGS_PATH
+        if os.path.exists(SETTINGS_PATH):
+            with open(SETTINGS_PATH, 'r') as f:
+                data = json.load(f)
+                val = data.get("apis", {}).get(key)
+                if val: return val
+                # Fallback para claves de primer nivel en versiones viejas
+                val = data.get(key)
+                if val: return val
+    except: pass
+
+    # 2. Fallback al config.py tradicional
+    return getattr(config, key, default)
+
+# Credenciales de Email (Prioridad UI)
+EMAIL_USER = get_unified_config("EMAIL_USER")
+EMAIL_PASSWORD = get_unified_config("EMAIL_PASSWORD")
+imap_server = get_unified_config("IMAP_SERVER", "imap.gmail.com") 
+
+# API Keys (Prioridad UI)
+MISTRAL_API_KEY = get_unified_config("MISTRAL_API_KEY")
+GITHUB_TOKEN = get_unified_config("GITHUB_TOKEN")
+ELEVENLABS_API_KEY = get_unified_config("ELEVENLABS_API_KEY")
 
 # Memoria de último contacto para comandos como "mandale otro"
 last_contact_resolved = {"name": None, "number": None}
@@ -266,25 +290,47 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 # Autonomía total: Phoenix solo mira dentro de su carpeta
 GLOBAL_ROOT = PROJECT_ROOT
 
-# Voice model paths - now relative to project directory
-# Modelos de voz en español
-VOICE_MODELS = {
-    "ElevenLabs": "ElevenLabs",                                                        # ElevenLabs API
-    "Daniela": os.path.join(PROJECT_ROOT, "voice_models", "es_AR-daniela-high.onnx"),  # Argentina - Femenina
-    "Claude": os.path.join(PROJECT_ROOT, "voice_models", "es_MX-claude-high.onnx"),    # México - Masculina
-    "Laura": os.path.join(PROJECT_ROOT, "voice_models", "es_MX-laura-high.onnx"),      # México - Femenina
-    "Miro": os.path.join(PROJECT_ROOT, "voice_models", "miro_es-ES.onnx"),             # España - Masculina
-}
+def get_all_voice_models():
+    """Escanea y construye el diccionario de voces disponibles dinámicamente"""
+    # Voces embebidas por defecto
+    models = {
+        "ElevenLabs": "ElevenLabs",
+        "Daniela": os.path.join(PROJECT_ROOT, "voice_models", "es_AR-daniela-high.onnx"),
+        "Claude": os.path.join(PROJECT_ROOT, "voice_models", "es_MX-claude-high.onnx"),
+        "Laura": os.path.join(PROJECT_ROOT, "voice_models", "es_MX-laura-high.onnx"),
+        "Miro": os.path.join(PROJECT_ROOT, "voice_models", "miro_es-ES.onnx"),
+    }
+    
+    # 1. Buscar en Carpeta de Usuario (~/.config/Fina/voice_models)
+    # 2. Buscar en Ruta personalizada de la Interfaz
+    from utils import get_unified_config, CONFIG_DIR
+    user_custom_path = get_unified_config("VOICE_MODELS_PATH")
+    
+    search_dirs = [os.path.join(CONFIG_DIR, "voice_models"), os.path.join(PROJECT_ROOT, "voice_models")]
+    if user_custom_path and os.path.exists(user_custom_path) and os.path.isdir(user_custom_path):
+        search_dirs.append(user_custom_path)
+    
+    for s_dir in search_dirs:
+        if os.path.exists(s_dir):
+            try:
+                for f in os.listdir(s_dir):
+                    if f.endswith(".onnx"):
+                        # Crear un nombre amigable a partir del archivo si no existe
+                        nice_name = f.replace(".onnx", "").replace("-", " ").replace("_", " ").title()
+                        path = os.path.join(s_dir, f)
+                        if nice_name not in models and "low" not in f: # Evitar procesar jsons o versiones low si hay high
+                             models[nice_name] = path
+            except: pass
+            
+    return models
 
-# Default voice model - Daniela (voz femenina argentina)
-DEFAULT_VOICE = os.path.join(PROJECT_ROOT, "voice_models", "es_AR-daniela-high.onnx")
+# Carga dinámica al arrancar
+VOICE_MODELS = get_all_voice_models()
+DEFAULT_VOICE = VOICE_MODELS.get("Daniela", list(VOICE_MODELS.values())[0])
 
-# Voice change functionality
-current_voice_index = 0
+# Funcionalidad de cambio de voz
 voice_model_names = list(VOICE_MODELS.keys())
-# Set Daniela as the default
-if "Daniela" in voice_model_names:
-    current_voice_index = voice_model_names.index("Daniela")
+current_voice_index = voice_model_names.index("Daniela") if "Daniela" in voice_model_names else 0
 
 def cycle_voice_model():
     """Cycle to the next voice model"""

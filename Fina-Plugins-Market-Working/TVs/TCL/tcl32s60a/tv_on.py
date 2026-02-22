@@ -80,6 +80,7 @@ def load_targets_from_settings():
     ]
     
     paths = [
+        os.path.join(os.path.expanduser("~"), ".config", "Fina", "settings.json"),
         os.path.join(PROJECT_ROOT, "config", "settings.json")
     ]
 

@@ -35,7 +35,10 @@ def load_channels():
     channels = {}
     
     # 1. Rutas locales de Fina-Ergen
+    config_dir = os.path.expanduser("~/.config/Fina")
     paths = [
+        os.path.join(config_dir, "channels.json"),
+        os.path.join(config_dir, "channels_telecentro.json"),
         os.path.join(PROJECT_ROOT, "config", "channels.json"),
         os.path.join(PROJECT_ROOT, "config", "channels_telecentro.json")
     ]

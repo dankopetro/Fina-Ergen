@@ -25,7 +25,10 @@ class TVPlugin:
         root = os.path.dirname(os.path.dirname(self.plugin_dir))
         local_settings = os.path.join(root, "config", "settings.json")
         
-        paths_to_check = [local_settings]
+        # 2. User config path
+        user_settings = os.path.join(os.path.expanduser("~"), ".config", "Fina", "settings.json")
+        
+        paths_to_check = [user_settings, local_settings]
         
         for p in paths_to_check:
             if os.path.exists(p):

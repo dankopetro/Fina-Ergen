@@ -54,9 +54,35 @@ app.add_middleware(
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
-CONTACTS_PATH = os.path.join(CONFIG_DIR, "contact.json")
-CHANNELS_PATH = os.path.join(PROJECT_ROOT, "channels.json") # Mantener canales en root por ahora
 USER_DATA_PATH = os.path.join(CONFIG_DIR, "user_data.json")
+# Soporte para ambos nombres (singular y plural)
+CONTACTS_PATH_PRIMARY = os.path.join(CONFIG_DIR, "contact.json")
+CONTACTS_PATH_SECONDARY = os.path.join(CONFIG_DIR, "contacts.json")
+
+# Estrategia para Canales: 1. Usuario, 2. Interno/Config, 3. Raíz
+CHANNELS_PATH_USER = os.path.join(CONFIG_DIR, "channels.json")
+CHANNELS_PATH_INTERNAL = os.path.join(PROJECT_ROOT, "config", "channels.json")
+CHANNELS_PATH_FALLBACK = os.path.join(PROJECT_ROOT, "channels.json")
+
+if os.path.exists(CONTACTS_PATH_PRIMARY):
+    CONTACTS_PATH = CONTACTS_PATH_PRIMARY
+else:
+    CONTACTS_PATH = CONTACTS_PATH_SECONDARY
+
+CHANNELS_PATH_TELECENTRO_USER = os.path.join(CONFIG_DIR, "channels_telecentro.json")
+CHANNELS_PATH_TELECENTRO_INTERNAL = os.path.join(PROJECT_ROOT, "config", "channels_telecentro.json")
+
+print(f"📂 [DIAGNÓSTICO] Config Dir: {CONFIG_DIR}", flush=True)
+print(f"📄 [DIAGNÓSTICO] Settings: {SETTINGS_PATH} (Existe: {os.path.exists(SETTINGS_PATH)})", flush=True)
+print(f"👥 [DIAGNÓSTICO] Contacts: {CONTACTS_PATH} (Existe: {os.path.exists(CONTACTS_PATH)})", flush=True)
+print(f"📺 [DIAGNÓSTICO] Channels Standard: {CHANNELS_PATH} (Existe: {os.path.exists(CHANNELS_PATH)})", flush=True)
+
+if os.path.exists(CHANNELS_PATH_TELECENTRO_USER):
+    print(f"📡 [DIAGNÓSTICO] Channels Telecentro: {CHANNELS_PATH_TELECENTRO_USER} (Encontrado en USUARIO)", flush=True)
+elif os.path.exists(CHANNELS_PATH_TELECENTRO_INTERNAL):
+    print(f"📡 [DIAGNÓSTICO] Channels Telecentro: {CHANNELS_PATH_TELECENTRO_INTERNAL} (Encontrado en CONFIG)", flush=True)
+else:
+    print(f"📡 [DIAGNÓSTICO] Channels Telecentro: NO ENCONTRADO", flush=True)
 
 print(f"✅ Rutas de usuario activas: {CONFIG_DIR}", flush=True)
 
@@ -166,11 +192,12 @@ async def get_settings():
 
 @app.get("/api/contacts")
 async def get_contacts():
-    """Retorna los contactos desde .config/Fina/contact.json"""
-    if not os.path.exists(CONTACTS_PATH):
+    """Retorna los contactos desde .config/Fina/contact.json (o contacts.json)"""
+    path = CONTACTS_PATH_PRIMARY if os.path.exists(CONTACTS_PATH_PRIMARY) else CONTACTS_PATH_SECONDARY
+    if not os.path.exists(path):
         return {}
     try:
-        with open(CONTACTS_PATH, "r", encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
         print(f"❌ Error cargando contactos: {e}", flush=True)
@@ -217,7 +244,7 @@ async def get_system_info():
         "python_path": sys.executable,
         "project_root": PROJECT_ROOT,
         "config_dir": CONFIG_DIR,
-        "version": "3.5.4"
+        "version": "3.5.4-18"
     }
 
 # --- Static ---

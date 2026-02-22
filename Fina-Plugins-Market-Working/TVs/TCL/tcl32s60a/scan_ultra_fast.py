@@ -137,8 +137,13 @@ def main():
     
     # Solo guardar si el escaneo terminó o no fue cancelado
     if channels_found:
-        project_root = "."
-        output_file = os.path.join(project_root, "config", "channels.json")
+        # Priorizar Carpeta de Usuario
+        config_dir = os.path.expanduser("~/.config/Fina")
+        output_file = os.path.join(config_dir, "channels.json")
+        
+        # Fallback si no existe la carpeta (aunque main.py la crea)
+        if not os.path.exists(config_dir):
+            output_file = os.path.join(".", "config", "channels.json")
         
         try:
             os.makedirs(os.path.dirname(output_file), exist_ok=True)

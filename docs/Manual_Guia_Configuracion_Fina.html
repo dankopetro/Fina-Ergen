@@ -190,18 +190,26 @@
         <div style="position: absolute; bottom: 30mm; color: #94a3b8;">Fina Ergen © 2026</div>
     </div>
 
-    <!-- SECCION 1: config.py y APIs Completo -->
+    <!-- SECCION 1: Interfaz y APIs -->
     <div class="content-container">
-        <h2><i class="fas fa-key"></i> 1. El cerebro: Archivo config.py y APIs</h2>
-        <p>Para que Fina logre la omnipotencia funcional, debe estar conectada a múltiples servicios. Todo se gestiona
-            en el archivo <code>config.py</code>.</p>
+        <h2><i class="fas fa-desktop"></i> 1. Configuración Visual: Interfaz Fina</h2>
+        <p>A partir de la versión v3.5.4-18, Fina prioriza la **configuración visual** desde la propia aplicación.
+            Ya no es necesario que un usuario novato edite código para que el sistema funcione.</p>
+
+        <div class="info-card">
+            <p><strong>📍 ¿Cómo configurar por pantalla?</strong><br>
+                Abre Fina Ergen y dirígete a: <br>
+                <code>Settings (Ajustes) > Dominio Inteligencia > Servicios & APIs</code><br>
+                Allí encontrarás formularios para pegar tus claves de IA, Emails y Rutas. Al darle a
+                <strong>"Guardar"</strong>, los cambios se aplican al instante.
+            </p>
+        </div>
 
         <div class="warning-card">
-            <p><strong>📍 ¿Dónde está este archivo?</strong><br>
-                Independientemente de si usas AppImage o .DEB, tu archivo de configuración personal se encuentra en:<br>
-                <code>~/.config/Fina/config.py</code><br>
-                (Puedes abrir tu carpeta personal, presionar <code>Ctrl+H</code> para ver carpetas ocultas, entrar a
-                <code>.config</code> y luego a <code>Fina</code>).
+            <p><strong>Para Usuarios Avanzados (config.py):</strong><br>
+                Fina aún mantiene el archivo <code>~/.config/Fina/config.py</code>. Si dejas un campo vacío en la
+                interfaz de Ajustes, Fina buscará los datos en este archivo. Esto es útil para migraciones o
+                configuraciones técnicas.
             </p>
         </div>
 
@@ -276,33 +284,39 @@
     <!-- SECCION 2: Rutas y Modelos Locales -->
     <div class="content-container">
         <h2><i class="fas fa-folder-open"></i> 2. Rutas del Sistema y Modelos Locales</h2>
-        <p>Si prefieres la privacidad del procesamiento local (Offline), Fina utiliza Piper y Vosk. Aquí defines dónde
-            viven esos archivos:</p>
+        <p>Fina utiliza los motores Piper y Vosk para darte privacidad total (Offline). Ahora puedes configurar estas
+            rutas pegándolas directamente en la interfaz.</p>
 
         <div class="info-card">
-            <p><strong>Modelos de Voz Piper (ONNX):</strong> Aquí es donde Fina busca a "Daniela" y otras voces.<br>
-                <strong>Descargas:</strong> <a
-                    href="https://huggingface.co/rhasspy/piper-voices/tree/main/es/es_AR/daniela/high">Daniela
-                    (Argentina)</a><br>
-                <code>VOICE_MODELS_PATH = "~/.config/Fina/voice_models"</code> (Detección automática activa)
-            </p>
+            <h3>🗣️ Modelos de Voz Piper (Voces de Fina)</h3>
+            <p>Puedes tener una colección de voces y cambiar entre ellas cuando quieras:</p>
+            <ul>
+                <li><strong>Multivocidad:</strong> Puedes guardar **varias voces distintas** en la misma carpeta. Cada
+                    una debe tener sus dos archivos (<code>.onnx</code> y <code>.onnx.json</code>).</li>
+                <li><strong>Configuración fácil:</strong> En la sección <em>"Modelos & Heurísticas"</em> de los Ajustes
+                    de Fina, pega la ruta de esa carpeta.</li>
+                <li><strong>¿Cómo cambiar de voz?:</strong> No hace falta tocar nada. Simplemente dile a Fina: <br>
+                    <i class="fas fa-comment"></i> <em>"Fina, cambiá la voz"</em> o <em>"Fina, usá otra voz"</em>.<br>
+                    El sistema rotará automáticamente entre todas las voces que encuentre en tu carpeta.
+                </li>
+            </ul>
+        </div>
 
-            <p><strong>Modelo de Reconocimiento Vosk:</strong> El motor que "escucha" tus palabras en modo local.<br>
-                <strong>Descarga Recomendada (Español):</strong> <a
-                    href="https://alphacephei.com/vosk/models/vosk-model-es-0.42.zip">vosk-model-es-0.42.zip</a><br>
-                <strong>Nota:</strong> Descomprime el ZIP y mueve la carpeta a <code>~/.config/Fina/model/</code>. Fina
-                lo encontrará solo.
-            </p>
+        <div class="info-card">
+            <h3>👂 Modelo de Reconocimiento Vosk (Para que Fina te escuche)</h3>
+            <p><strong>Descarga:</strong> <a
+                    href="https://alphacephei.com/vosk/models/vosk-model-es-0.42.zip">vosk-model-es-0.42.zip</a></p>
+            <p>Descomprime el archivo y pega la ruta de la carpeta resultante en el campo <strong>"Modelo Reconocimiento
+                    (Vosk)"</strong> de los Ajustes.</p>
         </div>
 
         <div class="warning-card">
-            <h3 style="margin-top:0; color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> El Gran Error de
-                AppImage</h3>
-            <p>Si usas el formato **AppImage**, recuerda que es un contenedor de SOLO LECTURA. Si descargas una voz
-                nueva, **NUNCA** intentes meterla dentro del archivo .AppImage.</p>
-            <p>Debes guardarla en una carpeta normal de tu disco (como Descargas o Documentos) y luego copiar esa ruta
-                exacta en el <code>config.py</code> (ubicado en <code>~/.config/Fina/config.py</code>). Fina leerá los
-                archivos desde afuera sin problemas.</p>
+            <h3 style="margin-top:0; color: #ef4444;"><i class="fas fa-magic"></i> Portabilidad Total (AppImage)</h3>
+            <p>Si usas **AppImage** o cambias de PC frecuentemente, te recomendamos guardar todas tus voces y modelos en
+                la carpeta centralizada:</p>
+            <code>~/.config/Fina/voice_models/</code>
+            <p>Si guardas tus archivos <code>.onnx</code> allí, Fina los encontrará automáticamente sin que tengas que
+                configurar ninguna ruta en la interfaz.</p>
         </div>
     </div>
 
@@ -326,7 +340,7 @@
     </div>
 
     <footer>
-        <p>Fina Ergen - Documentación de Configuración Total v3.5.4-14 (Force Edition)</p>
+        <p>Fina Ergen - Documentación de Configuración Total v3.5.4-18 (Force Edition)</p>
     </footer>
 
 </body>

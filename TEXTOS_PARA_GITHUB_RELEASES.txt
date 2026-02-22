@@ -1,3 +1,30 @@
+========== PARA LA VERSIÓN v3.5.4-18 [TANQUE INTELIGENTE] ==========
+
+## 🚀 Fina Ergen v3.5.4-18 - Edición "Tanque Inteligente" (Zero Friction)
+
+Esta versión marca la transición final hacia una Fina 100% autodependiente. Ya no solo es "Cero Terminal", sino que ella misma se encarga de organizar su "casa" y su "cerebro" sin que tú muevas un dedo.
+
+### 🛠️ Novedades de esta Versión:
+* **🏗️ Auto-Arquitectura de Perfil**: Fina ahora construye su propio "hogar" en el sistema. Al arrancar por primera vez, autogenera las carpetas de Modelos de Voz, Perfiles Biométricos, Plugins y Logs en `~/.config/Fina/`. ¡Orden total garantizado!
+* **🧠 Biometría de Voz Out-of-the-Box**: Hemos integrado `resemblyzer` en el motor de instalación automática. Ahora el sistema de reconocimiento de voz funciona inmediatamente en cualquier PC nueva sin instalaciones manuales de Python.
+* **🔗 Unificación de Entornos (VENV)**: Sincronizamos el "Cerebro" (motor de fondo) y la "Cara" (interfaz) para que compartan un único entorno virtual persistente. Esto elimina conflictos de librerías y hace que la aplicación sea irrompible.
+* **🏠 Market de Plugins Reubicado**: El **Market de Plugins** se mudó a su hogar definitivo: **Ajustes -> Dominio Inteligencia -> Nódulos**. Gestionar tus dispositivos IoT y descargar nuevas marcas ahora es más intuitivo y profesional.
+* **🕵️ Detección de Piper Robusta**: Se mejoró la búsqueda del motor de voz para asegurar que Fina siempre hable, sin importar qué distribución de Linux estés usando.
+
+### 📦 Instalación:
+Descarga el archivo `.deb` o `.AppImage` e instálalo normalmente. Fina te guiará en el primer arranque.
+
+
+### 📦 ¿Qué archivo AppImage descargar?
+Encontrarás dos versiones de AppImage en los assets:
+
+fina-ergen_3.5.4-18_patched_amd64.AppImage (RECOMENDADO): Versión optimizada con compresión máxima XZ (más liviana). Incluye parches de compatibilidad para que el Icono y el nombre aparezcan correctamente en el Menú de Aplicaciones (compatible con AppImageLauncher).
+fina-ergen_3.5.4-18_amd64.AppImage: Versión estándar generada por el compilador base. Es más pesada porque utiliza compresión estándar, pero es la versión purista de Tauri.
+
+¡Gracias por ser parte de la evolución de Fina! ❤️
+
+---
+
 ========== PARA LA VERSIÓN v3.5.4-14 [ACTUALIZADA] ==========
 
 ## 🚀 Fina Ergen v3.5.4-14 - Edición "Cero Terminal" y Guía Proactiva

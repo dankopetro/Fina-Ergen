@@ -11,16 +11,21 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 ---
 
 ## [v3.5.4-18] - 2026-02-22 (Edición "Tanque" Inteligente)
-Esta versión perfecciona la portabilidad y la experiencia de primer usuario ("Out-of-the-box"), asegurando que Fina configure su propio cerebro sin intervención manual.
+Esta versión perfecciona la portabilidad y la experiencia de primer usuario ("Out-of-the-box"), asegurando que Fina configure su propio cerebro sin intervención manual y facilitando la gestión de voces locales.
 
 ### Añadido
+* **Unificación de Configuración (UI Priority)**: Fina ahora prioriza los ajustes realizados desde la Interfaz Visual (`Ajustes > Servicios & APIs`) sobre el archivo `config.py`. Los novatos pueden configurar Emails, APIs y Modelos sin tocar una línea de código.
+* **Sección "Modelos & Heurísticas"**: Nuevo bloque en la UI para configurar rutas de modelos de voz (Piper) y reconocimiento (Vosk) de forma visual.
+* **Multivocidad Dinámica**: El sistema ahora escanea automáticamente todos los archivos `.onnx` en la ruta configurada. Permite tener múltiples voces en una misma carpeta y rotar entre ellas con el comando de voz: *"Fina, cambiá la voz"*.
 * **Estructura de Carpetas Automática**: Fina ahora autogenera todas sus carpetas esenciales (`voice_models`, `voice_profiles`, `temp_audio`, `plugins`, `Logs`) en `~/.config/Fina/` al primer arranque.
 * **Auto-Bootstrap de IA (Full)**: Inclusión de `resemblyzer` en el instalador silencioso. Ahora la biometría de voz funciona en PCs nuevas sin necesidad de ejecutar comandos de terminal.
 
 ### Arreglado
+* **Diagnóstico de Rutas Robusto**: Mejora en la detección y logueo de archivos de configuración (`channels.json`, `contacts.json`) para facilitar migraciones entre máquinas.
 * **Sincronización de Entornos Virtuales**: Se unificó la ubicación del `venv` entre el Cerebro (Sidecar) y la UI en una ruta persistente única (`~/.config/Fina/venv`).
 * **Optimización de Interfaz (UX)**: El botón del **Market de Plugins** ha sido movido a la sección de **Ajustes -> Nódulos**, su lugar lógico definitivo para la gestión de dispositivos.
 * **Detección de Piper**: Mejora en la búsqueda de binarios de voz para mayor robustez en AppImages "Slim".
+* **Persistencia de Canales**: Los scripts de escaneo (`scan_ultra_fast.py`) ahora guardan los resultados prioritariamente en la carpeta de configuración del usuario.
 
 ## [v3.5.4-14] - 2026-02-21 (Edición Visual y Estabilidad Crítica)
 Esta actualización resuelve fricciones de portabilidad, automatiza servicios e introduce documentación de alta calidad.

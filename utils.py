@@ -67,8 +67,16 @@ for folder in ["", "voice_models", "voice_profiles", "temp_audio", "plugins"]:
 # Definir rutas absolutas para archivos de datos
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
 USER_DATA_PATH = os.path.join(CONFIG_DIR, "user_data.json")
+# Soporte para ambos nombres (singular y plural)
 CONTACTS_PATH = os.path.join(CONFIG_DIR, "contact.json")
+if not os.path.exists(CONTACTS_PATH):
+    CONTACTS_PATH = os.path.join(CONFIG_DIR, "contacts.json")
 CONFIG_PY_PATH = os.path.join(CONFIG_DIR, "config.py")
+
+logger.info(f"📂 [DIAGNÓSTICO] Config Dir: {CONFIG_DIR}")
+logger.info(f"📄 [DIAGNÓSTICO] Settings: {SETTINGS_PATH} (Existe: {os.path.exists(SETTINGS_PATH)})")
+logger.info(f"👥 [DIAGNÓSTICO] Contacts: {CONTACTS_PATH} (Existe: {os.path.exists(CONTACTS_PATH)})")
+logger.info(f"🐍 [DIAGNÓSTICO] Config.py Path: {CONFIG_PY_PATH} (Existe: {os.path.exists(CONFIG_PY_PATH)})")
 
 def _ensure_config_exists():
     """Migrar o crear archivos base si no existen en .config/Fina"""
@@ -93,6 +101,28 @@ if CONFIG_DIR not in sys.path:
 
 # Local Imports
 import config
+
+# --- CONFIGURATION UNIFICATION (UI Priority) ---
+def get_unified_config(key, default=None):
+    """Prioriza settings.json (UI) sobre config.py (Código)"""
+    # 1. Intentar desde settings.json
+    try:
+        if os.path.exists(SETTINGS_PATH):
+            with open(SETTINGS_PATH, 'r') as f:
+                data = json.load(f)
+                val = data.get("apis", {}).get(key)
+                if val: return val
+                # Fallback para claves de primer nivel
+                val = data.get(key)
+                if val: return val
+    except: pass
+
+    # 2. Fallback al config.py tradicional
+    try:
+        import config
+        return getattr(config, key, default)
+    except:
+        return default
 
 def load_config():
     """Carga config.py desde ~/.config/Fina con fallback seguro"""
@@ -225,21 +255,45 @@ def _voice_engine_worker():
                 text, model_path = item
                 
                 if not model_path:
-                    # Ruta universal para modelo por defecto
-                    model_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "voice_models", "es_AR-daniela-high.onnx")
+                    # 1. Priorizar ruta definida por el usuario en la Interfaz (UI)
+                    user_defined_path = get_unified_config("VOICE_MODELS_PATH")
+                    if user_defined_path and os.path.exists(user_defined_path):
+                        if os.path.isdir(user_defined_path):
+                             # Si es una carpeta, buscamos el primer .onnx
+                             for f in os.listdir(user_defined_path):
+                                 if f.endswith(".onnx"):
+                                     model_path = os.path.join(user_defined_path, f)
+                                     break
+                        else:
+                             model_path = user_defined_path
+                    
+                    # 2. Fallback: Ruta estándar de Fina
+                    if not model_path:
+                        model_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "voice_models", "es_AR-daniela-high.onnx")
                 
-                # Verify model
-                # Verify model with fallback
-                if not os.path.exists(model_path):
-                     logger.warning(f"Rescate: Modelo {model_path} no encontrado. Buscando alternativa...")
-                     models_dir = os.path.join(ERGEN_ROOT, "voice_models")
-                     if os.path.exists(models_dir):
-                         potential_models = [m for m in os.listdir(models_dir) if m.endswith(".onnx")]
-                         if potential_models:
-                             model_path = os.path.join(models_dir, potential_models[0])
-                             logger.info(f"Usando modelo de rescate: {model_path}")
-                         else:
-                             model_path = None
+                # Verify model with deep fallback
+                if not model_path or not os.path.exists(model_path):
+                     logger.warning(f"Rescate: Modelo {model_path} no encontrado. Buscando alternativa en carpetas estándar...")
+                     # A. Carpeta definida por UI (si era una carpeta)
+                     # B. Carpeta de Usuario estándar
+                     user_models_dir = os.path.join(CONFIG_DIR, "voice_models")
+                     # C. Carpeta de Sistema (ERGEN_ROOT)
+                     sys_models_dir = os.path.join(ERGEN_ROOT, "voice_models")
+                     
+                     potential_models = []
+                     # Incluir la carpeta de UI en la búsqueda de rescate
+                     ui_dir = get_unified_config("VOICE_MODELS_PATH")
+                     search_dirs = []
+                     if ui_dir and os.path.exists(ui_dir) and os.path.isdir(ui_dir): search_dirs.append(ui_dir)
+                     search_dirs.extend([user_models_dir, sys_models_dir])
+
+                     for m_dir in search_dirs:
+                         if os.path.exists(m_dir):
+                             potential_models += [os.path.join(m_dir, m) for m in os.listdir(m_dir) if m.endswith(".onnx")]
+                     
+                     if potential_models:
+                         model_path = potential_models[0]
+                         logger.info(f"Usando modelo de rescate: {model_path}")
                      else:
                          model_path = None
 

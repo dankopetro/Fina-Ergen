@@ -13,6 +13,7 @@ def load_ips_from_settings():
     default_ips = ['192.168.0.11', '192.168.0.10']
     
     paths = [
+        os.path.join(os.path.expanduser("~"), ".config", "Fina", "settings.json"),
         os.path.join(PROJECT_ROOT, "config", "settings.json")
     ]
     
