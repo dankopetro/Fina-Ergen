@@ -221,7 +221,9 @@ def check_system_dependencies():
         "scrcpy": "Visualización de cámara",
         "vlc": "Reproductor de música",
         "nmap": "Escaneo de red IoT",
-        "xclip": "Portapapeles (X11)"
+        "xclip": "Portapapeles (X11)",
+        "lsof": "Limpieza de puertos y procesos",
+        "fuser": "Liberación de sockets"
     }
     missing = []
     for cmd, desc in deps.items():
@@ -1027,8 +1029,10 @@ def ensure_tv_is_on(m):
 # --- AI & TOOLS ---
 async def get_mistral_response(prompt):
     import aiohttp
+    github_token = get_unified_config("GITHUB_TOKEN")
+    if not github_token: return "No tengo token de GitHub configurado para la IA."
     url = "https://models.inference.ai.azure.com/chat/completions"
-    headers = {"Authorization": f"Bearer {config.GITHUB_TOKEN}", "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {github_token}", "Content-Type": "application/json"}
     payload = {
         "model": "Codestral-2501",
         "messages": [
@@ -1042,8 +1046,9 @@ async def get_mistral_response(prompt):
             async with session.post(url, json=payload, headers=headers) as response:
                 d = await response.json()
                 return d["choices"][0]["message"]["content"].strip()
-    except: 
-        return "Error IA."
+    except Exception as e:
+        logger.error(f"Error IA: {e}")
+        return "Error conectando con la IA."
 
 async def handle_unknown_request(c, m): 
     return await get_mistral_response(c)
@@ -1262,12 +1267,12 @@ async def convert_currency(amount, from_curr, to_curr):
         return "Servicio de moneda no disponible."
 
 async def generate_image(prompt, m=None):
-    from config import OPENAI_API_KEY
-    if not OPENAI_API_KEY: return "No tengo clave de OpenAI configurada."
+    openai_key = get_unified_config("OPENAI_API_KEY")
+    if not openai_key: return "No tengo clave de OpenAI configurada."
     
     try:
         from openai import OpenAI
-        client = OpenAI(api_key=OPENAI_API_KEY)
+        client = OpenAI(api_key=openai_key)
         
         response = client.images.generate(
             model="dall-e-3",
@@ -1277,7 +1282,6 @@ async def generate_image(prompt, m=None):
             n=1,
         )
         url = response.data[0].url
-        # Abrir en navegador
         subprocess.run(["xdg-open", url])
         return "Imagen generada y abierta en navegador."
     except Exception as e:

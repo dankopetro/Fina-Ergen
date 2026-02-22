@@ -20,7 +20,7 @@ def get_config_dir():
 CONFIG_DIR = get_config_dir()
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
 OUTPUT_FILE = os.path.join(CONFIG_DIR, "channels.json")
-REFERENCE_FILE = os.path.join(CONFIG_DIR, "cannels.json") # Lista base para comparar
+REFERENCE_FILE = Path(CONFIG_DIR) / "channels.json" # Lista base para comparar
 
 # Configuración de los objetivos (TVs)
 # Cada objetivo tiene su IP y su MAC address para Wake-on-LAN

@@ -1,4 +1,8 @@
 # imports pesados movidos a _initialize_classifier internos de ergen
+import logging
+import os
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
 
 # Global variables for lazy loading
 embedder = None

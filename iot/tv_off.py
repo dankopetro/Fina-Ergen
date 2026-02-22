@@ -173,11 +173,32 @@ def turn_off_android_tv(possible_ips):
     return False
 
 if __name__ == '__main__':
-    # Lista de IPs posibles - Ahora vacía por defecto
     tv_ips = []
     if len(sys.argv) > 1:
         tv_ips = [sys.argv[1]]
+    else:
+        # Intentar cargar desde settings.json (Ruta Universal)
+        import os
+        def get_config_dir():
+            xdg_config = os.environ.get("XDG_CONFIG_HOME")
+            if xdg_config: return os.path.join(xdg_config, "Fina")
+            try:
+                from pathlib import Path
+                return os.path.join(str(Path.home()), ".config", "Fina")
+            except: return os.path.expanduser("~/.config/Fina")
+        
+        settings_path = os.path.join(get_config_dir(), "settings.json")
+        if os.path.exists(settings_path):
+            try:
+                with open(settings_path, 'r') as f:
+                    data = json.load(f)
+                    tv_ips = [tv.get("ip") for tv in data.get("tvs", []) if tv.get("enabled", True) and tv.get("ip")]
+            except: pass
+        if not tv_ips: # Fallback a IPs comunes si no hay settings
+            tv_ips = ["192.168.0.10", "192.168.0.11", "192.168.0.12"]
     
+    try:
+        import json
     try:
         success = turn_off_android_tv(tv_ips)
         sys.exit(0 if success else 1)

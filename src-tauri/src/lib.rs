@@ -60,14 +60,26 @@ fn execute_shell_command(command: &str) -> Result<String, String> {
 
 fn get_python_exe(resource_dir: &std::path::Path) -> String {
     use std::process::Command;
+
+    // 1. Prioridad: VENV del usuario en ~/.config/Fina/venv (persistente, siempre actualizado)
+    let home = std::env::var("HOME").unwrap_or_else(|_| "/root".to_string());
+    let xdg_config = std::env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| format!("{}/.config", home));
+    let user_venv = std::path::PathBuf::from(&xdg_config).join("Fina/venv/bin/python3");
+    if user_venv.exists() {
+        return user_venv.to_str().unwrap_or("python3").to_string();
+    }
+    
+    // 2. Fallback: VENV dentro del AppImage (si se empaquetó uno)
     let venv_path = resource_dir.join("_up_/venv/bin/python3");
     let venv_dot_path = resource_dir.join("_up_/.venv/bin/python3");
-    
     if venv_path.exists() {
-        venv_path.to_str().unwrap_or("python3").to_string()
+        return venv_path.to_str().unwrap_or("python3").to_string();
     } else if venv_dot_path.exists() {
-        venv_dot_path.to_str().unwrap_or("python3").to_string()
-    } else if Command::new("python3").arg("--version").output().is_ok() {
+        return venv_dot_path.to_str().unwrap_or("python3").to_string();
+    }
+    
+    // 3. Último recurso: Python del sistema
+    if Command::new("python3").arg("--version").output().is_ok() {
         "python3".to_string()
     } else {
         "python".to_string()
@@ -277,9 +289,14 @@ pub fn run() {
                 .expect("No se pudo obtener la carpeta de recursos");
 
             // --- Preparamos Log para los procesos ocultos ---
-            let config_dir = std::env::var("HOME").map(PathBuf::from)
-                .unwrap_or_else(|_| PathBuf::from("/tmp"))
-                .join(".config/Fina");
+            let config_dir = std::env::var("XDG_CONFIG_HOME")
+                .map(PathBuf::from)
+                .map(|p| p.join("Fina"))
+                .unwrap_or_else(|_| {
+                    std::env::var("HOME").map(PathBuf::from)
+                        .unwrap_or_else(|_| PathBuf::from("/tmp"))
+                        .join(".config/Fina")
+                });
             let _ = create_dir_all(&config_dir);
             let log_path = config_dir.join("fina_services.log");
             

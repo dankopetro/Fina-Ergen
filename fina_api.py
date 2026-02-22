@@ -157,8 +157,7 @@ else:
     CHANNELS_PATH_TELECENTRO = CHANNELS_PATH_TELECENTRO_INTERNAL
 
 # DIAGNÓSTICO DE PERMISOS (Crítico para AppImage Sidecar)
-import getpass
-current_user = getpass.getuser()
+current_user = getpass.getuser()  # getpass ya importado arriba
 print(f"👤 API Corriendo como: {current_user}", flush=True)
 print(f"📂 Config Dir: {CONFIG_DIR} (Acceso R:{os.access(CONFIG_DIR, os.R_OK)})", flush=True)
 print(f"📄 Settings: {SETTINGS_PATH} (Existe: {os.path.exists(SETTINGS_PATH)}, Readable: {os.access(SETTINGS_PATH, os.R_OK) if os.path.exists(SETTINGS_PATH) else 'N/A'})", flush=True)
@@ -193,8 +192,7 @@ class StateUpdate(BaseModel):
     process: Optional[str] = None 
     temp: Optional[str] = None
 
-    class Config:
-        extra = "allow"
+    model_config = {"extra": "allow"}
 
 # --- Global State ---
 current_fina_state = {
@@ -240,7 +238,7 @@ async def get_fina_state():
 async def update_fina_state(state: StateUpdate):
     global current_fina_state
     # Actualizar estado global con TODO lo que venga (incluido timer)
-    update_data = state.dict(exclude_unset=True)
+    update_data = state.model_dump(exclude_unset=True)
     current_fina_state.update(update_data)
     return current_fina_state
 

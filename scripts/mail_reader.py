@@ -14,10 +14,17 @@ def decode_mime_words(s):
     except: return str(s)
 
 def read_emails():
-    # Path to settings.json (relative to scripts/mail_reader.py)
-    # ../config/settings.json
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    settings_path = os.path.join(base_dir, "config", "settings.json")
+    def get_config_dir():
+        xdg_config = os.environ.get("XDG_CONFIG_HOME")
+        if xdg_config:
+            return os.path.join(xdg_config, "Fina")
+        try:
+            from pathlib import Path
+            return os.path.join(str(Path.home()), ".config", "Fina")
+        except:
+            return os.path.expanduser("~/.config/Fina")
+    
+    settings_path = os.path.join(get_config_dir(), "settings.json")
     
     user, password = None, None
     try:

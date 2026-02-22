@@ -65,7 +65,7 @@ def get_config_dir():
 
 CONFIG_DIR = get_config_dir()
 OUTPUT_FILE = Path(CONFIG_DIR) / "channels.json"
-REFERENCE_FILE = Path(CONFIG_DIR) / "cannels.json" 
+REFERENCE_FILE = Path(CONFIG_DIR) / "channels.json" 
 
 # ---------------------------------------------------------------------------
 # Funciones auxiliares

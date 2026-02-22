@@ -1,7 +1,8 @@
-# import torch y sentence_transformers movidos a _initialize_model
 import logging
 import json
 import os
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
 # Usar el logger del sistema (ya configurado en utils si se importa desde main)
 logger = logging.getLogger("IntentClassifier")
