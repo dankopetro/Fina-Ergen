@@ -37,11 +37,11 @@ jobs:
       - name: Download Piper Binary (Sidecar)
         run: |
           mkdir -p src-tauri/binaries
-          if [ ! -f src-tauri/binaries/piper ]; then
+          if [ ! -d src-tauri/binaries/piper ]; then
             wget -O piper.tar.gz https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_amd64.tar.gz
             tar -xzf piper.tar.gz
-            cp piper/piper src-tauri/binaries/
-            chmod +x src-tauri/binaries/piper
+            cp -r piper src-tauri/binaries/
+            chmod +x src-tauri/binaries/piper/piper
             rm -rf piper piper.tar.gz
           fi
 

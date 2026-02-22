@@ -1,0 +1,762 @@
+commit efe0ac06e8f52432f1f8d086a716e5af5dbb3905
+Author: Claudio <claudio@example.com>
+Date:   Sun Feb 22 01:42:12 2026 -0300
+
+    fix: restore lowercase productName to fix linuxdeploy 81MB AppImage generation
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index ec337c4..6924778 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -68,22 +68,3 @@ jobs:
+             Descarga el archivo `.deb` o `.AppImage` e instálalo normalmente. Fina te guiará en el primer arranque.
+           releaseDraft: false
+           prerelease: false
+-
+-      - name: Build Slim XZ AppImage
+-        run: |
+-          wget -q "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
+-          chmod +x appimagetool-x86_64.AppImage
+-
+-          APP_DIR=src-tauri/target/release/bundle/appimage/fina-ergen.AppDir
+-          VERSION=$(node -p "require('./package.json').version")
+-
+-          cd "$APP_DIR"
+-          rm -f fina-ergen.desktop .DirIcon
+-          ln -s usr/share/applications/fina-ergen.desktop fina-ergen.desktop
+-          ln -s fina-ergen.png .DirIcon
+-          cd ../../../../../../
+-
+-          echo "📦 Generando AppImage XZ (Slim)..."
+-          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-xz.AppImage
+-
+-          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#"fina-ergen_${VERSION}_amd64.AppImage" --clobber
+
+commit d866d301f2a4ffa563a9c7f1ce3ddeb9d43a45f2
+Author: Claudio <claudio@example.com>
+Date:   Sun Feb 22 01:19:52 2026 -0300
+
+    ci: fix linuxdeploy by setting APPIMAGE_EXTRACT_AND_RUN in tauri-action env
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index f7e700d..ec337c4 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -48,10 +48,10 @@ jobs:
+       - uses: tauri-apps/tauri-action@v0.5.15
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++          APPIMAGE_EXTRACT_AND_RUN: 1
+         with:
+           tagName: v__VERSION__
+           releaseName: "Fina Ergen v__VERSION__"
+-          args: --bundles deb,rpm
+           releaseBody: |
+             ## 🚀 Fina Ergen v__VERSION__ - Edición "Cero Terminal" y Guía Proactiva
+ 
+@@ -69,30 +69,21 @@ jobs:
+           releaseDraft: false
+           prerelease: false
+ 
+-      - name: Build Full AppImages with linuxdeploy (Standard & Slim XZ)
++      - name: Build Slim XZ AppImage
+         run: |
+           wget -q "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
+           chmod +x appimagetool-x86_64.AppImage
+ 
+-          # Ahora linuxdeploy puede correr porque libfuse2 ya está instalado.
+-          # Tauri genera el AppDir completo con todas las librerías del sistema.
+-          APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri build -- --bundles appimage || true
+-
+           APP_DIR=src-tauri/target/release/bundle/appimage/fina-ergen.AppDir
+           VERSION=$(node -p "require('./package.json').version")
+ 
+-          # Reparar enlaces simbólicos
+           cd "$APP_DIR"
+           rm -f fina-ergen.desktop .DirIcon
+           ln -s usr/share/applications/fina-ergen.desktop fina-ergen.desktop
+           ln -s fina-ergen.png .DirIcon
+           cd ../../../../../../
+ 
+-          echo "📦 Generando AppImage Estándar (con todas las librerías)..."
+-          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APP_DIR" fina-ergen-std.AppImage
+-
+           echo "📦 Generando AppImage XZ (Slim)..."
+           APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-xz.AppImage
+ 
+-          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-std.AppImage#"fina-ergen_${VERSION}_x86_64.AppImage" --clobber
+           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#"fina-ergen_${VERSION}_amd64.AppImage" --clobber
+
+commit e421f7af5d940b6789d745fb196f8d3a4a0e5e49
+Author: Claudio <claudio@example.com>
+Date:   Sun Feb 22 01:09:45 2026 -0300
+
+    ci: restore linuxdeploy approach for full 81MB AppImages by installing libfuse2 before Tauri
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index 83868d3..f7e700d 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -29,7 +29,7 @@ jobs:
+       - name: Install dependencies
+         run: |
+           sudo apt-get update
+-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libjavascriptcoregtk-4.1-dev libsoup-3.0-dev rpm
++          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libjavascriptcoregtk-4.1-dev libsoup-3.0-dev rpm libfuse2
+ 
+       - name: Install frontend dependencies
+         run: npm install
+@@ -69,36 +69,30 @@ jobs:
+           releaseDraft: false
+           prerelease: false
+ 
+-      - name: Build Manual AppImages (Standard & Slim XZ)
++      - name: Build Full AppImages with linuxdeploy (Standard & Slim XZ)
+         run: |
+-          sudo apt-get install -y libfuse2
+           wget -q "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
+           chmod +x appimagetool-x86_64.AppImage
+ 
+-          # Generar AppDir (Tauri suele fallar al final pero deja el AppDir listo)
++          # Ahora linuxdeploy puede correr porque libfuse2 ya está instalado.
++          # Tauri genera el AppDir completo con todas las librerías del sistema.
+           APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri build -- --bundles appimage || true
+ 
+-          APP_DIR=$(ls -d src-tauri/target/release/bundle/appimage/*.AppDir | head -n 1)
++          APP_DIR=src-tauri/target/release/bundle/appimage/fina-ergen.AppDir
+           VERSION=$(node -p "require('./package.json').version")
+ 
+-          # Buscar el nombre del icono dentro del archivo desktop
+-          DESKTOP_PATH=$(find "$APP_DIR/usr/share/applications" -name "*.desktop" | head -n 1)
+-          ICON_NAME=$(grep "^Icon=" "$DESKTOP_PATH" | cut -d'=' -f2)
+-
+-          # Inyectar iconos necesarios en la raíz
+-          cp src-tauri/icons/128x128.png "$APP_DIR/$ICON_NAME.png"
+-          cp src-tauri/icons/128x128.png "$APP_DIR/.DirIcon"
+-
++          # Reparar enlaces simbólicos
+           cd "$APP_DIR"
+-          rm -f *.desktop
+-          ln -s "usr/share/applications/$(basename "$DESKTOP_PATH")" "$(basename "$DESKTOP_PATH")"
++          rm -f fina-ergen.desktop .DirIcon
++          ln -s usr/share/applications/fina-ergen.desktop fina-ergen.desktop
++          ln -s fina-ergen.png .DirIcon
+           cd ../../../../../../
+ 
+-          echo "📦 Generando AppImage Estándar..."
+-          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --no-appstream "$APP_DIR" fina-ergen-std.AppImage
++          echo "📦 Generando AppImage Estándar (con todas las librerías)..."
++          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APP_DIR" fina-ergen-std.AppImage
+ 
+-          echo "📦 Generando AppImage XZ..."
+-          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --no-appstream --comp xz "$APP_DIR" fina-ergen-xz.AppImage
++          echo "📦 Generando AppImage XZ (Slim)..."
++          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-xz.AppImage
+ 
+           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-std.AppImage#"fina-ergen_${VERSION}_x86_64.AppImage" --clobber
+           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#"fina-ergen_${VERSION}_amd64.AppImage" --clobber
+
+commit f5a174942ac68cf686ea8f4ab596cef6f762f2ff
+Author: Claudio <claudio@example.com>
+Date:   Sun Feb 22 00:37:29 2026 -0300
+
+    fix: correct matrix indentation in release.yml
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index 0fd6978..83868d3 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -11,8 +11,8 @@ jobs:
+       contents: write
+     strategy:
+       fail-fast: false
+-    matrix:
+-      platform: [ubuntu-24.04]
++      matrix:
++        platform: [ubuntu-24.04]
+ 
+     runs-on: ${{ matrix.platform }}
+     steps:
+
+commit 97b331d6fa519bf981baae443f7fe64f9508ec19
+Author: Claudio <claudio@example.com>
+Date:   Sun Feb 22 00:33:52 2026 -0300
+
+    ci: hard-fix AppImage icon and desktop issues in release workflow
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index 37cf262..0fd6978 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -11,8 +11,8 @@ jobs:
+       contents: write
+     strategy:
+       fail-fast: false
+-      matrix:
+-        platform: [ubuntu-24.04]
++    matrix:
++      platform: [ubuntu-24.04]
+ 
+     runs-on: ${{ matrix.platform }}
+     steps:
+@@ -79,20 +79,26 @@ jobs:
+           APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri build -- --bundles appimage || true
+ 
+           APP_DIR=$(ls -d src-tauri/target/release/bundle/appimage/*.AppDir | head -n 1)
+-          APP_NAME=$(basename "$APP_DIR" .AppDir)
+           VERSION=$(node -p "require('./package.json').version")
+ 
++          # Buscar el nombre del icono dentro del archivo desktop
++          DESKTOP_PATH=$(find "$APP_DIR/usr/share/applications" -name "*.desktop" | head -n 1)
++          ICON_NAME=$(grep "^Icon=" "$DESKTOP_PATH" | cut -d'=' -f2)
++
++          # Inyectar iconos necesarios en la raíz
++          cp src-tauri/icons/128x128.png "$APP_DIR/$ICON_NAME.png"
++          cp src-tauri/icons/128x128.png "$APP_DIR/.DirIcon"
++
+           cd "$APP_DIR"
+-          rm -f "$APP_NAME.desktop" .DirIcon
+-          ln -s "usr/share/applications/$APP_NAME.desktop" "$APP_NAME.desktop"
+-          ln -s "$APP_NAME.png" .DirIcon
++          rm -f *.desktop
++          ln -s "usr/share/applications/$(basename "$DESKTOP_PATH")" "$(basename "$DESKTOP_PATH")"
+           cd ../../../../../../
+ 
+           echo "📦 Generando AppImage Estándar..."
+-          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage "$APP_DIR" fina-ergen-std.AppImage
++          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --no-appstream "$APP_DIR" fina-ergen-std.AppImage
+ 
+           echo "📦 Generando AppImage XZ..."
+-          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-xz.AppImage
++          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --no-appstream --comp xz "$APP_DIR" fina-ergen-xz.AppImage
+ 
+           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-std.AppImage#"fina-ergen_${VERSION}_x86_64.AppImage" --clobber
+           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#"fina-ergen_${VERSION}_amd64.AppImage" --clobber
+
+commit 38731146552271526cd629de8ba5e1e00301f662
+Author: Claudio <claudio@example.com>
+Date:   Sun Feb 22 00:26:14 2026 -0300
+
+    ci: overhaul release workflow to fix linuxdeploy crash and generate both AppImages manually
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index a62a386..37cf262 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -48,10 +48,10 @@ jobs:
+       - uses: tauri-apps/tauri-action@v0.5.15
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+-          APPIMAGE_EXTRACT_AND_RUN: 1
+         with:
+           tagName: v__VERSION__
+           releaseName: "Fina Ergen v__VERSION__"
++          args: --bundles deb,rpm
+           releaseBody: |
+             ## 🚀 Fina Ergen v__VERSION__ - Edición "Cero Terminal" y Guía Proactiva
+ 
+@@ -69,29 +69,30 @@ jobs:
+           releaseDraft: false
+           prerelease: false
+ 
+-      - name: Build Second AppImage with XZ compression (Extreme Slim Edition)
++      - name: Build Manual AppImages (Standard & Slim XZ)
+         run: |
++          sudo apt-get install -y libfuse2
+           wget -q "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
+           chmod +x appimagetool-x86_64.AppImage
+ 
+-          # Localizar el AppDir generado por Tauri
++          # Generar AppDir (Tauri suele fallar al final pero deja el AppDir listo)
++          APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri build -- --bundles appimage || true
++
+           APP_DIR=$(ls -d src-tauri/target/release/bundle/appimage/*.AppDir | head -n 1)
+           APP_NAME=$(basename "$APP_DIR" .AppDir)
++          VERSION=$(node -p "require('./package.json').version")
+ 
+-          # Limpiar enlaces rotos antes de comprimir
+           cd "$APP_DIR"
+           rm -f "$APP_NAME.desktop" .DirIcon
+           ln -s "usr/share/applications/$APP_NAME.desktop" "$APP_NAME.desktop"
+           ln -s "$APP_NAME.png" .DirIcon
+           cd ../../../../../../
+ 
+-          # Generar la versión XZ ultra liviana
++          echo "📦 Generando AppImage Estándar..."
++          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage "$APP_DIR" fina-ergen-std.AppImage
++
+           echo "📦 Generando AppImage XZ..."
+           APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-xz.AppImage
+ 
+-          # Obtener versión para el nombre final
+-          VERSION=$(node -p "require('./package.json').version")
+-          TARGET_FILENAME="fina-ergen_${VERSION}_amd64.AppImage"
+-
+-          echo "🚀 Subiendo AppImage XZ a GitHub Releases..."
+-          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#${TARGET_FILENAME} --clobber
++          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-std.AppImage#"fina-ergen_${VERSION}_x86_64.AppImage" --clobber
++          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#"fina-ergen_${VERSION}_amd64.AppImage" --clobber
+
+commit 38d5346f8e4b15e146b6101644a3babca92c479d
+Author: Claudio <claudio@example.com>
+Date:   Sun Feb 22 00:16:58 2026 -0300
+
+    ci: fix appimage bundling on ubuntu 24.04 and generate dual appimages
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index e28a2d2..a62a386 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -48,48 +48,50 @@ jobs:
+       - uses: tauri-apps/tauri-action@v0.5.15
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++          APPIMAGE_EXTRACT_AND_RUN: 1
+         with:
+           tagName: v__VERSION__
+           releaseName: "Fina Ergen v__VERSION__"
+           releaseBody: |
+             ## 🚀 Fina Ergen v__VERSION__ - Edición "Cero Terminal" y Guía Proactiva
+-            
++
+             Esta actualización transforma a Fina en un asistente modular completamente resiliente y amigable para el usuario novato.
+-            
++
+             ### 🛠️ Novedades Críticas:
+             * **⚡ Auto-Bootstrap (Zero Terminal)**: Fina ahora detecta automáticamente si faltan librerías críticas de IA (Torch, Vosk, Sounddevice, etc.) y las instala sola en un entorno privado.
+             * **📖 Guía Proactiva para Novatos**: Apertura automática del manual de configuración al detectar falta de modelos de voz/oído.
+             * **🛡️ Blindaje de Configuración**: Fina ya no cierra por errores en `config.py`; ahora arranca siempre y avisa qué falta.
+             * **📐 Manual Centrado y Refinado**: El manual PDF y HTML ahora están integrados en el paquete y diseñados para impresión y web.
+             * **🧹 Limpieza de Logs**: Prevención de saturación de disco por logs repetitivos.
+-            
++
+             ### 📦 Instalación:
+             Descarga el archivo `.deb` o `.AppImage` e instálalo normalmente. Fina te guiará en el primer arranque.
+           releaseDraft: false
+           prerelease: false
+ 
+-      - name: Build AppImage with XZ compression
++      - name: Build Second AppImage with XZ compression (Extreme Slim Edition)
+         run: |
+-          # The linuxdeploy plugin bundled with Tauri fails when setting LDAI_COMP=xz
+-          # To fix this, we generate the xz AppImage manually using the official AppImageTool
+-          wget "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
++          wget -q "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
+           chmod +x appimagetool-x86_64.AppImage
+ 
+-          # Fix absolute paths from the AppDir that bug out AppImageLauncher before repacking
++          # Localizar el AppDir generado por Tauri
+           APP_DIR=$(ls -d src-tauri/target/release/bundle/appimage/*.AppDir | head -n 1)
+           APP_NAME=$(basename "$APP_DIR" .AppDir)
++
++          # Limpiar enlaces rotos antes de comprimir
+           cd "$APP_DIR"
+           rm -f "$APP_NAME.desktop" .DirIcon
+           ln -s "usr/share/applications/$APP_NAME.desktop" "$APP_NAME.desktop"
+           ln -s "$APP_NAME.png" .DirIcon
+           cd ../../../../../../
+ 
+-          # Generate the slim xz AppImage using extraction trick to bypass missing libfuse2 in Ubuntu 24.04 Actions
+-          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-patched.AppImage
++          # Generar la versión XZ ultra liviana
++          echo "📦 Generando AppImage XZ..."
++          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-xz.AppImage
+ 
+-          # Extract the version from package.json to construct the target filename
++          # Obtener versión para el nombre final
+           VERSION=$(node -p "require('./package.json').version")
+           TARGET_FILENAME="fina-ergen_${VERSION}_amd64.AppImage"
+ 
+-          echo "Replacing GitHub Release Asset..."
+-          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-patched.AppImage#${TARGET_FILENAME} --clobber
++          echo "🚀 Subiendo AppImage XZ a GitHub Releases..."
++          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#${TARGET_FILENAME} --clobber
+
+commit 98db9009f2d73a2de0c30e8aff606d79a41a3f67
+Author: Claudio <claudio@example.com>
+Date:   Sun Feb 22 00:05:16 2026 -0300
+
+    ci: fix release workflow to include piper sidecar and new bootstrap logic
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index a092a02..e28a2d2 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -34,31 +34,37 @@ jobs:
+       - name: Install frontend dependencies
+         run: npm install
+ 
++      - name: Download Piper Binary (Sidecar)
++        run: |
++          mkdir -p src-tauri/binaries
++          if [ ! -f src-tauri/binaries/piper ]; then
++            wget -O piper.tar.gz https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_amd64.tar.gz
++            tar -xzf piper.tar.gz
++            cp piper/piper src-tauri/binaries/
++            chmod +x src-tauri/binaries/piper
++            rm -rf piper piper.tar.gz
++          fi
++
+       - uses: tauri-apps/tauri-action@v0.5.15
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         with:
+-          tagName: v__VERSION__ # Real version will be taken from package.json
++          tagName: v__VERSION__
+           releaseName: "Fina Ergen v__VERSION__"
+           releaseBody: |
+-            ## 🚀 Fina Ergen v__VERSION__ - Edición Universal
+-            
+-            Esta versión marca un hito en la portabilidad de Fina Ergen, convirtiéndola en un asistente 100% autodependiente y universal.
+-            
+-            ### 🛠️ Novedades de esta Versión:
+-            *   **Universalidad Total**: Se han eliminado todas las rutas locales fijas. Fina ahora detecta su ubicación y recursos dinámicamente.
+-            *   **Persistencia Segura**: Tus ajustes, contactos y perfiles de voz ahora se guardan en `~/.config/Fina/`, permitiendo actualizar la aplicación sin perder tus datos.
+-            *   **Gestión de Plugins Avanzada**: Soporte para instalación de plugins en la carpeta del usuario. ¡Tus extensiones te siguen a donde vayas!
+-            *   **Optimización de Recursos**: El sistema de Android (Waydroid/Weston) ahora solo se activa si tienes un timbre configurado, ahorrando mucha memoria y CPU.
+-            *   **Clima en Tiempo Real**: Sincronización inmediata al arranque. No más esperas para ver la temperatura de tu ciudad.
++            ## 🚀 Fina Ergen v__VERSION__ - Edición "Cero Terminal" y Guía Proactiva
+             
+-            ### 📦 ¿Qué archivo descargar?
+-            Encontrarás dos versiones de AppImage en los assets:
++            Esta actualización transforma a Fina en un asistente modular completamente resiliente y amigable para el usuario novato.
+             
+-            1.  **fina-ergen_v..._amd64.AppImage (RECOMENDADO)**: Versión optimizada con compresión **XZ** (más liviana) y parches de compatibilidad para Iconos y sistemas modernos (Ubuntu 24.04+, Mint 22). 
+-            2.  **fina-ergen_v..._x86_64.AppImage**: Versión estándar generada por el compilador base.
++            ### 🛠️ Novedades Críticas:
++            * **⚡ Auto-Bootstrap (Zero Terminal)**: Fina ahora detecta automáticamente si faltan librerías críticas de IA (Torch, Vosk, Sounddevice, etc.) y las instala sola en un entorno privado.
++            * **📖 Guía Proactiva para Novatos**: Apertura automática del manual de configuración al detectar falta de modelos de voz/oído.
++            * **🛡️ Blindaje de Configuración**: Fina ya no cierra por errores en `config.py`; ahora arranca siempre y avisa qué falta.
++            * **📐 Manual Centrado y Refinado**: El manual PDF y HTML ahora están integrados en el paquete y diseñados para impresión y web.
++            * **🧹 Limpieza de Logs**: Prevención de saturación de disco por logs repetitivos.
+             
+-            ¡Gracias por ser parte de la evolución de Fina! ❤️
++            ### 📦 Instalación:
++            Descarga el archivo `.deb` o `.AppImage` e instálalo normalmente. Fina te guiará en el primer arranque.
+           releaseDraft: false
+           prerelease: false
+ 
+
+commit 217421bfe0ddf3f7abcfff653bb8003b475807cf
+Author: Claudio <claudio@example.com>
+Date:   Sat Feb 21 17:10:57 2026 -0300
+
+    fix: Metadata DEB y nombre Desktop Fina-Ergen actualizados. Solucionado el bug que dejaba frizado el escaner de RED. Bump v3.5.4-14
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index 51699b4..a092a02 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -70,14 +70,16 @@ jobs:
+           chmod +x appimagetool-x86_64.AppImage
+ 
+           # Fix absolute paths from the AppDir that bug out AppImageLauncher before repacking
+-          cd src-tauri/target/release/bundle/appimage/fina-ergen.AppDir
+-          rm -f fina-ergen.desktop .DirIcon
+-          ln -s usr/share/applications/fina-ergen.desktop fina-ergen.desktop
+-          ln -s fina-ergen.png .DirIcon
++          APP_DIR=$(ls -d src-tauri/target/release/bundle/appimage/*.AppDir | head -n 1)
++          APP_NAME=$(basename "$APP_DIR" .AppDir)
++          cd "$APP_DIR"
++          rm -f "$APP_NAME.desktop" .DirIcon
++          ln -s "usr/share/applications/$APP_NAME.desktop" "$APP_NAME.desktop"
++          ln -s "$APP_NAME.png" .DirIcon
+           cd ../../../../../../
+ 
+           # Generate the slim xz AppImage using extraction trick to bypass missing libfuse2 in Ubuntu 24.04 Actions
+-          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz src-tauri/target/release/bundle/appimage/fina-ergen.AppDir fina-ergen-patched.AppImage
++          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-patched.AppImage
+ 
+           # Extract the version from package.json to construct the target filename
+           VERSION=$(node -p "require('./package.json').version")
+
+commit 786ae3f29d7f77925641017158765e67e37e7302
+Author: Claudio <claudio@example.com>
+Date:   Sat Feb 21 15:35:03 2026 -0300
+
+    chore: Fina Universal Portability and Release Notes
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index adcdb1e..51699b4 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -40,7 +40,25 @@ jobs:
+         with:
+           tagName: v__VERSION__ # Real version will be taken from package.json
+           releaseName: "Fina Ergen v__VERSION__"
+-          releaseBody: "Release automática de Fina Ergen. Compilado en Ubuntu 24.04 (Compatible con Linux Mint 22)."
++          releaseBody: |
++            ## 🚀 Fina Ergen v__VERSION__ - Edición Universal
++            
++            Esta versión marca un hito en la portabilidad de Fina Ergen, convirtiéndola en un asistente 100% autodependiente y universal.
++            
++            ### 🛠️ Novedades de esta Versión:
++            *   **Universalidad Total**: Se han eliminado todas las rutas locales fijas. Fina ahora detecta su ubicación y recursos dinámicamente.
++            *   **Persistencia Segura**: Tus ajustes, contactos y perfiles de voz ahora se guardan en `~/.config/Fina/`, permitiendo actualizar la aplicación sin perder tus datos.
++            *   **Gestión de Plugins Avanzada**: Soporte para instalación de plugins en la carpeta del usuario. ¡Tus extensiones te siguen a donde vayas!
++            *   **Optimización de Recursos**: El sistema de Android (Waydroid/Weston) ahora solo se activa si tienes un timbre configurado, ahorrando mucha memoria y CPU.
++            *   **Clima en Tiempo Real**: Sincronización inmediata al arranque. No más esperas para ver la temperatura de tu ciudad.
++            
++            ### 📦 ¿Qué archivo descargar?
++            Encontrarás dos versiones de AppImage en los assets:
++            
++            1.  **fina-ergen_v..._amd64.AppImage (RECOMENDADO)**: Versión optimizada con compresión **XZ** (más liviana) y parches de compatibilidad para Iconos y sistemas modernos (Ubuntu 24.04+, Mint 22). 
++            2.  **fina-ergen_v..._x86_64.AppImage**: Versión estándar generada por el compilador base.
++            
++            ¡Gracias por ser parte de la evolución de Fina! ❤️
+           releaseDraft: false
+           prerelease: false
+ 
+
+commit 6463c7d0d73205809e8c4d831800032587f1a15a
+Author: Claudio <claudio@example.com>
+Date:   Fri Feb 20 07:02:52 2026 -0300
+
+    Fix libfuse2 error on Github Actions runner by adding APPIMAGE_EXTRACT_AND_RUN=1
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index 65a5fec..adcdb1e 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -44,26 +44,26 @@ jobs:
+           releaseDraft: false
+           prerelease: false
+ 
+-      - name: Build AppImage with XZ compression 
++      - name: Build AppImage with XZ compression
+         run: |
+           # The linuxdeploy plugin bundled with Tauri fails when setting LDAI_COMP=xz
+           # To fix this, we generate the xz AppImage manually using the official AppImageTool
+           wget "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
+           chmod +x appimagetool-x86_64.AppImage
+-          
++
+           # Fix absolute paths from the AppDir that bug out AppImageLauncher before repacking
+           cd src-tauri/target/release/bundle/appimage/fina-ergen.AppDir
+           rm -f fina-ergen.desktop .DirIcon
+           ln -s usr/share/applications/fina-ergen.desktop fina-ergen.desktop
+           ln -s fina-ergen.png .DirIcon
+           cd ../../../../../../
+-          
+-          # Generate the slim xz AppImage
+-          ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz src-tauri/target/release/bundle/appimage/fina-ergen.AppDir fina-ergen-patched.AppImage
+-          
++
++          # Generate the slim xz AppImage using extraction trick to bypass missing libfuse2 in Ubuntu 24.04 Actions
++          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz src-tauri/target/release/bundle/appimage/fina-ergen.AppDir fina-ergen-patched.AppImage
++
+           # Extract the version from package.json to construct the target filename
+           VERSION=$(node -p "require('./package.json').version")
+           TARGET_FILENAME="fina-ergen_${VERSION}_amd64.AppImage"
+-          
++
+           echo "Replacing GitHub Release Asset..."
+           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-patched.AppImage#${TARGET_FILENAME} --clobber
+
+commit 902618b746f63c579d613840835128d245077d24
+Author: Claudio <claudio@example.com>
+Date:   Fri Feb 20 06:54:41 2026 -0300
+
+    Fix AppImage GH Actions failing on LDAI_COMP by using appimagetool manually as a post-build step
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index cfaa972..65a5fec 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -37,10 +37,33 @@ jobs:
+       - uses: tauri-apps/tauri-action@v0.5.15
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+-          LDAI_COMP: xz
+         with:
+           tagName: v__VERSION__ # Real version will be taken from package.json
+           releaseName: "Fina Ergen v__VERSION__"
+           releaseBody: "Release automática de Fina Ergen. Compilado en Ubuntu 24.04 (Compatible con Linux Mint 22)."
+-          releaseDraft: true
++          releaseDraft: false
+           prerelease: false
++
++      - name: Build AppImage with XZ compression 
++        run: |
++          # The linuxdeploy plugin bundled with Tauri fails when setting LDAI_COMP=xz
++          # To fix this, we generate the xz AppImage manually using the official AppImageTool
++          wget "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
++          chmod +x appimagetool-x86_64.AppImage
++          
++          # Fix absolute paths from the AppDir that bug out AppImageLauncher before repacking
++          cd src-tauri/target/release/bundle/appimage/fina-ergen.AppDir
++          rm -f fina-ergen.desktop .DirIcon
++          ln -s usr/share/applications/fina-ergen.desktop fina-ergen.desktop
++          ln -s fina-ergen.png .DirIcon
++          cd ../../../../../../
++          
++          # Generate the slim xz AppImage
++          ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz src-tauri/target/release/bundle/appimage/fina-ergen.AppDir fina-ergen-patched.AppImage
++          
++          # Extract the version from package.json to construct the target filename
++          VERSION=$(node -p "require('./package.json').version")
++          TARGET_FILENAME="fina-ergen_${VERSION}_amd64.AppImage"
++          
++          echo "Replacing GitHub Release Asset..."
++          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-patched.AppImage#${TARGET_FILENAME} --clobber
+
+commit 7732b9735297626ef2f44d470b542f08e586f012
+Author: Claudio <claudio@example.com>
+Date:   Fri Feb 20 06:24:15 2026 -0300
+
+    Fix AppImage execution (start API in background) and set LDAI_COMP=xz for Github Actions
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index f1cca74..cfaa972 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -37,6 +37,7 @@ jobs:
+       - uses: tauri-apps/tauri-action@v0.5.15
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++          LDAI_COMP: xz
+         with:
+           tagName: v__VERSION__ # Real version will be taken from package.json
+           releaseName: "Fina Ergen v__VERSION__"
+
+commit a50c55f147c196659e2f5cd49de3301830a63631
+Author: Claudio <claudio@example.com>
+Date:   Fri Feb 20 05:05:12 2026 -0300
+
+    ci: fix webkit dependencies for ubuntu 24.04 and bump version
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index 095e258..f1cca74 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -29,7 +29,7 @@ jobs:
+       - name: Install dependencies
+         run: |
+           sudo apt-get update
+-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf libjavascriptcoregtk-4.0-dev libsoup2.4-dev rpm
++          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libjavascriptcoregtk-4.1-dev libsoup-3.0-dev rpm
+ 
+       - name: Install frontend dependencies
+         run: npm install
+
+commit 96fcbb876d7d8bedb408f9526b0065350dac35ee
+Author: Claudio <claudio@example.com>
+Date:   Fri Feb 20 04:55:21 2026 -0300
+
+    ci: add rpm to dependencies to support fedora and bump version
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index dbb6e89..095e258 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -2,7 +2,7 @@ name: Release
+ on:
+   push:
+     tags:
+-      - 'v*'
++      - "v*"
+   workflow_dispatch:
+ 
+ jobs:
+@@ -29,7 +29,7 @@ jobs:
+       - name: Install dependencies
+         run: |
+           sudo apt-get update
+-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf libjavascriptcoregtk-4.0-dev libsoup2.4-dev
++          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf libjavascriptcoregtk-4.0-dev libsoup2.4-dev rpm
+ 
+       - name: Install frontend dependencies
+         run: npm install
+
+commit 6da5277318018d3885f004249b64923c22765198
+Author: Claudio <claudio@example.com>
+Date:   Fri Feb 20 04:52:20 2026 -0300
+
+    ci: bump runner to ubuntu-24.04 and use newer tauri-action
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index 205fbc0..dbb6e89 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -12,7 +12,7 @@ jobs:
+     strategy:
+       fail-fast: false
+       matrix:
+-        platform: [ubuntu-22.04]
++        platform: [ubuntu-24.04]
+ 
+     runs-on: ${{ matrix.platform }}
+     steps:
+@@ -34,12 +34,12 @@ jobs:
+       - name: Install frontend dependencies
+         run: npm install
+ 
+-      - uses: tauri-apps/tauri-action@v0
++      - uses: tauri-apps/tauri-action@v0.5.15
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         with:
+           tagName: v__VERSION__ # Real version will be taken from package.json
+           releaseName: "Fina Ergen v__VERSION__"
+-          releaseBody: "Release automática de Fina Ergen. Incluye instaladores .deb y AppImage."
++          releaseBody: "Release automática de Fina Ergen. Compilado en Ubuntu 24.04 (Compatible con Linux Mint 22)."
+           releaseDraft: true
+           prerelease: false
+
+commit e83c1beecdc8effbf73b3fa4b36aa84f51e6ca05
+Author: Claudio <claudio@example.com>
+Date:   Fri Feb 20 02:21:40 2026 -0300
+
+    Initial Commit: Fina Ergen v3.5.4-1 (Clean)
+
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+new file mode 100644
+index 0000000..205fbc0
+--- /dev/null
++++ b/.github/workflows/release.yml
+@@ -0,0 +1,45 @@
++name: Release
++on:
++  push:
++    tags:
++      - 'v*'
++  workflow_dispatch:
++
++jobs:
++  release:
++    permissions:
++      contents: write
++    strategy:
++      fail-fast: false
++      matrix:
++        platform: [ubuntu-22.04]
++
++    runs-on: ${{ matrix.platform }}
++    steps:
++      - uses: actions/checkout@v4
++
++      - name: Setup Node
++        uses: actions/setup-node@v4
++        with:
++          node-version: 20
++
++      - name: Install Rust stable
++        uses: dtolnay/rust-toolchain@stable
++
++      - name: Install dependencies
++        run: |
++          sudo apt-get update
++          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf libjavascriptcoregtk-4.0-dev libsoup2.4-dev
++
++      - name: Install frontend dependencies
++        run: npm install
++
++      - uses: tauri-apps/tauri-action@v0
++        env:
++          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++        with:
++          tagName: v__VERSION__ # Real version will be taken from package.json
++          releaseName: "Fina Ergen v__VERSION__"
++          releaseBody: "Release automática de Fina Ergen. Incluye instaladores .deb y AppImage."
++          releaseDraft: true
++          prerelease: false

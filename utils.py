@@ -184,9 +184,12 @@ def _voice_engine_worker():
     if not piper_path:
         # Buscar en lugares comunes del proyecto
         potential_locations = [
+            os.path.join(ERGEN_ROOT, "binaries", "piper", "piper"),
+            os.path.join(ERGEN_ROOT, "..", "binaries", "piper", "piper"),
             os.path.join(ERGEN_ROOT, "bin", "piper"),
             os.path.join(ERGEN_ROOT, "assets", "piper"),
             os.path.join(ERGEN_ROOT, "..", "bin", "piper"),
+            "/usr/lib/Fina-Ergen/binaries/piper/piper",
             "/usr/lib/Fina-Ergen/bin/piper",
             "/usr/lib/fina-ergen/bin/piper",
             "/usr/local/bin/piper",
