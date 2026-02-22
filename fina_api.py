@@ -7,9 +7,27 @@ import threading
 import time
 from typing import List, Optional, Dict
 
-# --- LOGGING DIAGNÓSTICO ---
+# --- DETECCIÓN DE ENTORNO VIRTUAL [AUTO-SWITCH] ---
+def get_best_python():
+    vps = [
+        os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv", "bin", "python"),
+        os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"),
+        sys.executable
+    ]
+    for p in vps:
+        if os.path.exists(p): return p
+    return sys.executable
+
+best_py = get_best_python()
+if "venv" in best_py and "venv" not in sys.executable:
+    print(f"🔄 API: Relanzando con entorno detectado: {best_py}", flush=True)
+    os.execl(best_py, best_py, *sys.argv)
+
+# --- SILENCIAR LIBRERÍAS RUIDOSAS ---
 import logging
-for lib in ["httpx", "huggingface_hub", "urllib3"]:
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+for lib in ["httpx", "huggingface_hub", "urllib3", "transformers"]:
     logging.getLogger(lib).setLevel(logging.WARNING)
 
 print(f"\n--- [ARRANQUE API] {time.strftime('%Y-%m-%d %H:%M:%S')} ---", flush=True)

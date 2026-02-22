@@ -62,6 +62,7 @@ file_handler.setFormatter(formatter)
 
 # --- SILENCIAR LIBRERÍAS RUIDOSAS (DIETA DIGITAL EXTREMA) ---
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 for lib in ["httpx", "huggingface_hub", "urllib3", "sentence_transformers", "transformers", "tqdm"]:
