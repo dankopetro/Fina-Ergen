@@ -11,8 +11,8 @@ jobs:
       contents: write
     strategy:
       fail-fast: false
-      matrix:
-        platform: [ubuntu-24.04]
+    matrix:
+      platform: [ubuntu-24.04]
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -79,20 +79,26 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri build -- --bundles appimage || true
 
           APP_DIR=$(ls -d src-tauri/target/release/bundle/appimage/*.AppDir | head -n 1)
-          APP_NAME=$(basename "$APP_DIR" .AppDir)
           VERSION=$(node -p "require('./package.json').version")
 
+          # Buscar el nombre del icono dentro del archivo desktop
+          DESKTOP_PATH=$(find "$APP_DIR/usr/share/applications" -name "*.desktop" | head -n 1)
+          ICON_NAME=$(grep "^Icon=" "$DESKTOP_PATH" | cut -d'=' -f2)
+
+          # Inyectar iconos necesarios en la raíz
+          cp src-tauri/icons/128x128.png "$APP_DIR/$ICON_NAME.png"
+          cp src-tauri/icons/128x128.png "$APP_DIR/.DirIcon"
+
           cd "$APP_DIR"
-          rm -f "$APP_NAME.desktop" .DirIcon
-          ln -s "usr/share/applications/$APP_NAME.desktop" "$APP_NAME.desktop"
-          ln -s "$APP_NAME.png" .DirIcon
+          rm -f *.desktop
+          ln -s "usr/share/applications/$(basename "$DESKTOP_PATH")" "$(basename "$DESKTOP_PATH")"
           cd ../../../../../../
 
           echo "📦 Generando AppImage Estándar..."
-          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage "$APP_DIR" fina-ergen-std.AppImage
+          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --no-appstream "$APP_DIR" fina-ergen-std.AppImage
 
           echo "📦 Generando AppImage XZ..."
-          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-xz.AppImage
+          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --no-appstream --comp xz "$APP_DIR" fina-ergen-xz.AppImage
 
           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-std.AppImage#"fina-ergen_${VERSION}_x86_64.AppImage" --clobber
           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#"fina-ergen_${VERSION}_amd64.AppImage" --clobber
