@@ -27,7 +27,7 @@ def get_best_python():
 def bootstrap_fina():
     """Verifica e instala librerías de IA si faltan, sin terminal"""
     import subprocess
-    required_libs = ["fastapi", "uvicorn", "vosk", "sounddevice", "torch", "sentence_transformers"]
+    required_libs = ["fastapi", "uvicorn", "vosk", "sounddevice", "torch", "sentence_transformers", "resemblyzer"]
     missing = []
     
     import importlib.util

@@ -27,7 +27,7 @@ echo "📂 Root detectado: $ERGEN_ROOT" >&2
 
 # Ubicación del VENV (Priorizamos locales, luego globales)
 PYTHON_BIN=""
-USER_VENV="$HOME/.local/share/Fina/venv"
+USER_VENV="$HOME/.config/Fina/venv"
 
 # 1. Buscar en carpetas locales del proyecto [MODO DESARROLLO]
 for venv_name in ".venv" "venv"; do

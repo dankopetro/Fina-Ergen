@@ -125,8 +125,8 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.4";
-const buildDate = "Jue 19 Feb 2026 19:46";
+const version = "Fina Ergen v 3.5.4-18";
+const buildDate = "Dom 22 Feb 2026 14:05";
 
 const userSettings = ref({
     apis: {
@@ -2603,7 +2603,7 @@ const registerMasterPassword = () => {
                                 {{ msg.text }}</p>
                             <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{
                                 msg.time
-                            }}</span>
+                                }}</span>
                         </div>
                     </transition-group>
                 </div>
@@ -3133,7 +3133,7 @@ const registerMasterPassword = () => {
                                         <span class="text-[9px] font-bold text-slate-500 uppercase">Almacenamiento
                                             (Root)</span>
                                         <span class="text-[9px] font-bold text-white">{{ systemStats.disk.percent
-                                        }}%</span>
+                                            }}%</span>
                                     </div>
                                     <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                         <div class="h-full bg-gradient-to-r from-cyan-600 to-blue-500 transition-all duration-1000"
@@ -3229,7 +3229,7 @@ const registerMasterPassword = () => {
                                                     'border-pink-500/50': index % 3 === 2
                                                 }">
                                                 <span class="text-[11px] font-bold text-white">{{ reminder.task
-                                                    }}</span>
+                                                }}</span>
                                                 <span
                                                     class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{
                                                         reminder.time }}</span>
@@ -3443,14 +3443,6 @@ const registerMasterPassword = () => {
                                 </div>
                             </div>
 
-                            <!-- HUB DE PLUGINS ACCESS -->
-                            <button @click="openPluginStore"
-                                class="w-full max-w-7xl py-6 bg-gradient-to-r from-slate-900 to-slate-800 border border-white/10 rounded-[35px] flex items-center justify-center gap-4 hover:from-slate-800 hover:to-slate-700 transition-all group/store shadow-xl shrink-0">
-                                <i
-                                    class="fa-solid fa-puzzle-piece text-cyan-400 group-hover/store:rotate-45 transition-transform duration-500"></i>
-                                <span class="text-xs font-black text-white uppercase tracking-[0.4em]">Acceder al Market
-                                    de Plugins</span>
-                            </button>
                         </div>
                         <div v-else-if="activeTab === 'ajustes'"
                             class="w-full max-w-6xl h-[75vh] flex relative animate-in zoom-in-95 duration-500">
@@ -3987,12 +3979,22 @@ const registerMasterPassword = () => {
                                                 <span class="w-12 h-1 bg-indigo-500 rounded-full"></span>
                                                 Nódulos de Conectividad
                                             </h3>
-                                            <button @click="scanNetwork" :disabled="isScanningNetwork"
-                                                class="px-6 py-2 bg-indigo-500/10 hover:bg-indigo-500 border border-indigo-500/30 rounded-full text-white text-[10px] font-black uppercase tracking-widest transition-all">
-                                                <i class="fa-solid mr-2 shadow-sm"
-                                                    :class="isScanningNetwork ? 'fa-spinner fa-spin' : 'fa-arrows-rotate'"></i>
-                                                {{ isScanningNetwork ? 'Escaneando...' : 'Escanear Red' }}
-                                            </button>
+                                            <div class="flex items-center gap-4">
+                                                <!-- BOTÓN MARKET (MOVIDO DESDE AGENDA) -->
+                                                <button @click="openPluginStore"
+                                                    class="px-6 py-2 bg-gradient-to-r from-indigo-600/20 to-blue-600/20 hover:from-indigo-600 hover:to-blue-600 border border-indigo-500/30 rounded-full text-white text-[10px] font-black uppercase tracking-widest transition-all group/market">
+                                                    <i
+                                                        class="fa-solid fa-puzzle-piece mr-2 group-hover/market:rotate-45 transition-transform duration-500"></i>
+                                                    Market de Plugins
+                                                </button>
+
+                                                <button @click="scanNetwork" :disabled="isScanningNetwork"
+                                                    class="px-6 py-2 bg-indigo-500/10 hover:bg-indigo-500 border border-indigo-500/30 rounded-full text-white text-[10px] font-black uppercase tracking-widest transition-all">
+                                                    <i class="fa-solid mr-2 shadow-sm"
+                                                        :class="isScanningNetwork ? 'fa-spinner fa-spin' : 'fa-arrows-rotate'"></i>
+                                                    {{ isScanningNetwork ? 'Escaneando...' : 'Escanear Red' }}
+                                                </button>
+                                            </div>
                                         </div>
 
                                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -4143,7 +4145,7 @@ const registerMasterPassword = () => {
                                                 class="p-4 mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-2">
                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
                                                 <span class="text-xs font-bold text-red-200 uppercase">{{ mobileHubError
-                                                    }}</span>
+                                                }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4617,14 +4619,14 @@ const registerMasterPassword = () => {
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Temperatura</span>
                                                         <span class="text-xs font-mono font-bold text-white">{{
                                                             acState.temp
-                                                        }}°C</span>
+                                                            }}°C</span>
                                                     </div>
                                                     <div class="flex justify-between items-center">
                                                         <span
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Modo</span>
                                                         <span class="text-xs font-black text-white uppercase">{{
                                                             acState.mode
-                                                        }}</span>
+                                                            }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -4878,23 +4880,23 @@ const registerMasterPassword = () => {
                                     <span class="text-xl font-black text-white">{{
                                         Math.round(systemStats.cpu?.percent || 0) }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.cpu?.freq
-                                    }} MHz</span>
+                                        }} MHz</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">RAM</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.ram?.percent
-                                    }}%</span>
+                                        }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.ram?.used
-                                    }} / {{ systemStats.ram?.total }} GB</span>
+                                        }} / {{ systemStats.ram?.total }} GB</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">DISCO</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.disk?.percent
-                                    }}%</span>
+                                        }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.disk?.free
-                                    }} GB Libres</span>
+                                        }} GB Libres</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">

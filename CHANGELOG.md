@@ -10,6 +10,18 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
+## [v3.5.4-18] - 2026-02-22 (Edición "Tanque" Inteligente)
+Esta versión perfecciona la portabilidad y la experiencia de primer usuario ("Out-of-the-box"), asegurando que Fina configure su propio cerebro sin intervención manual.
+
+### Añadido
+* **Estructura de Carpetas Automática**: Fina ahora autogenera todas sus carpetas esenciales (`voice_models`, `voice_profiles`, `temp_audio`, `plugins`, `Logs`) en `~/.config/Fina/` al primer arranque.
+* **Auto-Bootstrap de IA (Full)**: Inclusión de `resemblyzer` en el instalador silencioso. Ahora la biometría de voz funciona en PCs nuevas sin necesidad de ejecutar comandos de terminal.
+
+### Arreglado
+* **Sincronización de Entornos Virtuales**: Se unificó la ubicación del `venv` entre el Cerebro (Sidecar) y la UI en una ruta persistente única (`~/.config/Fina/venv`).
+* **Optimización de Interfaz (UX)**: El botón del **Market de Plugins** ha sido movido a la sección de **Ajustes -> Nódulos**, su lugar lógico definitivo para la gestión de dispositivos.
+* **Detección de Piper**: Mejora en la búsqueda de binarios de voz para mayor robustez en AppImages "Slim".
+
 ## [v3.5.4-14] - 2026-02-21 (Edición Visual y Estabilidad Crítica)
 Esta actualización resuelve fricciones de portabilidad, automatiza servicios e introduce documentación de alta calidad.
 
