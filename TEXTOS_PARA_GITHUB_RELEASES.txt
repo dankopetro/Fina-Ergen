@@ -11,6 +11,7 @@ Esta versión representa el estado más refinado de Fina hasta la fecha, combina
 * **📖 Manual Enciclopédico (20 Páginas)**: Manual técnico profundo disponible en el repositorio (docs/) para Power Users.
 * **🔧 Core Fix (PYTHONHOME)**: Adiós definitivo al error "init_fs_encoding". Funciona en cualquier sistema Linux moderno.
 * **🧠 Inteligencia Blindada**: `Resemblyzer` ahora es una dependencia opcional. Si no está instalada, Fina arranca igual y te avisa por log para que no se bloquee el sistema.
+* **🔘 Acceso Directo a Guía**: Nuevo botón de **"Documentación"** en la barra lateral de Ajustes para abrir el Manual de Configuración al instante.
 * **✍️ Auditoría y Registro (Services Logs)**: Registro centralizado de eventos y errores en `~/.config/Fina/fina_services.log`.
 
 ========== PARA LA VERSIÓN v3.5.4-12 ==========
