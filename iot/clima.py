@@ -22,8 +22,30 @@ def decode_bcd(d):
 # ------------------------------
 
 # DATOS MAESTROS DEL AIRE SURREY (V2 - Sin necesidad de Token/Key)
-IP = "192.168.0.213"
-DEVICE_ID = 30786325625801
+DEFAULT_IP = "192.168.0.213"
+DEFAULT_DEVICE_ID = 30786325625801
+
+def load_ac_config():
+    """Loads AC IP and ID from settings.json in ~/.config/Fina"""
+    xdg_config = os.environ.get("XDG_CONFIG_HOME")
+    if xdg_config:
+        config_dir = os.path.join(xdg_config, "Fina")
+    else:
+        config_dir = os.path.expanduser("~/.config/Fina")
+    
+    settings_path = os.path.join(config_dir, "settings.json")
+    if os.path.exists(settings_path):
+        try:
+            with open(settings_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                ac_data = data.get("ac", {})
+                ip = ac_data.get("ip", DEFAULT_IP)
+                device_id = ac_data.get("device_id", DEFAULT_DEVICE_ID)
+                return ip, device_id
+        except: pass
+    return DEFAULT_IP, DEFAULT_DEVICE_ID
+
+IP, DEVICE_ID = load_ac_config()
 
 def send_event(event_name, payload):
     """Envia un evento UDP al Brain de Fina"""
@@ -50,6 +72,7 @@ async def control_aire():
     args = parser.parse_args()
 
     try:
+        # Prioridad: 1. Argumento --ip, 2. settings.json, 3. Hardcoded Default
         target_ip = args.ip if args.ip else IP
         device = AC(ip=target_ip, port=6444, device_id=DEVICE_ID)
         

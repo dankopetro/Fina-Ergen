@@ -4,8 +4,18 @@ import sys
 import datetime
 import time
 
+def get_config_dir():
+    xdg_config = os.environ.get("XDG_CONFIG_HOME")
+    if xdg_config:
+        return os.path.join(xdg_config, "Fina")
+    try:
+        from pathlib import Path
+        return os.path.join(str(Path.home()), ".config", "Fina")
+    except:
+        return os.path.expanduser("~/.config/Fina")
+
 # Logs paths - RUTA UNIVERSAL: ~/.config/Fina/Logs/plugins
-LOGS_DIR = os.path.expanduser("~/.config/Fina/Logs/plugins")
+LOGS_DIR = os.path.join(get_config_dir(), "Logs", "plugins")
 COMMANDS_LOG = os.path.join(LOGS_DIR, 'commands.log')
 ERRORS_LOG = os.path.join(LOGS_DIR, 'errors.log')
 

@@ -2278,8 +2278,14 @@ const loadTvChannels = async () => {
         // Escolher arquivo baseado na sala
         const channelFile = activeTvRoom.value === 'Deco' ? 'channels_telecentro.json' : 'channels.json';
         const script = `import json, os; 
-config_dir = os.path.expanduser("~/.config/Fina")
-path = os.path.join(config_dir, "${channelFile}")
+def get_config_dir():
+    xdg_config = os.environ.get("XDG_CONFIG_HOME")
+    if xdg_config: return os.path.join(xdg_config, "Fina")
+    try:
+        from pathlib import Path
+        return os.path.join(str(Path.home()), ".config", "Fina")
+    except: return os.path.expanduser("~/.config/Fina")
+path = os.path.join(get_config_dir(), "${channelFile}")
 if not os.path.exists(path): path = os.path.join(".", "config", "${channelFile}")
 print(json.dumps(json.load(open(path))))`;
         const output = await invoke("execute_shell_command", { command: `${pyPath} -c '${script}'` });

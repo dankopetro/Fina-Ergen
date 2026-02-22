@@ -9,7 +9,17 @@ def train_face(user_name="Administrador"):
     print("Mire a la cámara y mueva ligeramente la cabeza...")
 
     # Crear directorio para guardar caras - RUTA UNIVERSAL
-    base_dir = os.path.expanduser("~/.config/Fina/faces")
+    def get_config_dir():
+        xdg_config = os.environ.get("XDG_CONFIG_HOME")
+        if xdg_config:
+            return os.path.join(xdg_config, "Fina")
+        try:
+            from pathlib import Path
+            return os.path.join(str(Path.home()), ".config", "Fina")
+        except:
+            return os.path.expanduser("~/.config/Fina")
+
+    base_dir = os.path.join(get_config_dir(), "faces")
     user_dir = os.path.join(base_dir, user_name)
     os.makedirs(user_dir, exist_ok=True)
 

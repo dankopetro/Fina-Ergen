@@ -6,13 +6,26 @@ import os
 import json
 import threading
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SETTINGS_PATH = os.path.join(PROJECT_ROOT, "fina_settings.json")
+def get_config_dir():
+    # 1. Prioridad: XDG_CONFIG_HOME
+    xdg_config = os.environ.get("XDG_CONFIG_HOME")
+    if xdg_config:
+        return os.path.join(xdg_config, "Fina")
+    try:
+        from pathlib import Path
+        return os.path.join(str(Path.home()), ".config", "Fina")
+    except:
+        return os.path.expanduser("~/.config/Fina")
+
+CONFIG_DIR = get_config_dir()
+SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
+OUTPUT_FILE = os.path.join(CONFIG_DIR, "channels.json")
+REFERENCE_FILE = os.path.join(CONFIG_DIR, "cannels.json") # Lista base para comparar
 
 # Configuración de los objetivos (TVs)
 # Cada objetivo tiene su IP y su MAC address para Wake-on-LAN
 def load_targets():
-    """Carga la lista de TVs desde fina_settings.json (máx 4, solo enabled).
+    """Carga la lista de TVs desde settings.json (máx 4, solo enabled).
     
     Adicionalmente, escanea un rango de IPs si se define 'scan_range' en settings,
     o utiliza un rango por defecto (ej: .10 a .15) para máxima flexibilidad.

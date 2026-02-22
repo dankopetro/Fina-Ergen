@@ -53,10 +53,19 @@ COMMON_CHANNELS = [
     "89.1", "89.2", "89.3", "89.4", "89.5", "89.6", "89.7", "89.8",
 ]
 
-# Obtener la raíz del proyecto para guardar channels.json
-PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUT_FILE = PROJECT_ROOT / "channels.json"
-REFERENCE_FILE = PROJECT_ROOT / "cannels.json" # Lista base para comparar
+def get_config_dir():
+    xdg_config = os.environ.get("XDG_CONFIG_HOME")
+    if xdg_config:
+        return os.path.join(xdg_config, "Fina")
+    try:
+        from pathlib import Path
+        return os.path.join(str(Path.home()), ".config", "Fina")
+    except:
+        return os.path.expanduser("~/.config/Fina")
+
+CONFIG_DIR = get_config_dir()
+OUTPUT_FILE = Path(CONFIG_DIR) / "channels.json"
+REFERENCE_FILE = Path(CONFIG_DIR) / "cannels.json" 
 
 # ---------------------------------------------------------------------------
 # Funciones auxiliares

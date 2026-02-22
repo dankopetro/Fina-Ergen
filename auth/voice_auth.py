@@ -19,8 +19,17 @@ class VoiceAuthenticator:
         if storage_path:
             self.storage_path = Path(storage_path)
         else:
-            # RUTA UNIVERSAL: ~/.config/Fina/voice_profiles
-            self.storage_path = Path(os.path.expanduser("~/.config/Fina/voice_profiles"))
+            def get_config_dir():
+                xdg_config = os.environ.get("XDG_CONFIG_HOME")
+                if xdg_config:
+                    return os.path.join(xdg_config, "Fina")
+                try:
+                    from pathlib import Path
+                    return os.path.join(str(Path.home()), ".config", "Fina")
+                except:
+                    return os.path.expanduser("~/.config/Fina")
+            
+            self.storage_path = Path(get_config_dir()) / "voice_profiles"
         
         self.storage_path.mkdir(parents=True, exist_ok=True)
         self.profiles_file = self.storage_path / "profiles.json"

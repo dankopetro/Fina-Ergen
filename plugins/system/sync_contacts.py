@@ -6,16 +6,23 @@ import os
 import sys
 
 # Ruta absoluta basada en la ubicación del script
-# plugins/system/sync_contacts.py -> Prioridad en ~/.config/Fina
-CONFIG_DIR = os.path.expanduser("~/.config/Fina")
+def get_config_dir():
+    # Prioridad XDG
+    xdg_config = os.environ.get("XDG_CONFIG_HOME")
+    if xdg_config:
+        return os.path.join(xdg_config, "Fina")
+    # Rescate Home
+    try:
+        from pathlib import Path
+        return os.path.join(str(Path.home()), ".config", "Fina")
+    except:
+        return os.path.expanduser("~/.config/Fina")
+
+CONFIG_DIR = get_config_dir()
 CONFIG_PATH = os.path.join(CONFIG_DIR, "contact.json")
+# Soporte para plural
 if not os.path.exists(CONFIG_PATH) and os.path.exists(os.path.join(CONFIG_DIR, "contacts.json")):
     CONFIG_PATH = os.path.join(CONFIG_DIR, "contacts.json")
-
-# Fallback si no existe .config (poco probable ahora)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if not os.path.exists(os.path.dirname(CONFIG_PATH)):
-    CONFIG_PATH = os.path.join(BASE_DIR, "config", "contact.json")
 
 def clean_number(num):
     # Remove separators: spaces, dashes, parens

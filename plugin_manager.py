@@ -24,11 +24,23 @@ class PluginManager:
         """
         self.root_dir = Path(__file__).parent.absolute()
         
+        def get_config_dir():
+            xdg_config = os.environ.get("XDG_CONFIG_HOME")
+            if xdg_config:
+                return os.path.join(xdg_config, "Fina")
+            try:
+                from pathlib import Path
+                return os.path.join(str(Path.home()), ".config", "Fina")
+            except:
+                return os.path.expanduser("~/.config/Fina")
+
+        config_dir = Path(get_config_dir())
+        
         # 1. Carpeta de Sistema (dentro del proyecto/AppImage)
         self.system_plugins_dir = self.root_dir / "plugins"
         
         # 2. Carpeta de Usuario (Persistente en .config)
-        self.user_plugins_dir = Path(os.path.expanduser("~/.config/Fina/plugins"))
+        self.user_plugins_dir = config_dir / "plugins"
         
         # Asegurar que existan
         self.system_plugins_dir.mkdir(exist_ok=True)

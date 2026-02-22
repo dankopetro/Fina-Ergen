@@ -157,9 +157,22 @@ def main():
     channels_found = scan_ultra_fast(ip)
     
     if channels_found:
-        with open('test/digital.json', 'w', encoding='utf-8') as f:
+        def get_config_dir():
+            xdg_config = os.environ.get("XDG_CONFIG_HOME")
+            if xdg_config:
+                return os.path.join(xdg_config, "Fina")
+            try:
+                from pathlib import Path
+                return os.path.join(str(Path.home()), ".config", "Fina")
+            except:
+                return os.path.expanduser("~/.config/Fina")
+        
+        config_dir = get_config_dir()
+        output_file = os.path.join(config_dir, 'channels.json')
+        
+        with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(channels_found, f, indent=4, ensure_ascii=False)
-        print(f"\n✅ Guardados {len(channels_found)} canales.")
+        print(f"\n✅ Guardados {len(channels_found)} canales en {output_file}.")
 
 if __name__ == "__main__":
     main()

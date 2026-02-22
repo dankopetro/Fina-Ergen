@@ -15,7 +15,17 @@ try:
     data = json.loads(json_str)
     
     # Ruta Universal: ~/.config/Fina/settings.json
-    config_path = os.path.expanduser("~/.config/Fina/settings.json")
+    def get_config_dir():
+        xdg_config = os.environ.get("XDG_CONFIG_HOME")
+        if xdg_config:
+            return os.path.join(xdg_config, "Fina")
+        try:
+            from pathlib import Path
+            return os.path.join(str(Path.home()), ".config", "Fina")
+        except:
+            return os.path.expanduser("~/.config/Fina")
+
+    config_path = os.path.join(get_config_dir(), "settings.json")
     
     # Asegurar que el directorio existe
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
