@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libjavascriptcoregtk-4.1-dev libsoup-3.0-dev rpm
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libjavascriptcoregtk-4.1-dev libsoup-3.0-dev rpm libfuse2
 
       - name: Install frontend dependencies
         run: npm install
@@ -69,36 +69,30 @@ jobs:
           releaseDraft: false
           prerelease: false
 
-      - name: Build Manual AppImages (Standard & Slim XZ)
+      - name: Build Full AppImages with linuxdeploy (Standard & Slim XZ)
         run: |
-          sudo apt-get install -y libfuse2
           wget -q "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
           chmod +x appimagetool-x86_64.AppImage
 
-          # Generar AppDir (Tauri suele fallar al final pero deja el AppDir listo)
+          # Ahora linuxdeploy puede correr porque libfuse2 ya está instalado.
+          # Tauri genera el AppDir completo con todas las librerías del sistema.
           APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri build -- --bundles appimage || true
 
-          APP_DIR=$(ls -d src-tauri/target/release/bundle/appimage/*.AppDir | head -n 1)
+          APP_DIR=src-tauri/target/release/bundle/appimage/fina-ergen.AppDir
           VERSION=$(node -p "require('./package.json').version")
 
-          # Buscar el nombre del icono dentro del archivo desktop
-          DESKTOP_PATH=$(find "$APP_DIR/usr/share/applications" -name "*.desktop" | head -n 1)
-          ICON_NAME=$(grep "^Icon=" "$DESKTOP_PATH" | cut -d'=' -f2)
-
-          # Inyectar iconos necesarios en la raíz
-          cp src-tauri/icons/128x128.png "$APP_DIR/$ICON_NAME.png"
-          cp src-tauri/icons/128x128.png "$APP_DIR/.DirIcon"
-
+          # Reparar enlaces simbólicos
           cd "$APP_DIR"
-          rm -f *.desktop
-          ln -s "usr/share/applications/$(basename "$DESKTOP_PATH")" "$(basename "$DESKTOP_PATH")"
+          rm -f fina-ergen.desktop .DirIcon
+          ln -s usr/share/applications/fina-ergen.desktop fina-ergen.desktop
+          ln -s fina-ergen.png .DirIcon
           cd ../../../../../../
 
-          echo "📦 Generando AppImage Estándar..."
-          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --no-appstream "$APP_DIR" fina-ergen-std.AppImage
+          echo "📦 Generando AppImage Estándar (con todas las librerías)..."
+          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APP_DIR" fina-ergen-std.AppImage
 
-          echo "📦 Generando AppImage XZ..."
-          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool-x86_64.AppImage --no-appstream --comp xz "$APP_DIR" fina-ergen-xz.AppImage
+          echo "📦 Generando AppImage XZ (Slim)..."
+          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-xz.AppImage
 
           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-std.AppImage#"fina-ergen_${VERSION}_x86_64.AppImage" --clobber
           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#"fina-ergen_${VERSION}_amd64.AppImage" --clobber
