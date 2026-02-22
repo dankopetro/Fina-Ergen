@@ -27,6 +27,7 @@ echo "📂 Root detectado: $ERGEN_ROOT" >&2
 
 # Ubicación del VENV (Priorizamos locales, luego globales)
 PYTHON_BIN=""
+USER_VENV="$HOME/.local/share/Fina/venv"
 
 # 1. Buscar en carpetas locales del proyecto [MODO DESARROLLO]
 for venv_name in ".venv" "venv"; do
@@ -42,9 +43,9 @@ if [ -z "$PYTHON_BIN" ]; then
     if [ -f "$HOME/.venv/bin/python3" ]; then
         PYTHON_BIN="$HOME/.venv/bin/python3"
         echo "🐍 Usando VENV global del HOME (~/.venv)" >&2
-    elif [ -f "$HOME/.local/share/Fina/venv/bin/python3" ]; then
-        PYTHON_BIN="$HOME/.local/share/Fina/venv/bin/python3"
-        echo "🐍 Usando VENV global de Fina (.local/share/Fina/venv)" >&2
+    elif [ -f "$USER_VENV/bin/python3" ]; then
+        PYTHON_BIN="$USER_VENV/bin/python3"
+        echo "🐍 Usando VENV global de Fina ($USER_VENV)" >&2
     fi
 fi
 
