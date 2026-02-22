@@ -48,10 +48,10 @@ jobs:
       - uses: tauri-apps/tauri-action@v0.5.15
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPIMAGE_EXTRACT_AND_RUN: 1
         with:
           tagName: v__VERSION__
           releaseName: "Fina Ergen v__VERSION__"
-          args: --bundles deb,rpm
           releaseBody: |
             ## 🚀 Fina Ergen v__VERSION__ - Edición "Cero Terminal" y Guía Proactiva
 
@@ -69,30 +69,21 @@ jobs:
           releaseDraft: false
           prerelease: false
 
-      - name: Build Full AppImages with linuxdeploy (Standard & Slim XZ)
+      - name: Build Slim XZ AppImage
         run: |
           wget -q "https://github.com/AppImage/appimagekit/releases/download/continuous/appimagetool-x86_64.AppImage"
           chmod +x appimagetool-x86_64.AppImage
 
-          # Ahora linuxdeploy puede correr porque libfuse2 ya está instalado.
-          # Tauri genera el AppDir completo con todas las librerías del sistema.
-          APPIMAGE_EXTRACT_AND_RUN=1 npm run tauri build -- --bundles appimage || true
-
           APP_DIR=src-tauri/target/release/bundle/appimage/fina-ergen.AppDir
           VERSION=$(node -p "require('./package.json').version")
 
-          # Reparar enlaces simbólicos
           cd "$APP_DIR"
           rm -f fina-ergen.desktop .DirIcon
           ln -s usr/share/applications/fina-ergen.desktop fina-ergen.desktop
           ln -s fina-ergen.png .DirIcon
           cd ../../../../../../
 
-          echo "📦 Generando AppImage Estándar (con todas las librerías)..."
-          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APP_DIR" fina-ergen-std.AppImage
-
           echo "📦 Generando AppImage XZ (Slim)..."
           APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage --comp xz "$APP_DIR" fina-ergen-xz.AppImage
 
-          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-std.AppImage#"fina-ergen_${VERSION}_x86_64.AppImage" --clobber
           GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release upload "v${VERSION}" fina-ergen-xz.AppImage#"fina-ergen_${VERSION}_amd64.AppImage" --clobber
