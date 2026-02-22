@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Guía Oficial de Configuración y Puesta en Marcha - Fina Ergen</title>
@@ -47,12 +48,6 @@
             page-break-after: always;
         }
 
-        .cover-logo {
-            width: 280px;
-            margin-bottom: 25px;
-            filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.3));
-        }
-
         h1.main-title {
             font-size: 50pt;
             font-weight: 800;
@@ -73,7 +68,7 @@
             margin-top: 15px;
             text-transform: uppercase;
         }
-        
+
         .version-badge {
             margin-top: 40px;
             padding: 10px 30px;
@@ -117,7 +112,8 @@
             color: #d1d5db;
         }
 
-        .info-card, .warning-card {
+        .info-card,
+        .warning-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
@@ -125,9 +121,17 @@
             margin: 20px 0;
             page-break-inside: avoid;
         }
-        .info-card { border-left: 6px solid var(--primary); }
-        .warning-card { background: #1a0a0a; border-left: 6px solid #ef4444; border-color: #3d1a1a; }
-        
+
+        .info-card {
+            border-left: 6px solid var(--primary);
+        }
+
+        .warning-card {
+            background: #1a0a0a;
+            border-left: 6px solid #ef4444;
+            border-color: #3d1a1a;
+        }
+
         pre {
             background: #0d1117;
             padding: 15px;
@@ -142,8 +146,16 @@
             page-break-inside: avoid;
         }
 
-        a { color: var(--accent); text-decoration: none; font-weight: 600; }
-        .page-break { page-break-after: always; }
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
         footer {
             text-align: center;
             padding: 30px;
@@ -153,99 +165,150 @@
             background: #050505;
             margin-top: 40px;
         }
+
+        code {
+            background: #1e1e1e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ffca28;
+            font-family: 'Consolas', monospace;
+        }
     </style>
 </head>
+
 <body>
 
     <!-- PORTADA -->
     <div class="cover-page">
-        <h1 class="main-title">Configuración Experta</h1>
-        <div class="subtitle">Guía de Puesta en Marcha</div>
-        <div class="version-badge">APIs, Voces Locales y Redes (IoT)</div>
+        <h1 class="main-title">Configuración Total</h1>
+        <div class="subtitle">Guía de Puesta en Marcha V14-F</div>
+        <div class="version-badge">APIs, Servicios Pro y Redes IoT</div>
         <div style="position: absolute; bottom: 30mm; color: #94a3b8;">Fina Ergen © 2026</div>
     </div>
 
-    <!-- SECCION 1: config.py y APIs -->
+    <!-- SECCION 1: config.py y APIs Completo -->
     <div class="content-container">
         <h2><i class="fas fa-key"></i> 1. El cerebro: Archivo config.py y APIs</h2>
-        <p>Para que Fina alcance su máximo potencial, es indispensable conectarla a motores de Inteligencia Artificial y servicios meteorológicos. Todo este poder se controla desde un único archivo llamado <code>config.py</code>. Si usas la versión persistente, este archivo suele resguardarse en <code>~/.config/Fina/config.py</code>.</p>
-        
-        <h3>Obtención de Claves Maestras (APIs)</h3>
-        <p>Abre el archivo `config.py` con tu editor de texto favorito. Verás campos vacíos o temporales que debes rellenar con tus propias credenciales. A continuación, te indicamos dónde obtener cada una de manera gratuita:</p>
-        
+        <p>Para que Fina logre la omnipotencia funcional, debe estar conectada a múltiples servicios. Todo se gestiona
+            en <code>config.py</code>. A continuación, la lista completa de webs para obtener tus claves:</p>
+
+        <h3>🌐 Inteligencia Artificial y LLMs</h3>
         <div class="info-card">
-            <p><strong>☁️ Clima (OpenWeatherMap)</strong><br>
-            Para que Fina responda consultas meteorológicas, necesitas una API_KEY de OpenWeather.<br>
-            <strong>Obtener aquí:</strong> <a href="https://openweathermap.org/api">https://openweathermap.org/api</a> (Regístrate y ve a "My API Keys").<br>
-            <em>Ejemplo en código:</em> <code>WEATHER_API_KEY = "tu_clave_larga_aqui"</code></p>
+            <p><strong>GitHub Token (Mistral/Meta/AI):</strong> Genera un PAT en GitHub para usar modelos potentes
+                gratis.<br>
+                <strong>Web:</strong> <a
+                    href="https://github.com/settings/tokens">https://github.com/settings/tokens</a><br>
+                <code>GITHUB_TOKEN = "tu_token_aqui"</code>
+            </p>
+
+            <p><strong>OpenAI (ChatGPT/DALL-E):</strong> Para generación de imágenes y razonamiento avanzado.<br>
+                <strong>Web:</strong> <a
+                    href="https://platform.openai.com/api-keys">https://platform.openai.com/api-keys</a><br>
+                <code>OPENAI_API_KEY = "tu_sk_key_aqui"</code>
+            </p>
         </div>
 
+        <h3>☁️ Clima y Noticias</h3>
         <div class="info-card">
-            <p><strong>🧠 Inteligencia Artificial (Mistral / OpenAI)</strong><br>
-            Si la consulta supera las habilidades locales de Fina, ella lo derivará a un LLM avanzado.<br>
-            <strong>GitHub Models (Gratis temporalmente):</strong> Genera un PAT (Personal Access Token) en GitHub y colócalo en <code>GITHUB_TOKEN</code>.<br>
-            <strong>OpenAI (ChatGPT):</strong> <a href="https://platform.openai.com/api-keys">https://platform.openai.com/api-keys</a> (Colócalo en <code>OPENAI_API_KEY</code>).</p>
+            <p><strong>OpenWeatherMap:</strong> Informes meteorológicos precisos.<br>
+                <strong>Web:</strong> <a href="https://openweathermap.org/api">https://openweathermap.org/api</a><br>
+                <code>WEATHER_API_KEY = "tu_key_aqui"</code><br>
+                <code>WEATHER_CITY_ID = "tuid_de_ciudad"</code> (Busca tu ciudad en la web de OpenWeather).
+            </p>
+
+            <p><strong>NewsAPI:</strong> Para que Fina te lea las noticias del día.<br>
+                <strong>Web:</strong> <a href="https://newsapi.org/">https://newsapi.org/</a><br>
+                <code>NEWS_API_KEY = "tu_news_key_aqui"</code>
+            </p>
         </div>
 
+        <h3>🗣️ Audio y Voz (TTS Locales y Pro)</h3>
         <div class="info-card">
-            <p><strong>🗣️ Voces en la Nube (ElevenLabs)</strong><br>
-            Si deseas que Fina suene extremadamente realista (a costa de depender de internet), puedes inyectar su API.<br>
-            <strong>Obtener aquí:</strong> <a href="https://elevenlabs.io/">https://elevenlabs.io/</a> (Colócalo en <code>ELEVENLABS_API_KEY</code>).</p>
+            <p><strong>ElevenLabs:</strong> Las mejores voces neuronales del mundo.<br>
+                <strong>Web:</strong> <a href="https://elevenlabs.io/">https://elevenlabs.io/</a><br>
+                <code>ELEVENLABS_API_KEY = "tu_api_key_aqui"</code><br>
+                <code>FINA_VOICE_ID = "Id_de_la_voz_elegida"</code>
+            </p>
         </div>
-    </div>
 
-    <div class="page-break"></div>
+        <h3>🎨 Imagen y Video (Pro)</h3>
+        <div class="info-card">
+            <p><strong>RunwayML:</strong> Generación de video cinemático.<br>
+                <strong>Web:</strong> <a href="https://runwayml.com/">https://runwayml.com/</a><br>
+                <code>RUNAWAY_API_KEY = "tu_runway_key_aqui"</code>
+            </p>
 
-    <!-- SECCION 2: Modelos de Voz Físicos -->
-    <div class="content-container">
-        <h2><i class="fas fa-microphone-alt"></i> 2. Modelos de Voz Locales (Piper TTS)</h2>
-        <p>La filosofía de Fina dicta que debe poder hablarte incluso si cortan el internet de tu casa. Para esto usa el motor <strong>Piper TTS</strong>. Sin embargo, los archivos acústicos pesados (como su voz) no vienen pre-empaquetados y te enseñaremos cómo descargarlos.</p>
+            <p><strong>Unsplash:</strong> Buscador de imágenes de alta calidad.<br>
+                <strong>Web:</strong> <a href="https://unsplash.com/developers">https://unsplash.com/developers</a><br>
+                <code>UNSPLASH_SECRET_KEY = "tu_secret_key_aqui"</code>
+            </p>
+        </div>
 
-        <h3>El caso de "Daniela" (Voz Argentina Femenina)</h3>
-        <p>Dentro del proyecto, proveemos un script automático en la carpeta <code>voice_models/voice_setup.sh</code>. Este script descarga gratuitamente la increíble voz de "Daniela" directamente desde Hugging Face.</p>
-        <pre><code># Si tienes el código fuente, simplemente ejecuta:
-cd /home/tu_usuario/Fina-Ergen/voice_models
-./voice_setup.sh</code></pre>
-
-        <h3>Los Archivos Generados</h3>
-        <p>El script descargará dos cosas fundamentales:<br>
-        1. <code>es_AR-daniela-high.onnx</code> (La neurona acústica)<br>
-        2. <code>es_AR-daniela-high.onnx.json</code> (El archivo de configuración fonética)</p>
-
-        <h3>⚠️ Dónde colocar las voces (El caso del AppImage)</h3>
-        <p>Una consulta muy normal es: <em>"¿Pero si descargué el AppImage que es un solo archivo cuadrado, donde meto a Daniela?"</em></p>
+        <h3>✉️ Gmail (Notificaciones)</h3>
         <div class="warning-card">
-            <p><strong>Regla de Hierro:</strong> Nunca intentes inyectar archivos DENTRO de un AppImage, ya que es un "disco duro sellado de solo lectura".</p>
-            <p><strong>Solución:</strong> Debes colocar los dos archivos de Daniela en la carpeta persistente designada de tu Computadora. Dependiendo el sistema será <code>~/.config/Fina/voice_models/</code> o <code>~/piper_voices/</code> (puedes corroborar esta ruta revisando tu propio archivo `config.py` en la variable <code>VOICE_MODELS_PATH</code>).</p>
+            <p><strong>Importante:</strong> No uses tu contraseña normal de Gmail. Debes activar la "Verificación en dos
+                pasos" y generar una <strong>"Contraseña de Aplicación"</strong>.<br>
+                <strong>Configuración:</strong> <a
+                    href="https://myaccount.google.com/apppasswords">https://myaccount.google.com/apppasswords</a><br>
+                <code>EMAIL_USER = "tu_correo@gmail.com"</code><br>
+                <code>EMAIL_PASSWORD = "codigo_de_16_letras"</code>
+            </p>
         </div>
     </div>
 
     <div class="page-break"></div>
 
-    <!-- SECCION 3: Escaneo de Red -->
+    <!-- SECCION 2: Rutas y Modelos Locales -->
     <div class="content-container">
-        <h2><i class="fas fa-network-wired"></i> 3. Escaneo de Red y Registro de Equipos (IoT)</h2>
-        <p>Una vez Fina esté hablando fluidamente y su configuración base sea funcional, el siguiente paso es dotarla de ojos sobre su propia conectividad. Fina es capaz de manipular Televisores, Decodificadores y Aires Acondicionados en tu casa.</p>
+        <h2><i class="fas fa-folder-open"></i> 2. Rutas del Sistema y Modelos Locales</h2>
+        <p>Si prefieres la privacidad del procesamiento local (Offline), Fina utiliza Piper y Vosk. Aquí defines dónde
+            viven esos archivos:</p>
 
-        <h3>Proceso de Escaneo In-App</h3>
-        <p>1. Ingresa al Dashboard Visual de Fina.<br>
-        2. Dirígete a la pestaña <strong>Dispositivos / Red Local</strong>.<br>
-        3. Fina ejecutará un misil (ARP Scan) y te poblará una lista entera de todo aparato conectado en tu casa a tu Wi-Fi, mostrando direcciones IP y direcciones Físicas MAC.</p>
+        <div class="info-card">
+            <p><strong>Modelos de Voz Piper (ONNX):</strong> Aquí es donde Fina busca a "Daniela" y otras voces.<br>
+                <code>VOICE_MODELS_PATH = "/ruta/a/tus/modelos"</code><br>
+                <em>Recomendado:</em> <code>~/.config/Fina/voice_models</code>
+            </p>
 
-        <h3>Asignación Inteligente de Nombres y Habitaciones</h3>
-        <p>Al identificar la IP de uno de tus equipos de salón (Por ejemplo: un Chromecast o un Aire Midea IP: 192.168.1.15), debes hacer clic sobre él para registrarlo en el sistema. Se abrirá una pequeña ventana visual emergente pidiéndote cómo quieres "bautizar" a ese dispositivo.</p>
-        
-        <div class="info-card" style="border-left-color: #f59e0b;">
-            <h3 style="margin-top:0; color: #f59e0b;"><i class="fas fa-tv"></i> ¿Tienes 2 o más Televisores en casa?</h3>
-            <p>Ponerle como nombre "Teléfono" o "Televisor" a todo el IoT resulta en catástrofes domóticas por solapamiento ("Mezcla de identidades"). Fina asume su inteligencia con <strong>Nomenclaturas Relacionales</strong>.</p>
-            <p>Al momento de darle nombre a tus aparatos (Ej: <em>TV Samsung</em> o <em>Aire TCL</em>), fíjate que <strong>un poco más abajo en ese mismo lugar del guardado visual, figura una caja de asignación para la Habitacion a la que corresponde.</strong></p>
-            <p>Es <strong>crucial para el éxito</strong> que detalles "Habitación: Living" para el dispositivo 1 y "Habitación: Cuarto Principal" para el dispositivo 2. De este modo, tú le ordenarás a Fina: <em>"Fina, prende el televisor del Living"</em> y Fina computará el discriminador exacto de red evitando encender televisores a terceras personas durmiendo.</p>
+            <p><strong>Modelo de Reconocimiento Vosk:</strong> El motor que "escucha" tus palabras en modo local.<br>
+                <strong>Descargar:</strong> <a
+                    href="https://alphacephei.com/vosk/models">https://alphacephei.com/vosk/models</a><br>
+                <code>VOSK_MODEL_PATH = "/ruta/al/modelo/descomprimido"</code>
+            </p>
+        </div>
+
+        <div class="warning-card">
+            <h3 style="margin-top:0; color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> El Gran Error de
+                AppImage</h3>
+            <p>Si usas el formato **AppImage**, recuerda que es un contenedor de SOLO LECTURA. Si descargas una voz
+                nueva, **NUNCA** intentes meterla dentro del archivo .AppImage.</p>
+            <p>Debes guardarla en una carpeta normal de tu disco (como Descargas o Documentos) y luego copiar esa ruta
+                exacta en el `config.py`. Fina leerá los archivos desde afuera sin problemas.</p>
+        </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- SECCION 3: Red y TVs -->
+    <div class="content-container">
+        <h2><i class="fas fa-network-wired"></i> 3. Domótica IoT y Registro de Equipos</h2>
+        <p>Fina es capaz de controlar televisores, aires y luces. El proceso es visual:</p>
+
+        <div class="info-card">
+            <h3>Asignación de "Habitaciones"</h3>
+            <p>Si tienes dos televisores iguales (ej. dos Samsung), Fina se confundirá si solo dices "Prende la TV". Por
+                eso, al escanear la red y registrar un dispositivo con el ícono del **Lápiz**, fíjate que aparece un
+                campo llamado **HABITACIÓN**.</p>
+            <p><strong>Truco Pro:</strong> Si asignas un televisor a "Cocina" y otro a "Living", podrás decir:
+                <em>"Fina, prende la tele de la cocina"</em> y el sistema sabrá exactamente que IP disparar, evitando
+                encender la del living por error.</p>
         </div>
     </div>
 
     <footer>
-        <p>Fina Ergen - Documentación de Configuración Base v3.5.5 (Próximo Release)</p>
+        <p>Fina Ergen - Documentación de Configuración Total v3.5.4-14 (Force Edition)</p>
     </footer>
 
 </body>
+
 </html>

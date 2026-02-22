@@ -1,16 +1,17 @@
 ========== PARA LA VERSIÓN v3.5.4-14 ==========
 
-## 🚀 Fina Ergen v3.5.4-14 - Edición Visual y Estabilidad Total
+## 🚀 Fina Ergen v3.5.4-14 - Edición Visual, Configuración y Estabilidad Blindada
 
-Esta versión representa el estado más refinado de Fina hasta la fecha, combinando parches críticos de portabilidad con una suite documental de lujo.
+Esta versión representa el estado más refinado de Fina hasta la fecha, combinando parches críticos de portabilidad con una suite documental de lujo y un blindaje total para entornos de solo lectura.
 
 ### 🛠️ Novedades de esta Versión:
-* **📸 Manual Visual de Usuario (10 Páginas)**: Se incluye en el instalador la guía práctica basada en capturas reales, explicando cada botón del Dashboard.
+* **🛡️ Blindaje Universal (Fix Read-Only)**: Se redireccionó el 100% de la escritura (logs, audios temporales, perfiles de voz, escaneos IoT) a `~/.config/Fina`. La aplicación ahora es invulnerable a errores de permiso en AppImage y instalaciones globales.
+* **📗 Guía de Configuración Experta**: Nuevo manual dedicado a explicar cómo obtener cada API KEY (OpenWeather, OpenAI, ElevenLabs, Gmail, etc.) con links directos a las webs oficiales.
+* **📸 Manual Visual de Usuario (11 Páginas)**: Guía práctica basada en capturas reales, explicando cada botón del Dashboard.
 * **📖 Manual Enciclopédico (20 Páginas)**: Manual técnico profundo disponible en el repositorio (docs/) para Power Users.
-* **🔧 Blindaje AppImage (Fix PYTHONHOME)**: Adiós al error "init_fs_encoding". Funciona en cualquier sistema Linux moderno.
-* **⚡ Auto-Backend Launch**: Los servicios de IA y API arrancan solos al abrir la App.
-* **🛰️ Escaneo de Red Nativo**: Búsqueda ultrarrápida de dispositivos IoT mediante Rust.
-* **✍️ Auditoría y Registro (Services Logs)**: Registro detallado de eventos en `~/.config/Fina/fina_services.log`.
+* **🔧 Core Fix (PYTHONHOME)**: Adiós definitivo al error "init_fs_encoding". Funciona en cualquier sistema Linux moderno.
+* **🧠 Inteligencia Blindada**: `Resemblyzer` ahora es una dependencia opcional. Si no está instalada, Fina arranca igual y te avisa por log para que no se bloquee el sistema.
+* **✍️ Auditoría y Registro (Services Logs)**: Registro centralizado de eventos y errores en `~/.config/Fina/fina_services.log`.
 
 ========== PARA LA VERSIÓN v3.5.4-12 ==========
 
