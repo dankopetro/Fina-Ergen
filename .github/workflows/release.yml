@@ -34,31 +34,37 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
+      - name: Download Piper Binary (Sidecar)
+        run: |
+          mkdir -p src-tauri/binaries
+          if [ ! -f src-tauri/binaries/piper ]; then
+            wget -O piper.tar.gz https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_amd64.tar.gz
+            tar -xzf piper.tar.gz
+            cp piper/piper src-tauri/binaries/
+            chmod +x src-tauri/binaries/piper
+            rm -rf piper piper.tar.gz
+          fi
+
       - uses: tauri-apps/tauri-action@v0.5.15
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__ # Real version will be taken from package.json
+          tagName: v__VERSION__
           releaseName: "Fina Ergen v__VERSION__"
           releaseBody: |
-            ## 🚀 Fina Ergen v__VERSION__ - Edición Universal
+            ## 🚀 Fina Ergen v__VERSION__ - Edición "Cero Terminal" y Guía Proactiva
             
-            Esta versión marca un hito en la portabilidad de Fina Ergen, convirtiéndola en un asistente 100% autodependiente y universal.
+            Esta actualización transforma a Fina en un asistente modular completamente resiliente y amigable para el usuario novato.
             
-            ### 🛠️ Novedades de esta Versión:
-            *   **Universalidad Total**: Se han eliminado todas las rutas locales fijas. Fina ahora detecta su ubicación y recursos dinámicamente.
-            *   **Persistencia Segura**: Tus ajustes, contactos y perfiles de voz ahora se guardan en `~/.config/Fina/`, permitiendo actualizar la aplicación sin perder tus datos.
-            *   **Gestión de Plugins Avanzada**: Soporte para instalación de plugins en la carpeta del usuario. ¡Tus extensiones te siguen a donde vayas!
-            *   **Optimización de Recursos**: El sistema de Android (Waydroid/Weston) ahora solo se activa si tienes un timbre configurado, ahorrando mucha memoria y CPU.
-            *   **Clima en Tiempo Real**: Sincronización inmediata al arranque. No más esperas para ver la temperatura de tu ciudad.
+            ### 🛠️ Novedades Críticas:
+            * **⚡ Auto-Bootstrap (Zero Terminal)**: Fina ahora detecta automáticamente si faltan librerías críticas de IA (Torch, Vosk, Sounddevice, etc.) y las instala sola en un entorno privado.
+            * **📖 Guía Proactiva para Novatos**: Apertura automática del manual de configuración al detectar falta de modelos de voz/oído.
+            * **🛡️ Blindaje de Configuración**: Fina ya no cierra por errores en `config.py`; ahora arranca siempre y avisa qué falta.
+            * **📐 Manual Centrado y Refinado**: El manual PDF y HTML ahora están integrados en el paquete y diseñados para impresión y web.
+            * **🧹 Limpieza de Logs**: Prevención de saturación de disco por logs repetitivos.
             
-            ### 📦 ¿Qué archivo descargar?
-            Encontrarás dos versiones de AppImage en los assets:
-            
-            1.  **fina-ergen_v..._amd64.AppImage (RECOMENDADO)**: Versión optimizada con compresión **XZ** (más liviana) y parches de compatibilidad para Iconos y sistemas modernos (Ubuntu 24.04+, Mint 22). 
-            2.  **fina-ergen_v..._x86_64.AppImage**: Versión estándar generada por el compilador base.
-            
-            ¡Gracias por ser parte de la evolución de Fina! ❤️
+            ### 📦 Instalación:
+            Descarga el archivo `.deb` o `.AppImage` e instálalo normalmente. Fina te guiará en el primer arranque.
           releaseDraft: false
           prerelease: false
 
