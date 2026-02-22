@@ -78,7 +78,6 @@
       "../fina_plugin_integration.py",
       "../intents.json",
       "../requirements.txt",
-      "../setup.py",
       "../iot/**/*",
       "../plugins/system/**/*",
       "../plugins/biometria/**/*",
