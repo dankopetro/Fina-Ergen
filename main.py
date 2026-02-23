@@ -2,12 +2,14 @@ import sys
 import os
 
 # -------------------------------------------------------------
-# FORZAR CARGA LOCAL (Plugins, Utils)
-# Evita cargar versiones viejas instaladas en site-packages
+# FORZAR CARGA LOCAL Y VENV DEL USUARIO (AppImage Fix)
+# Evita cargar versiones viejas instaladas globalmente y permite
+# ver módulos del usuario (ej: resemblyzer) si falla la detección normal.
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
-    print(f"🔧 Forzando carga local desde: {current_dir}")
+    print(f"🔧 Forzando carga local desde: {current_dir}", flush=True)
     sys.path.insert(0, current_dir)
+
 # -------------------------------------------------------------
 
 # --- DETECCIÓN DE ENTORNO VIRTUAL [UNIVERSAL] ---
@@ -71,6 +73,14 @@ if "venv" not in sys.executable:
         print(f"👤 Ejecutado por: {getpass.getuser()}")
         os.execl(best_py, best_py, *sys.argv)
 # --------------------------------------------------
+
+# FORZAR VISIBILIDAD DE LIBRERÍAS DEL USUARIO (Para aislamientos de AppImage)
+import glob
+venv_base = os.path.dirname(os.path.dirname(best_py))
+dynamic_site_packages = os.path.join(venv_base, "lib", "python3.*", "site-packages")
+for p in glob.glob(dynamic_site_packages):
+    if p not in sys.path:
+        sys.path.append(p)
 
 import logging
 import time

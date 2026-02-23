@@ -20,27 +20,37 @@ class TVPlugin:
         self.settings = self._load_settings()
         
     def _load_settings(self) -> Dict[str, Any]:
-        """Carga configuración o usa defaults"""
-        # 1. Local path (Fina-Ergen root)
-        root = os.path.dirname(os.path.dirname(self.plugin_dir))
-        local_settings = os.path.join(root, "config", "settings.json")
+        """Carga configuración desde ~/.config/Fina/settings.json de forma robusta"""
+        config_dir = None
         
-        # 2. User config path
-        user_settings = os.path.join(os.path.expanduser("~"), ".config", "Fina", "settings.json")
+        # 1. Prioridad: XDG_CONFIG_HOME
+        xdg_config = os.environ.get("XDG_CONFIG_HOME")
+        if xdg_config:
+            config_dir = os.path.join(xdg_config, "Fina")
+        else:
+            # 2. Rescate: Home del usuario real
+            try:
+                from pathlib import Path
+                config_dir = os.path.join(str(Path.home()), ".config", "Fina")
+            except:
+                config_dir = os.path.expanduser("~/.config/Fina")
+                
+        settings_path = os.path.join(config_dir, "settings.json")
+        fallback_settings = os.path.join(os.path.dirname(os.path.dirname(self.plugin_dir)), "config", "settings.json")
         
-        paths_to_check = [user_settings, local_settings]
+        paths_to_check = [settings_path, fallback_settings]
+        self.logger.info(f"🔎 TVPlugin buscando settings en: {paths_to_check}")
         
         for p in paths_to_check:
             if os.path.exists(p):
                 try:
                     with open(p, 'r') as f:
-                        self.logger.info(f"📺 Cargando configuración desde: {p}")
+                        self.logger.info(f"✅ TVPlugin: Cargando settings desde {p}")
                         return json.load(f)
                 except Exception as e:
                     self.logger.error(f"Error leyendo settings {p}: {e}")
 
-        # Default si nada funciona (NO INVENTAR DISPOSITIVOS)
-        self.logger.error("❌ CRÍTICO: No se pudo cargar settings.json de ninguna ruta conocida.")
+        self.logger.error(f"❌ CRÍTICO: No se encontró settings.json en NINGUNA ruta. (Probado: {paths_to_check})")
         return {"tvs": []}
 
     def _ensure_adb_connections(self):

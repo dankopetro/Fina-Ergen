@@ -23,6 +23,18 @@ if "venv" in best_py and "venv" not in sys.executable:
     print(f"🔄 API: Relanzando con entorno detectado: {best_py}", flush=True)
     os.execl(best_py, best_py, *sys.argv)
 
+# FORZAR VISIBILIDAD DE LIBRERÍAS DEL USUARIO (Para aislamientos de AppImage)
+import glob
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+# Buscar el site-packages dinámicamente según el mejor entorno detectado
+venv_base = os.path.dirname(os.path.dirname(best_py))
+dynamic_site_packages = os.path.join(venv_base, "lib", "python3.*", "site-packages")
+for p in glob.glob(dynamic_site_packages):
+    if p not in sys.path:
+        sys.path.append(p)
 # --- SILENCIAR LIBRERÍAS RUIDOSAS ---
 import logging
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
@@ -37,11 +49,12 @@ logging.getLogger("transformers").setLevel(logging.ERROR)
 for lib in ["httpx", "urllib3"]:
     logging.getLogger(lib).setLevel(logging.WARNING)
 
-# --- LIMPIADOR DE PUERTOS (Multi-Método - No depende de lsof) ---
+# --- LIMPIADOR DE PUERTOS (Multi-Método) ---
 def kill_process_on_port(port):
     killed = False
+    current_pid = str(os.getpid())
     try:
-        # Método 1: fuser (disponible en la mayoría de distros Linux)
+        # Método 1: fuser
         result = subprocess.run(["fuser", "-k", f"{port}/tcp"], 
                                 capture_output=True, timeout=3)
         if result.returncode == 0:
@@ -58,17 +71,22 @@ def kill_process_on_port(port):
             ).decode().strip()
             if result:
                 for pid in result.split():
-                    subprocess.run(["kill", "-9", pid])
-                    print(f"🧹 API: Proceso {pid} en puerto {port} eliminado (ss).", flush=True)
+                    if pid != current_pid:
+                        subprocess.run(["kill", "-9", pid])
+                        print(f"🧹 API: Proceso {pid} en puerto {port} eliminado (ss).", flush=True)
                 killed = True
         except: pass
     
     if not killed:
         try:
-            # Método 3: pkill directo de uvicorn (el que usa el puerto)
-            subprocess.run(["pkill", "-f", "uvicorn"], timeout=2)
-            subprocess.run(["pkill", "-f", "fina_api"], timeout=2)
-            print(f"🧹 API: Procesos uvicorn/fina_api anteriores terminados.", flush=True)
+            # Método 3: pkill directo de uvicorn (Pero protegiendo a sí mismo)
+            import pty
+            ps_out = subprocess.check_output("pgrep -f uvicorn", shell=True, text=True)
+            for pid in ps_out.strip().split():
+                if pid and pid != current_pid:
+                    subprocess.run(["kill", "-9", pid])
+                    print(f"🧹 API: Proceso zombie uvicorn ({pid}) terminado.", flush=True)
+            killed = True
         except: pass
     
     if killed:
@@ -234,16 +252,38 @@ enroll_info = {"active": False, "message": "Esperando...", "progress": 0}
 
 # --- Helper Functions ---
 def load_settings_data():
-    if not os.path.exists(SETTINGS_PATH):
-        # Crear default si no existe
-        return {"tvs": [], "apis": {}, "paths": {}, "tv_apps": {}}
-    try:
-        with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"❌ Error cargando settings: {e}", flush=True)
-        return {}
+    data = {"tvs": [], "apis": {}, "paths": {}, "tv_apps": {}}
+    if os.path.exists(SETTINGS_PATH):
+        try:
+            with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
+                loaded = json.load(f)
+                if isinstance(loaded, dict):
+                    # Manejar formato viejo plano "MISTRAL_API_KEY" -> "apis": {"MISTRAL_API_KEY"}
+                    if "apis" not in loaded and "MISTRAL_API_KEY" in loaded:
+                        data["apis"] = loaded.copy()
+                    else:
+                        data.update(loaded)
+        except Exception as e:
+            print(f"❌ Error cargando settings.json: {e}", flush=True)
 
+    # Inyectar claves críticas desde config.py mediante el unificador si no están en settings
+    try:
+        import utils
+        keys_to_sync = [
+            "MISTRAL_API_KEY", "OPENAI_API_KEY", "WEATHER_API_KEY", "USER_NAME",
+            "HUE_BRIDGE_IP", "HUE_USERNAME", "EMAIL_USER", "EMAIL_PASSWORD",
+            "WEATHER_CITY_ID", "WEATHER_UNITS", "GITHUB_TOKEN", "GITHUB_REPO", "GITHUB_USER"
+        ]
+        if "apis" not in data: data["apis"] = {}
+        for k in keys_to_sync:
+            if not data["apis"].get(k):
+                val = utils.get_unified_config(k)
+                if val is not None:
+                    data["apis"][k] = val
+    except Exception as e:
+        print(f"⚠️ Aviso: No se pudieron sincronizar variables de config.py a UI: {e}", flush=True)
+        
+    return data
 def save_settings_data(data):
     try:
         with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
