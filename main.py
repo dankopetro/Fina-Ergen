@@ -2,14 +2,17 @@ import sys
 import os
 
 # -------------------------------------------------------------
-# FORZAR CARGA LOCAL Y VENV DEL USUARIO (AppImage Fix)
-# Evita cargar versiones viejas instaladas globalmente y permite
-# ver módulos del usuario (ej: resemblyzer) si falla la detección normal.
+# FORZAR CARGA LOCAL Y VENV DEL USUARIO (AppImage/DEB Fix)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
-    print(f"🔧 Forzando carga local desde: {current_dir}", flush=True)
     sys.path.insert(0, current_dir)
 
+# CARGAR LIBRERÍAS INTEGRADAS (Bundled Libs de Recursos)
+# Esto permite que Fina corra sin instalar nada vía PIP en el usuario
+bundled_path = os.path.join(current_dir, "bundled_libs")
+if os.path.exists(bundled_path):
+    print(f"📦 Usando Librerías Integradas (Bundled): {bundled_path}", flush=True)
+    sys.path.insert(0, bundled_path)
 # -------------------------------------------------------------
 
 # --- DETECCIÓN DE ENTORNO VIRTUAL [UNIVERSAL] ---
@@ -27,57 +30,36 @@ def get_best_python():
         if os.path.exists(p): return p
     return sys.executable
 
-# --- BOOTSTRAP: AUTO-INSTALADOR DE LIBRERÍAS [ZERO TERMINAL] ---
+# --- BOOTSTRAP: DESACTIVADO (Instalación vía Sistema) ---
 def bootstrap_fina():
-    """Verifica e instala librerías de IA si faltan, sin terminal"""
-    import subprocess
-    required_libs = ["fastapi", "uvicorn", "vosk", "sounddevice", "torch", "sentence_transformers", "resemblyzer"]
-    missing = []
-    
-    import importlib.util
-    for lib in required_libs:
-        if importlib.util.find_spec(lib) is None:
-            missing.append(lib)
-    
-    if not missing: return True
+    """Ya no instalamos nada en caliente. El .DEB/.RPM maneja las dependencias."""
+    print("ℹ️ Fina: Usando dependencias del sistema instaladas por el paquete (.deb/.rpm).")
+    return True
 
-    print(f"📦 Fina detectó componentes faltantes: {missing}")
-    print("🛠️ Iniciando auto-configuración silenciosa...")
-    
-    config_venv = os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv")
-    try:
-        if not os.path.exists(config_venv):
-            print(f"📁 Creando entorno virtual en {config_venv}...")
-            subprocess.run([sys.executable, "-m", "venv", config_venv], check=True)
-        
-        pip_exe = os.path.join(config_venv, "bin", "pip")
-        print(f"🚀 Instalando dependencias: {missing} (Esto solo ocurre una vez)...")
-        subprocess.check_call([pip_exe, "install", "--upgrade", "pip"], stdout=subprocess.DEVNULL)
-        subprocess.check_call([pip_exe, "install"] + missing, stdout=subprocess.DEVNULL)
-        print("✅ Auto-configuración completada.")
-        return True
-    except Exception as e:
-        print(f"❌ Error en auto-configuración: {e}")
-        return False
+# Determinar si estamos en un entorno virtual (VENV)
+in_venv = sys.prefix != sys.base_prefix
 
-# Si no estamos en un venv y existe uno, relanzar con ese
-# Si NO hay venv, intentar bootstrap primero
 best_py = get_best_python()
-if "venv" not in sys.executable:
+
+# Si no estamos en un venv, intentar buscar uno o crearlo
+if not in_venv:
     if "venv" not in best_py:
-        # No hay venv en ningún lado, intentar crearlo
+        # Intentar bootstrap si no se detectó ningún venv existente
         if bootstrap_fina():
             best_py = get_best_python()
     
-    if "venv" in best_py and best_py != sys.executable:
+    # Si encontramos un python mejor (un venv) que no es el actual, relanzar
+    if best_py != sys.executable:
         print(f"🔄 Relanzando Fina con entorno detectado: {best_py}")
         import getpass
         print(f"👤 Ejecutado por: {getpass.getuser()}")
+        # Aseguramos que pasamos la ruta absoluta
         os.execl(best_py, best_py, *sys.argv)
 # --------------------------------------------------
 
 # FORZAR VISIBILIDAD DE LIBRERÍAS DEL USUARIO (Para aislamientos de AppImage)
 import glob
+# Buscar el site-packages dinámicamente según el mejor entorno detectado
 venv_bases = [
     os.path.dirname(os.path.dirname(best_py)),
     os.path.expanduser("~/.config/Fina/venv"),
@@ -86,10 +68,12 @@ venv_bases = [
 ]
 
 for base in venv_bases:
-    dynamic_site_packages = os.path.join(base, "lib", "python3.*", "site-packages")
-    for p in glob.glob(dynamic_site_packages):
-        if p not in sys.path:
-            sys.path.append(p)
+    dynamic_site_packages1 = os.path.join(base, "lib", "python3.*", "site-packages")
+    dynamic_site_packages2 = os.path.join(base, "lib64", "python3.*", "site-packages")
+    for pattern in [dynamic_site_packages1, dynamic_site_packages2]:
+        for p in glob.glob(pattern):
+            if p not in sys.path:
+                sys.path.append(p)  # NO USAR INSERT(1). Causa shadow strikes a python builtin libs como typing.py.
 
 import logging
 import time
@@ -648,7 +632,7 @@ async def main():
                 print("🛑 EJECUTANDO PROTOCOLO DE APAGADO TOTAL (AUTORIZADO)...")
                 
                 # 1. Avisar a la API (Estado Shutdown)
-                try: requests.get("http://127.0.0.1:8000/api/shutdown", timeout=0.5)
+                try: requests.get("http://127.0.0.1:18000/api/shutdown", timeout=0.5)
                 except: pass
                 
                 # 2. Matar todo explícitamente usando cleanup.sh

@@ -114,7 +114,7 @@ def generate_manual():
     pdf.cell(0, 8, '3.1 Acceso y Lanzamiento', 0, 1)
     pdf.set_text_color(*COLOR_TEXT)
     pdf.set_font('Arial', '', 11)
-    pdf.multi_cell(0, 6, 'Ejecuta el script: ./run_web_panel.sh\nAccede en tu navegador a: http://localhost:8000')
+    pdf.multi_cell(0, 6, 'Ejecuta el script: ./run_web_panel.sh\nAccede en tu navegador a: http://localhost:18000')
     pdf.ln(2)
 
     pdf.set_text_color(*COLOR_SUBTITLE)

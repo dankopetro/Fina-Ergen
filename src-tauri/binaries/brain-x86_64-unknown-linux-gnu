@@ -1,110 +1,187 @@
-# Brain Sidecar - Fina Ergen
-# GESTIÓN AUTOMÁTICA DE ENTORNO VIRTUAL Y DEPENDENCIAS
+#!/bin/bash
+# Brain Sidecar - Fina Ergen v3.5.4-18
+# GESTIÓN UNIVERSAL DE ENTORNO Y PROCESOS [EDICIÓN RECONSTRUCCIÓN FINAL]
 
-# Directorio donde se encuentra este script
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# 1. Rutas Base y Logging
+# Resolvemos el path real del script para evitar problemas de symlinks en /usr/bin
+REAL_SCRIPT_PATH="$(readlink -f "$0")"
+SCRIPT_DIR="$(cd "$(dirname "$REAL_SCRIPT_PATH")" && pwd)"
+LOG_DIR="$HOME/.config/Fina/Logs"
+mkdir -p "$LOG_DIR"
+BOOT_LOG="$LOG_DIR/boot_wrapper.log"
 
-# Estrategia de búsqueda de raíz (Desarrollo vs Producción .deb/.rpm)
-# 1. Desarrollo: ../../../ (desde binaries/)
-# 2. Producción: ../ (desde binaries/ en /usr/lib/fina-ergen/)
-# 3. Producción (Alternate): ../resources/
-for root in "$SCRIPT_DIR/../../../" "$SCRIPT_DIR/../" "$SCRIPT_DIR/../resources/"; do
-    IF_ROOT="$(realpath "$root" 2>/dev/null)"
-    if [ -f "$IF_ROOT/main.py" ]; then
-        ERGEN_ROOT="$IF_ROOT"
-        ERGEN_MAIN="$ERGEN_ROOT/main.py"
+# Redirigir todo al log para diagnóstico (stdout + stderr)
+exec > >(tee -a "$BOOT_LOG") 2>&1
+echo "--- [BOOT WRAPPER START] $(date) ---"
+echo "📍 REAL_SCRIPT_PATH: $REAL_SCRIPT_PATH"
+echo "📍 SCRIPT_DIR detectado: $SCRIPT_DIR"
+echo "👤 USER: $(whoami)"
+echo "🏠 HOME: $HOME"
+echo "🔍 PWD: $(pwd)"
+
+# 2. Búsqueda Exhaustiva de la Raíz del Proyecto (main.py)
+ERGEN_ROOT=""
+
+# Lista de búsqueda táctica TOTAL:
+search_paths=(
+    "$SCRIPT_DIR/_up_"              # Relativo al sidecar en /usr/lib/fina-ergen/
+    "$SCRIPT_DIR/../_up_"           # Relativo al sidecar en /usr/lib/fina-ergen/binaries/
+    "$SCRIPT_DIR/.."                # Tauri Resources standard
+    "$SCRIPT_DIR/../../.."          # Development (src-tauri/binaries -> project_root)
+    "/usr/lib/fina-ergen/_up_"      # Ruta absoluta estándar DEB (Fina Resources)
+    "/usr/lib/fina-ergen"           # Ruta absoluta alternativa
+    "/usr/share/fina-ergen/_up_"    # Ruta absoluta estándar RPM
+    "/usr/share/fina-ergen"         # Ruta absoluta alternativa RPM
+    "/opt/fina-ergen/_up_"          # Otras instalaciones
+    "$(pwd)"                        # Fallback local
+)
+
+echo "🔍 Buscando archivos core (fina_api.py / main.py)..."
+for path in "${search_paths[@]}"; do
+    ABS_PATH="$(realpath "$path" 2>/dev/null)"
+    if [ -n "$ABS_PATH" ] && [ -f "$ABS_PATH/main.py" ] && [ -f "$ABS_PATH/fina_api.py" ]; then
+        ERGEN_ROOT="$ABS_PATH"
+        echo "✅ Raíz encontrada exitosamente en: $ERGEN_ROOT"
         break
     fi
 done
 
 if [ -z "$ERGEN_ROOT" ]; then
-    echo "⚠️ ADVERTENCIA: No se encontró main.py en rutas estándar. Usando PWD." >&2
-    ERGEN_ROOT="$(pwd)"
-    ERGEN_MAIN="$ERGEN_ROOT/main.py"
+    echo "❌ ERROR FATAL: No se pudo localizar la instalación de Fina."
+    echo "Faltan main.py y fina_api.py en los directorios de recursos."
+    echo "Rutas exploradas:"
+    for p in "${search_paths[@]}"; do echo "  - $p"; done
+    exit 1
 fi
 
-echo "📂 Root detectado: $ERGEN_ROOT" >&2
-
-# Ubicación del VENV (Priorizamos locales, luego globales)
-PYTHON_BIN=""
-USER_VENV="$HOME/.config/Fina/venv"
-
-# 1. Buscar en carpetas locales del proyecto [MODO DESARROLLO]
-for venv_name in ".venv" "venv"; do
-    if [ -f "$ERGEN_ROOT/$venv_name/bin/python3" ]; then
-        PYTHON_BIN="$ERGEN_ROOT/$venv_name/bin/python3"
-        echo "🐍 Usando VENV local: $venv_name" >&2
+# 3. Preparación de Python (Aislamiento de Distro)
+PYTHON_SYSTEM=""
+for py in "python3" "python" "python3.12" "python3.11" "python3.10"; do
+    if command -v "$py" >/dev/null 2>&1; then
+        PYTHON_SYSTEM="$(command -v "$py")"
         break
     fi
 done
 
-# 2. Si no hay local, buscar globales [MODO PRODUCCIÓN / USUARIO]
-if [ -z "$PYTHON_BIN" ]; then
-    if [ -f "$HOME/.venv/bin/python3" ]; then
-        PYTHON_BIN="$HOME/.venv/bin/python3"
-        echo "🐍 Usando VENV global del HOME (~/.venv)" >&2
-    elif [ -f "$USER_VENV/bin/python3" ]; then
-        PYTHON_BIN="$USER_VENV/bin/python3"
-        echo "🐍 Usando VENV global de Fina ($USER_VENV)" >&2
-    fi
-fi
+[ -z "$PYTHON_SYSTEM" ] && echo "❌ ERROR: Python no encontrado." && exit 1
+echo "🐍 Python sistema: $PYTHON_SYSTEM"
 
-# --- INICIALIZACIÓN AUTOMÁTICA DEL ENTORNO ---
+USER_VENV="$HOME/.config/Fina/venv"
+PYTHON_BIN=""
+
+# 4. Gestión de VENV e Instalación VISIBLE
+USER_VENV="$HOME/.config/Fina/venv"
+PYTHON_BIN="$USER_VENV/bin/python3"
+
+# Si no existe el VENV, informamos al usuario con una ventana (si hay zenity)
 if [ ! -f "$PYTHON_BIN" ]; then
-    echo "🛠️ Preparando entorno virtual por primera vez..." >&2
+    if command -v zenity >/dev/null 2>&1; then
+        zenity --info --title="Fina Ergen" --text="Fina está preparando su 'cerebro' por primera vez.\nEsto tardará unos minutos dependiendo de tu internet.\nNo cierres el proceso para asegurar que la biometría funcione." --width=400 &
+    fi
     
-    # Verificar si python3 y venv están instalados
-    if ! python3 -c "import venv" &>/dev/null; then
-        echo "❌ ERROR: El módulo 'python3-venv' no está instalado." >&2
-        echo "💡 Por favor, ejecuta: sudo apt install python3-venv (en Debian/Ubuntu/Mint)" >&2
-        # Intentamos seguir con el python del sistema como último recurso
-        PYTHON_BIN="$(which python3)"
+    echo "🛠️ Creando VENV..."
+    "$PYTHON_SYSTEM" -m venv "$USER_VENV" --system-site-packages || "$PYTHON_SYSTEM" -m venv "$USER_VENV"
+fi
+
+if [ -f "$PYTHON_BIN" ]; then
+    # Instalación con Barra de Progreso si zenity existe
+    if command -v zenity >/dev/null 2>&1 && [ ! -f "$HOME/.config/Fina/.installed" ]; then
+        echo "📦 Instalando componentes pesados (Torch, Resemblyzer)..."
+        (
+            echo "# Actualizando herramientas base (pip)..."; echo "10"
+            "$PYTHON_BIN" -m pip install --upgrade pip >/dev/null 2>&1
+            
+            echo "# Instalando servicios y drivers..."; echo "30"
+            "$PYTHON_BIN" -m pip install fastapi uvicorn requests psutil numpy sounddevice soundfile >/dev/null 2>&1
+            
+            echo "# Descargando motores de IA (Biometría)..."; echo "60"
+            "$PYTHON_BIN" -m pip install resemblyzer torch --extra-index-url https://download.pytorch.org/whl/cpu >/dev/null 2>&1
+            
+            echo "# Instalando y acomodando archivos finales..."; echo "90"
+            "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" >/dev/null 2>&1
+            
+            touch "$HOME/.config/Fina/.installed"
+            echo "# ¡Todo listo! Fina está despertando..."; echo "100"
+            sleep 1
+        ) | zenity --progress --title="Fina Ergen - Primer Arranque" --text="Iniciando configuración..." --percentage=0 --auto-close
     else
-        mkdir -p "$(dirname "$USER_VENV")"
-        python3 -m venv "$USER_VENV" || { echo "❌ Error creando venv" >&2; exit 1; }
-        PYTHON_BIN="$USER_VENV/bin/python3"
-        
-        # Instalación inicial de requerimientos
-        if [ -f "$ERGEN_ROOT/requirements.txt" ]; then
-            echo "📦 Instalando dependencias de Fina (esto puede tardar unos minutos)..." >&2
-            "$PYTHON_BIN" -m pip install --upgrade pip &>/dev/null
-            "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" || echo "⚠️ Algunos paquetes fallaron, se intentarán cargar bajo demanda." >&2
-        fi
+        # Instalación silenciosa o ya hecha
+        "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" --quiet >/dev/null 2>&1 || true
     fi
+else
+    PYTHON_BIN="$PYTHON_SYSTEM"
 fi
 
-# Verificar si se necesitan nuevas dependencias (comparando fecha de requirements.txt)
-# Solo si el directorio es escribible
-if [ -w "$ERGEN_ROOT" ] && [ -f "$ERGEN_ROOT/requirements.txt" ]; then
-    # Un check simple para no re-instalar siempre: si requirements es mas nuevo que el venv
-    if [ "$ERGEN_ROOT/requirements.txt" -nt "$PYTHON_BIN" ]; then
-        echo "🔄 Actualizando dependencias detectadas..." >&2
-        "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt"
-        touch "$PYTHON_BIN" # Actualizar fecha del binario como marcador
-    fi
+echo "🚀 Usando entorno: $PYTHON_BIN"
+
+# 4. Limpieza de Seguridad INTELIGENTE (Puerto 18000)
+# Usamos el 18000 para evitar conflictos con otras Apps que usen el 8000 (Django/FastAPI)
+echo "🧹 Limpiando procesos previos de Fina..."
+pkill -9 -f "fina_api.py" >/dev/null 2>&1
+pkill -9 -f "main.py" >/dev/null 2>&1
+pkill -9 -f "monitor_ergen.py" >/dev/null 2>&1
+
+# Solo matamos lo que esté en el 18000 si es necesario
+for i in {1..2}; do
+    if command -v ss >/dev/null 2>&1; then ss -tlnp 'sport = :18000' | grep -oP 'pid=\K\d+' | xargs -r kill -9 >/dev/null 2>&1; fi
+    if command -v fuser >/dev/null 2>&1; then fuser -k -9 18000/tcp >/dev/null 2>&1; fi
+    sleep 0.3
+done
+
+# 5. Migración de Configuración y Permisos
+if [ ! -f "$HOME/.config/Fina/settings.json" ] && [ -f "$ERGEN_ROOT/fina_settings.json" ]; then
+    echo "📄 Migrando settings.json inicial..."
+    cp "$ERGEN_ROOT/fina_settings.json" "$HOME/.config/Fina/settings.json"
 fi
 
-# Ejecutar desde el directorio de Ergen
+# DIAGNÓSTICO: Ver qué hay realmente en la raíz
+echo "🔍 Listado de archivos en Raíz ($ERGEN_ROOT):"
+ls -F "$ERGEN_ROOT" | head -n 30
+
+if [ -d "$ERGEN_ROOT/plugins" ]; then
+    echo "🔍 Listado de Plugins detectados en resources:"
+    ls -F "$ERGEN_ROOT/plugins"
+fi
+
+# Asegurar permisos de ejecución en binarios críticos dentro de recursos
+echo "🔑 Asegurando permisos de ejecución..."
+# Buscar Piper en múltiples profundidades posibles por si Tauri cambió la estructura
+PIPER_LOCS=(
+    "$ERGEN_ROOT/binaries/piper/piper"
+    "$ERGEN_ROOT/binaries/piper-x86_64-unknown-linux-gnu"
+    "$ERGEN_ROOT/bin/piper"
+    "$ERGEN_ROOT/piper"
+    "$ERGEN_ROOT/piper-x86_64-unknown-linux-gnu"
+    "$(find "$ERGEN_ROOT" -name "piper*" -type f 2>/dev/null | head -n 3)"
+)
+
+for LOC in "${PIPER_LOCS[@]}"; do
+    if [ -f "$LOC" ]; then
+        echo "✅ Habilitando ejecución: $LOC"
+        chmod +x "$LOC" 2>/dev/null || true
+    fi
+done
+
+chmod +x "$ERGEN_ROOT/fina_api.py" "$ERGEN_ROOT/main.py" 2>/dev/null || true
+
+# 6. Lanzamiento
 cd "$ERGEN_ROOT"
+export PYTHONUNBUFFERED=1
+export PYTHONPATH="$ERGEN_ROOT"
 
-# Asegurar que procesos antiguos mueran
-pkill -f "fina_api.py"
-pkill -f "$ERGEN_MAIN"
-pkill -f "monitor_ergen.py"
+echo "🔌 Backend API..."
+"$PYTHON_BIN" fina_api.py > "$LOG_DIR/api_services.log" 2>&1 &
+API_PID=$!
 
-echo "🔌 [Brain Wrapper] Iniciando servicios core..." >&2
-"$PYTHON_BIN" -u fina_api.py &
+sleep 2
 
-if [ -f "plugins/doorbell/monitor_ergen.py" ]; then
-    "$PYTHON_BIN" -u plugins/doorbell/monitor_ergen.py &
-fi
-
-# Cleanup global at exit
 cleanup() {
-    echo "🛑 [Brain Wrapper] Deteniendo procesos..." >&2
-    pkill -P $$
+    echo "🛑 Deteniendo todo..."
+    kill $API_PID 2>/dev/null
+    pkill -P $$ 2>/dev/null
+    exit 0
 }
 trap cleanup EXIT INT TERM
 
-echo "🚀 [Brain Wrapper] Iniciando CEREBRO..." >&2
-exec "$PYTHON_BIN" -u "$ERGEN_MAIN"
+echo "🧠 CEREBRO FINA..."
+exec "$PYTHON_BIN" main.py

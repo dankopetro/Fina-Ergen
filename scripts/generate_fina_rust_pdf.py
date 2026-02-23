@@ -141,7 +141,7 @@ npm run dev"""
         ['Error', 'Causa', 'Solucion'],
         ['no such command: tauri', 'Tauri CLI no instalado', 'cargo install tauri-cli'],
         ['Property toggleWindowMode not defined', 'Funcion no expuesta en Vue', 'Agregar al return del componente Vue'],
-        ['address already in use', 'Puerto 8000 ya esta en uso', 'sudo lsof -ti:8000 | xargs kill -9']
+        ['address already in use', 'Puerto 18000 ya esta en uso', 'sudo lsof -ti:18000 | xargs kill -9']
     ]
     
     problems_table = Table(problems_data, colWidths=[2.5*inch, 2*inch, 2.5*inch])
@@ -214,7 +214,7 @@ return {
         ['Produccion', 'cargo tauri build'],
         ['Limpiar', 'cargo clean'],
         ['Ver procesos', 'pgrep -f fina-app'],
-        ['Ver puertos', 'lsof -i :8000'],
+        ['Ver puertos', 'lsof -i :18000'],
         ['Logs detallados', 'RUST_LOG=debug cargo tauri dev']
     ]
     

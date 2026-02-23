@@ -255,7 +255,8 @@ class TVPlugin:
             if not os.path.exists(path):
                 self.logger.warning(f"⚠️ Script faltante en tcl_32s60a: {script}")
             else:
-                os.chmod(path, 0o755)
+                try: os.chmod(path, 0o755)
+                except: pass
 
     def _get_model_folder(self, tv_type: str) -> str:
         """Mapea el tipo de TV a la carpeta del controlador"""

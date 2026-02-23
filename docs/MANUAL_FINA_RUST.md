@@ -80,11 +80,11 @@ return {
 ```
 
 ### **❌ Error: `address already in use`**
-**Causa**: Puerto 8000 ya está en uso
+**Causa**: Puerto 18000 ya está en uso
 **Solución**:
 ```bash
-# Matar proceso en puerto 8000
-sudo lsof -ti:8000 | xargs kill -9
+# Matar proceso en puerto 18000
+sudo lsof -ti:18000 | xargs kill -9
 
 # O cambiar puerto en configuración
 ```
@@ -212,7 +212,7 @@ cargo clean
 pgrep -f fina-app
 
 # Ver puertos en uso
-lsof -i :8000
+lsof -i :18000
 
 # Logs detallados
 RUST_LOG=debug cargo tauri dev

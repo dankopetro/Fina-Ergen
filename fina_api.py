@@ -31,6 +31,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
+bundled_path = os.path.join(current_dir, "bundled_libs")
+if os.path.exists(bundled_path):
+    sys.path.insert(0, bundled_path)
+
 # Buscar el site-packages dinámicamente según el mejor entorno detectado
 venv_bases = [
     os.path.dirname(os.path.dirname(best_py)),
@@ -40,10 +44,12 @@ venv_bases = [
 ]
 
 for base in venv_bases:
-    dynamic_site_packages = os.path.join(base, "lib", "python3.*", "site-packages")
-    for p in glob.glob(dynamic_site_packages):
-        if p not in sys.path:
-            sys.path.append(p)
+    dynamic_site_packages1 = os.path.join(base, "lib", "python3.*", "site-packages")
+    dynamic_site_packages2 = os.path.join(base, "lib64", "python3.*", "site-packages")
+    for pattern in [dynamic_site_packages1, dynamic_site_packages2]:
+        for p in glob.glob(pattern):
+            if p not in sys.path:
+                sys.path.append(p)
 # --- SILENCIAR LIBRERÍAS RUIDOSAS ---
 import logging
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
@@ -58,51 +64,51 @@ logging.getLogger("transformers").setLevel(logging.ERROR)
 for lib in ["httpx", "urllib3"]:
     logging.getLogger(lib).setLevel(logging.WARNING)
 
-# --- LIMPIADOR DE PUERTOS (Robust psutil) ---
-def kill_process_on_port(port):
-    current_pid = os.getpid()
-    killed = False
+# --- LIMPIADOR DE PUERTOS (Respetuoso y Específico) ---
+def wait_and_kill_port(port=18000, retries=10):
+    import os, time, socket, subprocess
     
-    try:
-        import psutil
-        
-        # 1. Matanza quirúrgica: matar a quien sea que tenga el puerto 8000 ocupado
-        try:
-            for conn in psutil.net_connections(kind='inet'):
-                if conn.laddr.port == port:
-                    pid = conn.pid
-                    if pid and pid != current_pid:
-                        try:
-                            p = psutil.Process(pid)
-                            p.kill()
-                            print(f"🧹 API: Proceso intruso {pid} ({p.name()}) expulsado del puerto {port}.", flush=True)
-                            killed = True
-                        except: pass
-        except Exception as e:
-            print(f"⚠️ Aviso limpieza puerto: {e}", flush=True)
+    current_pid = os.getpid()
+    parent_pid = os.getppid()
 
-        # 2. Barrido de seguridad: buscar zombies de la API vieja
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+    for attempt in range(retries):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            s.bind(('0.0.0.0', port))
+            s.close()
+            return True
+        except OSError:
+            s.close()
+            # MODO INTELIGENTE: Verificar si el proceso es realmente Fina
             try:
-                cmd = " ".join(proc.info['cmdline'] or []).lower()
-                # Filtrar solo a nosotros mismos y al padre Rust si corresponde
-                if ("uvicorn" in cmd or "fina_api" in cmd) and proc.pid != current_pid:
-                    proc.kill()
-                    print(f"🧹 API: Zombie eliminado {proc.pid}.", flush=True)
-                    killed = True
-            except: pass
+                import psutil
+                for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+                    try:
+                        for conn in proc.connections(kind='inet'):
+                            if conn.laddr.port == port:
+                                pid = proc.info['pid']
+                                cmdline = " ".join(proc.info['cmdline'] or [])
+                                # Solo matamos si es parte de Fina
+                                if any(x in cmdline for x in ["fina_api.py", "main.py"]):
+                                    if pid not in (current_pid, parent_pid):
+                                        print(f"🔪 API: Liberando puerto {port} ocupado por Fina (PID {pid})", flush=True)
+                                        os.kill(pid, 9)
+                                else:
+                                    print(f"⚠️ API: Puerto {port} ocupado por otra App ({proc.info['name']}). Reintentando...", flush=True)
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        continue
+            except ImportError:
+                # Si no hay psutil, usamos fuser pero solo como último recurso
+                pass
             
-    except ImportError:
-        # Fallback ultra-basico si psutil no está (no deberia pasar)
-        try:
-            os.system(f"fuser -k {port}/tcp >/dev/null 2>&1")
-        except: pass
+            time.sleep(0.5)
+    
+    return False
 
-    if killed:
-        time.sleep(2)
-
-
-kill_process_on_port(8000)
+if not wait_and_kill_port(18000):
+    print("❌ API: ERROR FATAL - El puerto 18000 sigue occupied tras todos los intentos. Abortando.", flush=True)
+    sys.exit(1)
 
 print(f"\n--- [ARRANQUE API] {time.strftime('%Y-%m-%d %H:%M:%S')} ---", flush=True)
 
@@ -313,8 +319,8 @@ async def get_fina_state():
 @app.post("/api/state")
 async def update_fina_state(state: StateUpdate):
     global current_fina_state
-    # Actualizar estado global con TODO lo que venga (incluido timer)
-    update_data = state.model_dump(exclude_unset=True)
+    # Compatibilidad Pydantic v1 (.dict) y v2 (.model_dump)
+    update_data = state.model_dump(exclude_unset=True) if hasattr(state, "model_dump") else state.dict(exclude_unset=True)
     current_fina_state.update(update_data)
     return current_fina_state
 
@@ -413,8 +419,5 @@ if os.path.exists(os.path.join(PROJECT_ROOT, "static")):
 
 # --- Boot Logic ---
 if __name__ == "__main__":
-    print("🚀 Iniciando Uvicorn en 0.0.0.0:8000...", flush=True)
-    # Ejecutamos Uvicorn
-    # IMPORTANTE: log_config=None para que use nuestros handlers si quisieramos, 
-    # pero aquí confiamos en que stdout ya está redirigido a API_BOOT.log
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    print("🚀 Iniciando Uvicorn en 0.0.0.0:18000...", flush=True)
+    uvicorn.run(app, host="0.0.0.0", port=18000)

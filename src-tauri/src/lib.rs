@@ -280,13 +280,8 @@ pub fn run() {
             }
         })
         .setup(|app| {
-            use tauri::Manager;
-            use std::process::{Command, Stdio};
-            use std::fs::{OpenOptions, create_dir_all};
+            use std::fs::create_dir_all;
             use std::path::PathBuf;
-
-            let resource_dir = app.path().resource_dir()
-                .expect("No se pudo obtener la carpeta de recursos");
 
             // --- Preparamos Log para los procesos ocultos ---
             let config_dir = std::env::var("XDG_CONFIG_HOME")
@@ -298,52 +293,26 @@ pub fn run() {
                         .join(".config/Fina")
                 });
             let _ = create_dir_all(&config_dir);
-            let log_path = config_dir.join("fina_services.log");
-            
-            // Función auxiliar para obtener el archivo de log mode append
-            let get_log_file = || -> std::fs::File {
-                OpenOptions::new()
-                    .create(true)
-                    .append(true)
-                    .open(&log_path)
-                    .unwrap_or_else(|_| OpenOptions::new().create(true).append(true).open("/tmp/fina_services.log").unwrap())
-            };
 
-
-            // Detectar el mejor motor python disponible (Prioridad: VENV local > Sistema)
-            let python_exe = get_python_exe(&resource_dir);
-            let python = &python_exe;
-
-            // --- Arrancar fina_api.py (Backend REST) ---
-            let api_script = resource_dir.join("_up_/fina_api.py");
-            if api_script.exists() {
-                println!("[RUST] Arrancando backend API: {:?}", api_script);
-                let _ = Command::new(python)
-                    .env_remove("PYTHONHOME")
-                    .env_remove("PYTHONPATH")
-                    .arg("-u")
-                    .arg(&api_script)
-                    .stdout(Stdio::from(get_log_file()))
-                    .stderr(Stdio::from(get_log_file()))
-                    .spawn();
-            } else {
-                println!("[RUST] ⚠ fina_api.py no encontrado en {:?}", api_script);
-            }
-
-            // --- Arrancar main.py (Cerebro) ---
-            let brain_script = resource_dir.join("_up_/main.py");
-            if brain_script.exists() {
-                println!("[RUST] Arrancando cerebro: {:?}", brain_script);
-                let _ = Command::new(python)
-                    .env_remove("PYTHONHOME")
-                    .env_remove("PYTHONPATH")
-                    .arg("-u")
-                    .arg(&brain_script)
-                    .stdout(Stdio::from(get_log_file()))
-                    .stderr(Stdio::from(get_log_file()))
-                    .spawn();
-            } else {
-                println!("[RUST] ⚠ main.py no encontrado en {:?}", brain_script);
+            // --- LANZAR SIDECAR 'BRAIN' (Gestor Universal) ---
+            // El Sidecar 'brain' se encarga de crear el venv, instalar dependencias,
+            # [cfg(not(mobile))]
+            {
+                use tauri_plugin_shell::ShellExt;
+                println!("[RUST] Lanzando Sidecar Universal 'brain'...");
+                let sidecar = app.shell().sidecar("brain")
+                    .map_err(|e| {
+                        println!("[RUST] ❌ Error preparando sidecar: {}", e);
+                        e
+                    })?;
+                
+                let (mut _rx, _child) = sidecar.spawn()
+                    .map_err(|e| {
+                        println!("[RUST] ❌ Error al spawnear sidecar: {}", e);
+                        e
+                    })?;
+                
+                println!("[RUST] Sidecar brain iniciado exitosamente.");
             }
 
             Ok(())

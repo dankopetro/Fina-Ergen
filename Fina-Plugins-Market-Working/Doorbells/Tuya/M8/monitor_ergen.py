@@ -270,7 +270,7 @@ def monitor_loop():
                         # Redundancia vía API
                         try:
                             import requests
-                            requests.post("http://127.0.0.1:8000/api/command", json={"name": "doorbell-ring", "payload": {}}, timeout=0.2)
+                            requests.post("http://127.0.0.1:18000/api/command", json={"name": "doorbell-ring", "payload": {}}, timeout=0.2)
                         except: pass
                         
                         # 2. Despertar y Preparar Entorno (ADB)
@@ -363,7 +363,7 @@ def monitor_loop():
                             # Notificar visualmente a la UI
                             try:
                                 import requests
-                                requests.post("http://127.0.0.1:8000/api/state", json={"status": "speaking", "process": mensaje}, timeout=0.2)
+                                requests.post("http://127.0.0.1:18000/api/state", json={"status": "speaking", "process": mensaje}, timeout=0.2)
                             except: pass
 
                             # TTS Real
@@ -399,7 +399,7 @@ def monitor_loop():
                             print("📡 Notificando colgado a la interfaz...")
                             try:
                                 import requests
-                                requests.post("http://127.0.0.1:8000/api/command", json={"name": "doorbell-hangup", "payload": {}}, timeout=0.5)
+                                requests.post("http://127.0.0.1:18000/api/command", json={"name": "doorbell-hangup", "payload": {}}, timeout=0.5)
                             except: pass
                             
                             print(json.dumps({"type": "event", "name": "doorbell-hangup", "payload": {}}), flush=True)

@@ -36,7 +36,7 @@ def simulate_sequence():
     # Notificar vía API para que Fina (main.py) se entere si el script corre aparte
     try:
         import requests
-        requests.post("http://127.0.0.1:8000/api/command", json={"name": "doorbell-ring", "payload": {}}, timeout=0.5)
+        requests.post("http://127.0.0.1:18000/api/command", json={"name": "doorbell-ring", "payload": {}}, timeout=0.5)
         log("📡 Notificación enviada a la API de Fina.")
     except Exception as e:
         log(f"⚠️ No se pudo notificar a la API (Fina está cerrada?): {e}")
@@ -93,7 +93,7 @@ def simulate_sequence():
     # Intentar que Fina hable de verdad si la API está lista
     try:
         import requests
-        requests.post("http://127.0.0.1:8000/api/state", json={"status": "speaking", "process": "En unos segundos serás atendido. Gracias por esperar."}, timeout=0.2)
+        requests.post("http://127.0.0.1:18000/api/state", json={"status": "speaking", "process": "En unos segundos serás atendido. Gracias por esperar."}, timeout=0.2)
     except: pass
     
     # 10. ESPERAR Y COLGAR
@@ -116,7 +116,7 @@ def simulate_sequence():
     log("📡 Enviando señal de COLGAR a Fina...")
     try:
         import requests
-        requests.post("http://127.0.0.1:8000/api/command", json={"name": "doorbell-hangup", "payload": {}}, timeout=0.5)
+        requests.post("http://127.0.0.1:18000/api/command", json={"name": "doorbell-hangup", "payload": {}}, timeout=0.5)
     except: pass
     
     log("✅ Secuencia completada. Fina debería haber cerrado la ventana.")

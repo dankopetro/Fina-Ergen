@@ -37,7 +37,7 @@ const configDir = ref("");
 const syncSystemInfo = async () => {
     if (!isTauri) return;
     try {
-        const res = await fetch("http://127.0.0.1:8000/api/system/info");
+        const res = await fetch("http://127.0.0.1:18000/api/system/info");
         const data = await res.json();
         if (data.python_path) {
             pythonExecutable.value = data.python_path;
@@ -954,7 +954,7 @@ const openPluginStore = async () => {
 
     try {
         // Obtener lista de instalados primero
-        const localResp = await fetch("http://127.0.0.1:8000/api/plugins");
+        const localResp = await fetch("http://127.0.0.1:18000/api/plugins");
         const installedLocal = localResp.ok ? await localResp.json() : [];
         const installedNames = installedLocal.map(p => p.name.toLowerCase());
 
@@ -1579,10 +1579,10 @@ const refreshDoorbellStatus = async () => {
 
 
 
-const fetchSettings = async (maxRetries = 10, delayMs = 1000) => {
+const fetchSettings = async (maxRetries = 60, delayMs = 1000) => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/settings");
+        const response = await fetch("http://127.0.0.1:18000/api/settings");
         if (!response.ok) throw new Error(`API HTTP ${response.status}`);
         const loaded = await response.json();
         console.log(`📂 Settings OK (intento ${attempt}):`, loaded);
@@ -1623,7 +1623,7 @@ const fetchSettings = async (maxRetries = 10, delayMs = 1000) => {
 
 const fetchContacts = async () => {
     try {
-        const response = await fetch("http://127.0.0.1:8000/api/contacts");
+        const response = await fetch("http://127.0.0.1:18000/api/contacts");
         if (response.ok) {
             contacts.value = await response.json();
             console.log("👥 Contactos cargados vía API:", Object.keys(contacts.value).length);
@@ -1635,7 +1635,7 @@ const fetchContacts = async () => {
 
 const fetchUserData = async () => {
     try {
-        const response = await fetch("http://127.0.0.1:8000/api/userdata");
+        const response = await fetch("http://127.0.0.1:18000/api/userdata");
         if (response.ok) {
             userData.value = await response.json();
             console.log("📝 Datos de usuario cargados:", userData.value);
@@ -2067,7 +2067,7 @@ onMounted(async () => {
     // FIX V2: Polling optimizado (1000ms) para ahorro de memoria
     setInterval(async () => {
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/state");
+            const response = await fetch("http://127.0.0.1:18000/api/state");
             if (!response.ok) throw new Error("API Error");
             const data = await response.json();
 

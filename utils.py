@@ -265,7 +265,7 @@ def update_ui_state(status, process=None, intensity=0.0, extra_payload=None):
         # Esto ayuda si la API está viva pero el pase de mensajes stdout falla
         try:
              import requests
-             requests.post("http://127.0.0.1:8000/api/state", json=payload, timeout=0.05)
+             requests.post("http://127.0.0.1:18000/api/state", json=payload, timeout=0.05)
         except: pass
 
     except: pass
@@ -278,7 +278,7 @@ def send_ui_command(name, payload):
         print(json.dumps({"type": "event", "name": name, "payload": payload}), flush=True)
         # 2. Vía API para que el polling de la UI lo capture
         import requests
-        requests.post("http://127.0.0.1:8000/api/command", json=data, timeout=0.1)
+        requests.post("http://127.0.0.1:18000/api/command", json=data, timeout=0.1)
     except: pass
 
 # --- VOICE ENGINE (SEQUENTIAL & CONTROLLED) ---
@@ -297,27 +297,47 @@ def _voice_engine_worker():
     if not piper_path:
         # Buscar en lugares comunes del proyecto
         potential_locations = [
-            os.path.join(ERGEN_ROOT, "binaries", "piper", "piper"),
-            os.path.join(ERGEN_ROOT, "..", "binaries", "piper", "piper"),
-            os.path.join(ERGEN_ROOT, "bin", "piper"),
-            os.path.join(ERGEN_ROOT, "assets", "piper"),
-            os.path.join(ERGEN_ROOT, "..", "bin", "piper"),
-            "/usr/lib/Fina-Ergen/binaries/piper/piper",
-            "/usr/lib/Fina-Ergen/bin/piper",
-            "/usr/lib/fina-ergen/bin/piper",
+            # Ruta REAL donde Tauri/deb instala el sidecar
+            "/usr/lib/fina-ergen/binaries/piper-x86_64-unknown-linux-gnu",
+            "/usr/lib/fina-ergen/binaries/piper",
+            # Tauri externalBin también puede ir a /usr/bin
+            "/usr/bin/piper-x86_64-unknown-linux-gnu",
+            "/usr/bin/piper",
             "/usr/local/bin/piper",
+            # Rutas dentro del bundle de recursos
+            os.path.join(ERGEN_ROOT, "binaries", "piper", "piper"),
+            os.path.join(ERGEN_ROOT, "binaries", "piper-x86_64-unknown-linux-gnu"),
+            os.path.join(ERGEN_ROOT, "piper-x86_64-unknown-linux-gnu"),
+            os.path.join(ERGEN_ROOT, "piper"),
+            os.path.join(os.path.dirname(ERGEN_ROOT), "binaries", "piper-x86_64-unknown-linux-gnu"),
+            os.path.join(ERGEN_ROOT, "bin", "piper"),
+            "/usr/lib/fina-ergen/_up_/binaries/piper-x86_64-unknown-linux-gnu",
             os.path.join(os.path.expanduser("~"), ".local", "bin", "piper")
         ]
         for loc in potential_locations:
-            # 1. Intentar el nombre exacto
-            if os.path.exists(loc) and os.access(loc, os.X_OK):
-                piper_path = loc
-                break
+            if os.path.exists(loc):
+                # Intentar dar permisos si faltan
+                if not os.access(loc, os.X_OK):
+                    try: 
+                        import stat
+                        os.chmod(loc, os.stat(loc).st_mode | stat.S_IEXEC)
+                    except: pass
+                
+                if os.access(loc, os.X_OK):
+                    piper_path = loc
+                    break
+            
             # 2. Intentar con el sufijo de Tauri (sidecar)
             sidecar = f"{loc}-x86_64-unknown-linux-gnu"
-            if os.path.exists(sidecar) and os.access(sidecar, os.X_OK):
-                piper_path = sidecar
-                break
+            if os.path.exists(sidecar):
+                if not os.access(sidecar, os.X_OK):
+                    try:
+                        import stat
+                        os.chmod(sidecar, os.stat(sidecar).st_mode | stat.S_IEXEC)
+                    except: pass
+                if os.access(sidecar, os.X_OK):
+                    piper_path = sidecar
+                    break
 
     aplay_path = shutil.which("aplay") or "/usr/bin/aplay"
 
@@ -338,47 +358,43 @@ def _voice_engine_worker():
                 text, model_path = item
                 
                 if not model_path:
-                    # 1. Priorizar ruta definida por el usuario en la Interfaz (UI)
-                    user_defined_path = get_unified_config("VOICE_MODELS_PATH")
-                    if user_defined_path and os.path.exists(user_defined_path):
-                        if os.path.isdir(user_defined_path):
-                             # Si es una carpeta, buscamos el primer .onnx
-                             for f in os.listdir(user_defined_path):
-                                 if f.endswith(".onnx"):
-                                     model_path = os.path.join(user_defined_path, f)
-                                     break
-                        else:
-                             model_path = user_defined_path
-                    
-                    # 2. Fallback: Ruta estándar de Fina
+                    # 1. Prioridad: carpeta personal del usuario
+                    user_models_dir = os.path.join(CONFIG_DIR, "voice_models")
+                    for fname in ["es_AR-daniela-high.onnx", "es_MX-claude-high.onnx", "es_MX-laura-high.onnx", "miro_es-ES.onnx"]:
+                        candidate = os.path.join(user_models_dir, fname)
+                        if os.path.exists(candidate):
+                            model_path = candidate
+                            break
+                    # 2. Si no encontró ninguno conocido, tomar cualquier .onnx del directorio
+                    if not model_path and os.path.exists(user_models_dir):
+                        for f in os.listdir(user_models_dir):
+                            if f.endswith(".onnx"):
+                                model_path = os.path.join(user_models_dir, f)
+                                break
+                    # 3. Fallback: ruta definida por el usuario en la UI
                     if not model_path:
-                        model_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "voice_models", "es_AR-daniela-high.onnx")
-                
-                # Verify model with deep fallback
-                if not model_path or not os.path.exists(model_path):
-                     logger.warning(f"Rescate: Modelo {model_path} no encontrado. Buscando alternativa en carpetas estándar...")
-                     # A. Carpeta definida por UI (si era una carpeta)
-                     # B. Carpeta de Usuario estándar
-                     user_models_dir = os.path.join(CONFIG_DIR, "voice_models")
-                     # C. Carpeta de Sistema (ERGEN_ROOT)
-                     sys_models_dir = os.path.join(ERGEN_ROOT, "voice_models")
-                     
-                     potential_models = []
-                     # Incluir la carpeta de UI en la búsqueda de rescate
-                     ui_dir = get_unified_config("VOICE_MODELS_PATH")
-                     search_dirs = []
-                     if ui_dir and os.path.exists(ui_dir) and os.path.isdir(ui_dir): search_dirs.append(ui_dir)
-                     search_dirs.extend([user_models_dir, sys_models_dir])
+                        user_defined_path = get_unified_config("VOICE_MODELS_PATH")
+                        if user_defined_path and os.path.exists(user_defined_path):
+                            if os.path.isdir(user_defined_path):
+                                for f in os.listdir(user_defined_path):
+                                    if f.endswith(".onnx"):
+                                        model_path = os.path.join(user_defined_path, f)
+                                        break
+                            else:
+                                model_path = user_defined_path
 
-                     for m_dir in search_dirs:
-                         if os.path.exists(m_dir):
-                             potential_models += [os.path.join(m_dir, m) for m in os.listdir(m_dir) if m.endswith(".onnx")]
-                     
-                     if potential_models:
-                         model_path = potential_models[0]
-                         logger.info(f"Usando modelo de rescate: {model_path}")
-                     else:
-                         model_path = None
+                # Verify model exists
+                if not model_path or not os.path.exists(model_path):
+                    logger.warning(f"Rescate: Modelo {model_path} no encontrado. Buscando alternativa...")
+                    user_models_dir = os.path.join(CONFIG_DIR, "voice_models")
+                    potential_models = []
+                    if os.path.exists(user_models_dir):
+                        potential_models = [os.path.join(user_models_dir, m) for m in os.listdir(user_models_dir) if m.endswith(".onnx")]
+                    if potential_models:
+                        model_path = potential_models[0]
+                        logger.info(f"Usando modelo de rescate: {model_path}")
+                    else:
+                        model_path = None
 
                 clean_text = text.replace('"', '').replace("'", "").replace("\n", " ").strip()
                 if not clean_text:
@@ -393,17 +409,26 @@ def _voice_engine_worker():
                     continue
 
                 safe_text = shlex.quote(clean_text)
-                gen_cmd = f'echo {safe_text} | {piper_path} --model "{model_path}" --length_scale 1.5 --output_file "{filepath}"'
+                # Directorio donde están las .so de Piper (bundled con el .deb)
+                piper_libs_dir = "/usr/lib/fina-ergen/binaries/piper"
+                if not os.path.exists(piper_libs_dir):
+                    piper_libs_dir = os.path.join(os.path.dirname(piper_path), "piper") if piper_path else ""
+                gen_cmd = f'echo {safe_text} | LD_LIBRARY_PATH="{piper_libs_dir}:$LD_LIBRARY_PATH" {piper_path} --model "{model_path}" --length_scale 1.5 --output_file "{filepath}"'
                 
                 # Ejecutar generación (Esto causa la latencia "invisible")
                 gen_success = False
+                piper_stderr = ""
                 try:
-                    subprocess.run(gen_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=12)
+                    result = subprocess.run(gen_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=12)
+                    piper_stderr = result.stderr.decode("utf-8", errors="ignore").strip()
                     gen_success = True
                 except subprocess.TimeoutExpired:
                     logger.error("TTS Timeout: Piper tardó demasiado en generar el audio.")
                 except Exception as e:
                     logger.error(f"TTS Error ejecutando Piper: {e}")
+                
+                if piper_stderr:
+                    logger.error(f"Piper stderr: {piper_stderr[:500]}")
                 
                 if gen_success and os.path.exists(filepath) and os.path.getsize(filepath) > 0:
                     update_ui_state("speaking", text, 0.8)

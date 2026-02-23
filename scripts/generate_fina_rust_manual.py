@@ -142,8 +142,8 @@ python launch_fina_rust.py"""
         },
         {
             "error": "address already in use",
-            "causa": "Puerto 8000 ya esta en uso",
-            "solucion": "sudo lsof -ti:8000 | xargs kill -9"
+            "causa": "Puerto 18000 ya esta en uso",
+            "solucion": "sudo lsof -ti:18000 | xargs kill -9"
         }
     ]
     
@@ -276,7 +276,7 @@ fn toggle_fullscreen(window: Window) -> Result<(), String> {
         ("Producción", "cargo tauri build"),
         ("Limpiar", "cargo clean"),
         ("Ver procesos", "pgrep -f fina-app"),
-        ("Ver puertos", "lsof -i :8000"),
+        ("Ver puertos", "lsof -i :18000"),
         ("Logs detallados", "RUST_LOG=debug cargo tauri dev")
     ]
     

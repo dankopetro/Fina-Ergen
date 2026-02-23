@@ -16,7 +16,7 @@ Garantizar que cuando alguien toque el timbre (o cuando se simule con el script 
 **Problema:** La interfaz de Fina a veces ignoraba el comando para abrir la cámara porque la comunicación por comandos estándar (stdout) podía perderse.
 **Solución:**
 - Se configuró el frontend (`src/App.vue`) para que al consultar la API REST de Fina (`/api/state`) procese activamente los comandos `doorbell-ring` y `doorbell-hangup`.
-- Ahora, cuando los scripts de Python detectan el timbre, envían una petición HTTP POST redundante directamente a `http://127.0.0.1:8000/api/command` asegurando que la UI abra y cierre la ventana de vídeo de inmediato.
+- Ahora, cuando los scripts de Python detectan el timbre, envían una petición HTTP POST redundante directamente a `http://127.0.0.1:18000/api/command` asegurando que la UI abra y cierre la ventana de vídeo de inmediato.
 
 ### 2. Flujo Lineal y a Prueba de Errores en la Secuencia
 **Archivos:** `plugins/doorbell/monitor_ergen.py` & `plugins/doorbell/test_doorbell.py`
