@@ -12,6 +12,8 @@ def get_best_python():
     vps = [
         os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv", "bin", "python"),
         os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"),
+        os.path.abspath(os.path.join("venv", "bin", "python")),
+        os.path.abspath(os.path.join(".venv", "bin", "python")),
         sys.executable
     ]
     for p in vps:
@@ -30,11 +32,18 @@ if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 # Buscar el site-packages dinámicamente según el mejor entorno detectado
-venv_base = os.path.dirname(os.path.dirname(best_py))
-dynamic_site_packages = os.path.join(venv_base, "lib", "python3.*", "site-packages")
-for p in glob.glob(dynamic_site_packages):
-    if p not in sys.path:
-        sys.path.append(p)
+venv_bases = [
+    os.path.dirname(os.path.dirname(best_py)),
+    os.path.expanduser("~/.config/Fina/venv"),
+    os.path.abspath("venv"),
+    os.path.abspath(".venv")
+]
+
+for base in venv_bases:
+    dynamic_site_packages = os.path.join(base, "lib", "python3.*", "site-packages")
+    for p in glob.glob(dynamic_site_packages):
+        if p not in sys.path:
+            sys.path.append(p)
 # --- SILENCIAR LIBRERÍAS RUIDOSAS ---
 import logging
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
@@ -49,48 +58,49 @@ logging.getLogger("transformers").setLevel(logging.ERROR)
 for lib in ["httpx", "urllib3"]:
     logging.getLogger(lib).setLevel(logging.WARNING)
 
-# --- LIMPIADOR DE PUERTOS (Multi-Método) ---
+# --- LIMPIADOR DE PUERTOS (Robust psutil) ---
 def kill_process_on_port(port):
+    current_pid = os.getpid()
     killed = False
-    current_pid = str(os.getpid())
+    
     try:
-        # Método 1: fuser
-        result = subprocess.run(["fuser", "-k", f"{port}/tcp"], 
-                                capture_output=True, timeout=3)
-        if result.returncode == 0:
-            print(f"🧹 API: Puerto {port} liberado con fuser.", flush=True)
-            killed = True
-    except: pass
-    
-    if not killed:
+        import psutil
+        
+        # 1. Matanza quirúrgica: matar a quien sea que tenga el puerto 8000 ocupado
         try:
-            # Método 2: ss + kill manual
-            result = subprocess.check_output(
-                f"ss -tlnp | grep ':{port}' | grep -oP 'pid=\\K[0-9]+'",
-                shell=True, timeout=3
-            ).decode().strip()
-            if result:
-                for pid in result.split():
-                    if pid != current_pid:
-                        subprocess.run(["kill", "-9", pid])
-                        print(f"🧹 API: Proceso {pid} en puerto {port} eliminado (ss).", flush=True)
-                killed = True
-        except: pass
-    
-    if not killed:
+            for conn in psutil.net_connections(kind='inet'):
+                if conn.laddr.port == port:
+                    pid = conn.pid
+                    if pid and pid != current_pid:
+                        try:
+                            p = psutil.Process(pid)
+                            p.kill()
+                            print(f"🧹 API: Proceso intruso {pid} ({p.name()}) expulsado del puerto {port}.", flush=True)
+                            killed = True
+                        except: pass
+        except Exception as e:
+            print(f"⚠️ Aviso limpieza puerto: {e}", flush=True)
+
+        # 2. Barrido de seguridad: buscar zombies de la API vieja
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                cmd = " ".join(proc.info['cmdline'] or []).lower()
+                # Filtrar solo a nosotros mismos y al padre Rust si corresponde
+                if ("uvicorn" in cmd or "fina_api" in cmd) and proc.pid != current_pid:
+                    proc.kill()
+                    print(f"🧹 API: Zombie eliminado {proc.pid}.", flush=True)
+                    killed = True
+            except: pass
+            
+    except ImportError:
+        # Fallback ultra-basico si psutil no está (no deberia pasar)
         try:
-            # Método 3: pkill directo de uvicorn (Pero protegiendo a sí mismo)
-            import pty
-            ps_out = subprocess.check_output("pgrep -f uvicorn", shell=True, text=True)
-            for pid in ps_out.strip().split():
-                if pid and pid != current_pid:
-                    subprocess.run(["kill", "-9", pid])
-                    print(f"🧹 API: Proceso zombie uvicorn ({pid}) terminado.", flush=True)
-            killed = True
+            os.system(f"fuser -k {port}/tcp >/dev/null 2>&1")
         except: pass
-    
+
     if killed:
-        time.sleep(1)  # Dar tiempo al kernel para liberar el socket
+        time.sleep(2)
+
 
 kill_process_on_port(8000)
 

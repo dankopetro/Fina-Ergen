@@ -19,6 +19,8 @@ def get_best_python():
         os.path.join(os.path.expanduser("~"), ".config", "Fina", "venv", "bin", "python"),
         os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"),
         os.path.join(os.path.expanduser("~"), ".venv", "bin", "python"),
+        os.path.abspath(os.path.join("venv", "bin", "python")),
+        os.path.abspath(os.path.join(".venv", "bin", "python")),
         sys.executable
     ]
     for p in vps:
@@ -76,11 +78,18 @@ if "venv" not in sys.executable:
 
 # FORZAR VISIBILIDAD DE LIBRERÍAS DEL USUARIO (Para aislamientos de AppImage)
 import glob
-venv_base = os.path.dirname(os.path.dirname(best_py))
-dynamic_site_packages = os.path.join(venv_base, "lib", "python3.*", "site-packages")
-for p in glob.glob(dynamic_site_packages):
-    if p not in sys.path:
-        sys.path.append(p)
+venv_bases = [
+    os.path.dirname(os.path.dirname(best_py)),
+    os.path.expanduser("~/.config/Fina/venv"),
+    os.path.abspath("venv"),
+    os.path.abspath(".venv")
+]
+
+for base in venv_bases:
+    dynamic_site_packages = os.path.join(base, "lib", "python3.*", "site-packages")
+    for p in glob.glob(dynamic_site_packages):
+        if p not in sys.path:
+            sys.path.append(p)
 
 import logging
 import time
