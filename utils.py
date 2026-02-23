@@ -409,11 +409,18 @@ def _voice_engine_worker():
                     continue
 
                 safe_text = shlex.quote(clean_text)
-                # Directorio donde están las .so de Piper (bundled con el .deb)
+                # Directorio donde están las .so y espeak-ng-data de Piper (bundled con el .deb)
                 piper_libs_dir = "/usr/lib/fina-ergen/binaries/piper"
                 if not os.path.exists(piper_libs_dir):
                     piper_libs_dir = os.path.join(os.path.dirname(piper_path), "piper") if piper_path else ""
-                gen_cmd = f'echo {safe_text} | LD_LIBRARY_PATH="{piper_libs_dir}:$LD_LIBRARY_PATH" {piper_path} --model "{model_path}" --length_scale 1.5 --output_file "{filepath}"'
+                espeak_data = os.path.join(piper_libs_dir, "espeak-ng-data")
+                espeak_flag = f'--espeak-data "{espeak_data}"' if os.path.exists(espeak_data) else ""
+                gen_cmd = (
+                    f'echo {safe_text} | '
+                    f'LD_LIBRARY_PATH="{piper_libs_dir}:$LD_LIBRARY_PATH" '
+                    f'ESPEAK_DATA_PATH="{espeak_data}" '
+                    f'{piper_path} --model "{model_path}" {espeak_flag} --length_scale 1.5 --output_file "{filepath}"'
+                )
                 
                 # Ejecutar generación (Esto causa la latencia "invisible")
                 gen_success = False
