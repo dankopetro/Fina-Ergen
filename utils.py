@@ -426,11 +426,11 @@ def _voice_engine_worker():
                 gen_success = False
                 piper_stderr = ""
                 try:
-                    result = subprocess.run(gen_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=12)
+                    result = subprocess.run(gen_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=60)
                     piper_stderr = result.stderr.decode("utf-8", errors="ignore").strip()
                     gen_success = True
                 except subprocess.TimeoutExpired:
-                    logger.error("TTS Timeout: Piper tardó demasiado en generar el audio.")
+                    logger.error("TTS Timeout: Piper tardó demasiado en generar el audio (>60s).")
                 except Exception as e:
                     logger.error(f"TTS Error ejecutando Piper: {e}")
                 
