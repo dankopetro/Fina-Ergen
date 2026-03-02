@@ -61,12 +61,27 @@ fn execute_shell_command(command: &str) -> Result<String, String> {
 fn get_python_exe(resource_dir: &std::path::Path) -> String {
     use std::process::Command;
 
-    // 1. Prioridad: VENV del usuario en ~/.config/Fina/venv (persistente, siempre actualizado)
+    // 1. Prioridad: VENV del usuario en ~/.venv o ~/venv
     let home = std::env::var("HOME").unwrap_or_else(|_| "/root".to_string());
+    
+    let global_venvs = vec![
+        std::path::PathBuf::from(&home).join(".venv/bin/python3"),
+        std::path::PathBuf::from(&home).join("venv/bin/python3"),
+        std::path::PathBuf::from(&home).join(".env/bin/python3"),
+        std::path::PathBuf::from(&home).join("env/bin/python3"),
+    ];
+    
+    for venv in global_venvs {
+        if venv.exists() {
+            return venv.to_str().unwrap_or("python3").to_string();
+        }
+    }
+    
+    // 2. Fallback VENV Fina específico en ~/.config/Fina/venv
     let xdg_config = std::env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| format!("{}/.config", home));
-    let user_venv = std::path::PathBuf::from(&xdg_config).join("Fina/venv/bin/python3");
-    if user_venv.exists() {
-        return user_venv.to_str().unwrap_or("python3").to_string();
+    let fina_venv = std::path::PathBuf::from(&xdg_config).join("Fina/venv/bin/python3");
+    if fina_venv.exists() {
+        return fina_venv.to_str().unwrap_or("python3").to_string();
     }
     
     // 2. Fallback: VENV dentro del AppImage (si se empaquetó uno)

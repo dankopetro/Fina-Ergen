@@ -70,7 +70,30 @@ USER_VENV="$HOME/.config/Fina/venv"
 PYTHON_BIN=""
 
 # 4. Gestión de VENV e Instalación VISIBLE
-USER_VENV="$HOME/.config/Fina/venv"
+USER_VENV=""
+
+# 4.1 Buscar en subcarpetas locales comunes en ERGEN_ROOT
+for env_name in "venv" ".venv" "env" ".env"; do
+    if [ -f "$ERGEN_ROOT/$env_name/bin/python3" ]; then
+        USER_VENV="$ERGEN_ROOT/$env_name"
+        echo "🐍 [ENCONTRADO] Entorno Virtual '$env_name' detectado en proyecto."
+        break
+    fi
+done
+# 4.2 Buscar en subcarpetas globales de usuario (prioridad)
+if [ -z "$USER_VENV" ]; then
+    for env_name in "venv" ".venv" "env" ".env"; do
+        if [ -f "$HOME/$env_name/bin/python3" ]; then
+            USER_VENV="$HOME/$env_name"
+            echo "🐍 [ENCONTRADO] Entorno Virtual '$env_name' global detectado en $HOME."
+            break
+        fi
+    done
+fi
+# Default fallback
+if [ -z "$USER_VENV" ]; then
+    USER_VENV="$HOME/.config/Fina/venv"
+fi
 PYTHON_BIN="$USER_VENV/bin/python3"
 
 # Si no existe el VENV, informamos al usuario con una ventana (si hay zenity)
@@ -79,34 +102,46 @@ if [ ! -f "$PYTHON_BIN" ]; then
         zenity --info --title="Fina Ergen" --text="Fina está preparando su 'cerebro' por primera vez.\nEsto tardará unos minutos dependiendo de tu internet.\nNo cierres el proceso para asegurar que la biometría funcione." --width=400 &
     fi
     
-    echo "🛠️ Creando VENV..."
+    echo "🛠️ Creando VENV en $USER_VENV..."
     "$PYTHON_SYSTEM" -m venv "$USER_VENV" --system-site-packages || "$PYTHON_SYSTEM" -m venv "$USER_VENV"
 fi
 
 if [ -f "$PYTHON_BIN" ]; then
-    # Instalación con Barra de Progreso si zenity existe
-    if command -v zenity >/dev/null 2>&1 && [ ! -f "$HOME/.config/Fina/.installed" ]; then
-        echo "📦 Instalando componentes pesados (Torch, Resemblyzer)..."
-        (
-            echo "# Actualizando herramientas base (pip)..."; echo "10"
-            "$PYTHON_BIN" -m pip install --upgrade pip >/dev/null 2>&1
-            
-            echo "# Instalando servicios y drivers..."; echo "30"
-            "$PYTHON_BIN" -m pip install fastapi uvicorn requests psutil numpy sounddevice soundfile >/dev/null 2>&1
-            
-            echo "# Descargando motores de IA (Biometría)..."; echo "60"
-            "$PYTHON_BIN" -m pip install resemblyzer torch --extra-index-url https://download.pytorch.org/whl/cpu >/dev/null 2>&1
-            
-            echo "# Instalando y acomodando archivos finales..."; echo "90"
-            "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" >/dev/null 2>&1
-            
+    # Chequeo inteligente: ¿Están instaladas las dependencias básicas?
+    NEEDS_INSTALL=0
+    if ! "$PYTHON_BIN" -c "import fastapi, uvicorn, requests, pydantic, resemblyzer" >/dev/null 2>&1; then
+        NEEDS_INSTALL=1
+    fi
+
+    if [ "$NEEDS_INSTALL" -eq 1 ]; then
+        # Instalación con Barra de Progreso si zenity existe
+        if command -v zenity >/dev/null 2>&1; then
+            echo "📦 Instalando componentes pesados (Torch, Resemblyzer)..."
+            (
+                echo "# Actualizando herramientas base (pip)..."; echo "10"
+                "$PYTHON_BIN" -m pip install --upgrade pip >/dev/null 2>&1
+                
+                echo "# Instalando servicios y drivers..."; echo "30"
+                "$PYTHON_BIN" -m pip install fastapi uvicorn requests psutil numpy sounddevice soundfile >/dev/null 2>&1
+                
+                echo "# Descargando motores de IA (Biometría)..."; echo "60"
+                "$PYTHON_BIN" -m pip install resemblyzer torch --extra-index-url https://download.pytorch.org/whl/cpu >/dev/null 2>&1
+                
+                echo "# Instalando y acomodando archivos finales..."; echo "90"
+                "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" >/dev/null 2>&1
+                
+                touch "$HOME/.config/Fina/.installed"
+                echo "# ¡Todo listo! Fina está despertando..."; echo "100"
+                sleep 1
+            ) | zenity --progress --title="Fina Ergen - Primer Arranque" --text="Iniciando configuración..." --percentage=0 --auto-close
+        else
+            # Instalación silenciosa
+            echo "📦 Instalando dependencias silenciosamente..."
+            "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" --quiet >/dev/null 2>&1 || true
             touch "$HOME/.config/Fina/.installed"
-            echo "# ¡Todo listo! Fina está despertando..."; echo "100"
-            sleep 1
-        ) | zenity --progress --title="Fina Ergen - Primer Arranque" --text="Iniciando configuración..." --percentage=0 --auto-close
+        fi
     else
-        # Instalación silenciosa o ya hecha
-        "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" --quiet >/dev/null 2>&1 || true
+        echo "✅ Dependencias de Python detectadas OK, saltando instalación redundante."
     fi
 else
     PYTHON_BIN="$PYTHON_SYSTEM"
