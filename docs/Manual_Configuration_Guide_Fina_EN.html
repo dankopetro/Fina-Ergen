@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Official Configuration and Setup Guide - Fina Ergen</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        :root {
+            --bg-body: #000000;
+            --bg-card: #0c0c0c;
+            --primary: #3b82f6;
+            --accent: #22d3ee;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --gradient: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.8;
+            font-size: 11pt;
+        }
+
+        .cover-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            position: relative;
+        }
+
+        h1.main-title {
+            font-size: 50pt;
+            font-weight: 800;
+            margin: 0;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 18pt;
+            font-weight: 400;
+            letter-spacing: 5px;
+            color: var(--text-main);
+            margin-top: 15px;
+            text-transform: uppercase;
+        }
+
+        .version-badge {
+            margin-top: 40px;
+            padding: 10px 30px;
+            border: 1px solid var(--accent);
+            border-radius: 50px;
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 12pt;
+            background: rgba(34, 213, 238, 0.05);
+        }
+
+        .content-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            background-color: var(--bg-body);
+        }
+
+        h2 {
+            font-size: 22pt;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 800;
+        }
+
+        h3 {
+            font-size: 15pt;
+            color: var(--accent);
+            margin-top: 25px;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+            color: #d1d5db;
+        }
+
+        .info-card,
+        .warning-card,
+        .setup-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .info-card {
+            border-left: 6px solid var(--primary);
+        }
+
+        .warning-card {
+            background: #1a0a0a;
+            border-left: 6px solid #ef4444;
+            border-color: #3d1a1a;
+        }
+
+        .setup-card {
+            background: #0a1a0a;
+            border-left: 6px solid #10b981;
+            border-color: #1a3d2a;
+        }
+
+        pre {
+            background: #0d1117;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            color: #e6edf3;
+            font-family: 'Consolas', monospace;
+            font-size: 9.5pt;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 10pt;
+            border-top: 1px solid var(--border);
+            background: #050505;
+            margin-top: 40px;
+        }
+
+        code {
+            background: #1e1e1e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ffca28;
+            font-family: 'Consolas', monospace;
+        }
+
+        .step-number {
+            background: var(--gradient);
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- COVER -->
+    <div class="cover-page">
+        <h1 class="main-title">Full Configuration</h1>
+        <div class="subtitle">Fina Ergen Startup Guide</div>
+        <div class="version-badge">Voice Models, APIs & IoT Domain</div>
+        <div style="position: absolute; bottom: 30px; color: #94a3b8;">Fina Ergen © 2026</div>
+    </div>
+
+    <!-- SECTION 1: Voices and Models (CRITICAL) -->
+    <div class="content-container">
+        <h2><i class="fas fa-microphone-alt"></i> 1. Voice Models: The Core of Fina</h2>
+        <p>Fina needs two types of "brains" to talk and listen. While Fina downloads a basic version on first start, for the best experience you should set up high-quality offline models.</p>
+
+        <div class="setup-card">
+            <h3><span class="step-number">A</span> Listen: Vosk Recognition Model</h3>
+            <p>This allows Fina to hear you without an internet connection.</p>
+            <ul>
+                <li><strong>Choosing the model:</strong> We recommend the <strong>Large</strong> models (around 1-2GB) for maximum accuracy.</li>
+                <li><strong>Where to download:</strong> Go to <a href="https://alphacephei.com/vosk/models">Vosk Models</a>.</li>
+                <li><strong>Installation:</strong> 
+                    <ol>
+                        <li>Download the model for your language (e.g., <code>vosk-model-en-us-0.42</code>).</li>
+                        <li>Unzip it inside: <code>~/.config/Fina/model/</code></li>
+                        <li>In Fina's Settings, go to <strong>Intelligence Domain > Path Options</strong> and paste the folder path.</li>
+                    </ol>
+                </li>
+            </ul>
+        </div>
+
+        <div class="setup-card">
+            <h3><span class="step-number">B</span> Speak: Piper Speech Model (TTS)</h3>
+            <p>This is how Fina's voice sounds. You can have multiple voices!</p>
+            <ul>
+                <li><strong>Downloads:</strong> Get <code>.onnx</code> and <code>.json</code> files from the <a href="https://github.com/rhasspy/piper/releases">Piper Repository</a>.</li>
+                <li><strong>Storage:</strong> Place all voice files in: <code>~/.config/Fina/voice_models/</code></li>
+                <li><strong>Switching:</strong> Once files are there, you can simply tell Fina: <em>"Fina, change your voice"</em>.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- SECTION 2: UI & APIs -->
+    <div class="content-container">
+        <h2><i class="fas fa-desktop"></i> 2. Visual Interface & Connectivity</h2>
+        <p>Everything can be configured directly from the app. No coding skills required for basic setup.</p>
+
+        <div class="info-card">
+            <p><strong>📍 How to configure?</strong><br>
+                Open Fina and go to:<br>
+                <code>Settings > Intelligence Domain > Services & APIs</code><br>
+                Fill the forms with your API keys and click <strong>"Save"</strong>.
+            </p>
+        </div>
+
+        <h3>🌐 AI & Language Models</h3>
+        <div class="info-card">
+            <p><strong>GitHub Token:</strong> Used for powerful free models.<br>
+                <strong>Get here:</strong> <a href="https://github.com/settings/tokens">GitHub Tokens</a>
+            </p>
+            <p><strong>OpenAI:</strong> For images and advanced reasoning.<br>
+                <strong>Get here:</strong> <a href="https://platform.openai.com/api-keys">OpenAI API</a>
+            </p>
+        </div>
+
+        <h3>☁️ Weather & News</h3>
+        <div class="info-card">
+            <p><strong>OpenWeatherMap:</strong> Accurate weather reports.<br>
+                <strong>Get here:</strong> <a href="https://openweathermap.org/api">OpenWeather API</a>
+            </p>
+            <p><strong>NewsAPI:</strong> Daily news readings.<br>
+                <strong>Get here:</strong> <a href="https://newsapi.org/">NewsAPI</a>
+            </p>
+        </div>
+
+        <div class="warning-card">
+            <p><strong>Gmail Notifications:</strong><br>
+                Enable "Two-Step Verification" in your Google account and generate an <strong>"App Password"</strong>.<br>
+                <strong>Link:</strong> <a href="https://myaccount.google.com/apppasswords">Google App Passwords</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- SECTION 3: IoT -->
+    <div class="content-container">
+        <h2><i class="fas fa-home"></i> 3. Smart Home (IoT)</h2>
+        <p>Fina can control TVs, lights, and AC units by scanning your local network.</p>
+        <div class="info-card">
+            <p><strong>Pro Tip: Room Assignment</strong><br>
+                When a device is detected, click the <strong>Pencil icon</strong> to assign it to a "Room" (e.g., 'Kitchen' or 'Living Room'). This prevents Fina from getting confused if you have multiple TVs.
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Fina Ergen - Official Documentation v3.5.4-18 (Global Edition)</p>
+    </footer>
+
+</body>
+
+</html>

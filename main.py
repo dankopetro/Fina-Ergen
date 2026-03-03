@@ -427,8 +427,8 @@ async def main():
             if not os.path.exists(manual_lock):
                 import webbrowser
                 # Intentar primero el HTML, luego el PDF
-                manual_html = os.path.join(PROJECT_ROOT, "docs", "Manual_Guia_Configuracion_Fina.html")
-                manual_pdf = os.path.join(PROJECT_ROOT, "docs", "Manual_Guia_Configuracion_Fina.pdf")
+                manual_html = os.path.join(PROJECT_ROOT, "docs", "Manual_Configuration_Guide_Fina_EN.html")
+                manual_pdf = os.path.join(PROJECT_ROOT, "docs", "Manual_Configuration_Guide_Fina_EN.pdf")
                 
                 opened = False
                 if os.path.exists(manual_html):

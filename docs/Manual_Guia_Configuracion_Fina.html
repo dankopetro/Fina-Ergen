@@ -281,42 +281,48 @@
 
     <div class="page-break"></div>
 
-    <!-- SECCION 2: Rutas y Modelos Locales -->
+    <!-- SECCION 2: Rutas y Modelos Locales (CRÍTICO) -->
     <div class="content-container">
-        <h2><i class="fas fa-folder-open"></i> 2. Rutas del Sistema y Modelos Locales</h2>
-        <p>Fina utiliza los motores Piper y Vosk para darte privacidad total (Offline). Ahora puedes configurar estas
-            rutas pegándolas directamente en la interfaz.</p>
+        <h2><i class="fas fa-microphone-alt"></i> 2. Modelos de Voz: El Corazón de Fina</h2>
+        <p>Fina necesita dos "cerebros" para hablar y escuchar. Aunque Fina descarga una versión básica al inicio, para
+            la mejor experiencia debes configurar los modelos offline de alta calidad.</p>
 
-        <div class="info-card">
-            <h3>🗣️ Modelos de Voz Piper (Voces de Fina)</h3>
-            <p>Puedes tener una colección de voces y cambiar entre ellas cuando quieras:</p>
+        <div class="setup-card"
+            style="background: #0a1a0a; border-left: 6px solid #10b981; border-color: #1a3d2a; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid var(--border);">
+            <h3><span
+                    style="background: var(--gradient); width: 30px; height: 30px; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%; color: white; font-weight: bold; margin-right: 10px;">A</span>
+                Escucha: Modelo de Reconocimiento Vosk</h3>
+            <p>Esto permite que Fina te escuche sin depender de internet.</p>
             <ul>
-                <li><strong>Multivocidad:</strong> Puedes guardar **varias voces distintas** en la misma carpeta. Cada
-                    una debe tener sus dos archivos (<code>.onnx</code> y <code>.onnx.json</code>).</li>
-                <li><strong>Configuración fácil:</strong> En la sección <em>"Modelos & Heurísticas"</em> de los Ajustes
-                    de Fina, pega la ruta de esa carpeta.</li>
-                <li><strong>¿Cómo cambiar de voz?:</strong> No hace falta tocar nada. Simplemente dile a Fina: <br>
-                    <i class="fas fa-comment"></i> <em>"Fina, cambiá la voz"</em> o <em>"Fina, usá otra voz"</em>.<br>
-                    El sistema rotará automáticamente entre todas las voces que encuentre en tu carpeta.
+                <li><strong>Elección del modelo:</strong> Recomendamos los modelos <strong>Large</strong> (aprox. 1-2GB)
+                    para máxima precisión.</li>
+                <li><strong>Dónde descargar:</strong> Visita <a href="https://alphacephei.com/vosk/models">Vosk
+                        Models</a>.</li>
+                <li><strong>Instalación:</strong>
+                    <ol>
+                        <li>Descarga el modelo de tu idioma (ej. <code>vosk-model-es-0.42</code>).</li>
+                        <li>Descomprímelo dentro de: <code>~/.config/Fina/model/</code></li>
+                        <li>En los Ajustes de Fina, ve a <strong>Dominio Inteligencia > Opciones de Path</strong> y pega
+                            la ruta de la carpeta.</li>
+                    </ol>
                 </li>
             </ul>
         </div>
 
-        <div class="info-card">
-            <h3>👂 Modelo de Reconocimiento Vosk (Para que Fina te escuche)</h3>
-            <p><strong>Descarga:</strong> <a
-                    href="https://alphacephei.com/vosk/models/vosk-model-es-0.42.zip">vosk-model-es-0.42.zip</a></p>
-            <p>Descomprime el archivo y pega la ruta de la carpeta resultante en el campo <strong>"Modelo Reconocimiento
-                    (Vosk)"</strong> de los Ajustes.</p>
-        </div>
-
-        <div class="warning-card">
-            <h3 style="margin-top:0; color: #ef4444;"><i class="fas fa-magic"></i> Portabilidad Total (AppImage)</h3>
-            <p>Si usas **AppImage** o cambias de PC frecuentemente, te recomendamos guardar todas tus voces y modelos en
-                la carpeta centralizada:</p>
-            <code>~/.config/Fina/voice_models/</code>
-            <p>Si guardas tus archivos <code>.onnx</code> allí, Fina los encontrará automáticamente sin que tengas que
-                configurar ninguna ruta en la interfaz.</p>
+        <div class="setup-card"
+            style="background: #0a1a0a; border-left: 6px solid #10b981; border-color: #1a3d2a; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid var(--border);">
+            <h3><span
+                    style="background: var(--gradient); width: 30px; height: 30px; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%; color: white; font-weight: bold; margin-right: 10px;">B</span>
+                Habla: Modelo de Voz Piper (TTS)</h3>
+            <p>Así es como suena Fina. ¡Puedes tener muchas voces!</p>
+            <ul>
+                <li><strong>Descargas:</strong> Obtén los archivos <code>.onnx</code> y <code>.json</code> desde el <a
+                        href="https://github.com/rhasspy/piper/releases">Repositorio de Piper</a>.</li>
+                <li><strong>Almacenamiento:</strong> Guarda todos los archivos de voz en:
+                    <code>~/.config/Fina/voice_models/</code></li>
+                <li><strong>Cambio de voz:</strong> Una vez guardados, simplemente dile: <em>"Fina, cambiá la voz"</em>.
+                </li>
+            </ul>
         </div>
     </div>
 
