@@ -8,52 +8,58 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 
-        <style>@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        :root {
+            --bg-body: #000000;
+            --bg-card: #0c0c0c;
+            --primary: #3b82f6;
+            --accent: #22d3ee;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --gradient: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%);
+        }
 
         @page {
             size: A4;
             margin: 0;
+            background-color: #000000;
         }
 
-        html {
-            background-color: #000000 !important;
-        }
-
+        html,
         body {
             background-color: #000000 !important;
             margin: 0;
             padding: 0;
             width: 100%;
+            height: 100%;
             font-family: 'Outfit', sans-serif;
-            color: #f8fafc;
-            line-height: 1.8;
+            color: var(--text-main);
+            line-height: 1.6;
             font-size: 11pt;
-            position: relative;
         }
 
         .cover-page {
-            min-height: 290mm;
             width: 100%;
-            max-width: 210mm;
-            margin: 0 auto;
+            height: 297mm;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             background: radial-gradient(circle at center, #111 0%, #000 100%);
-            position: relative;
             page-break-after: always;
         }
 
         h1.main-title {
-            font-size: 50pt;
+            font-size: 48pt;
             font-weight: 800;
             margin: 0;
-            background: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%);
+            color: #3b82f6;
+            /* Fallback */
+            background: var(--gradient);
             -webkit-background-clip: text;
             background-clip: text;
-            -webkit-text-fill-color: transparent;
+            /* WeasyPrint might not support clip-text, so we use a solid fallback or just style carefully */
             letter-spacing: -2px;
             text-transform: uppercase;
         }
@@ -62,7 +68,7 @@
             font-size: 18pt;
             font-weight: 400;
             letter-spacing: 5px;
-            color: #f8fafc;
+            color: var(--text-main);
             margin-top: 15px;
             text-transform: uppercase;
         }
@@ -70,60 +76,57 @@
         .version-badge {
             margin-top: 40px;
             padding: 10px 30px;
-            border: 1px solid #22d3ee;
+            border: 1px solid var(--accent);
             border-radius: 50px;
-            color: #22d3ee;
+            color: var(--accent);
             font-weight: 600;
             font-size: 12pt;
             background: rgba(34, 213, 238, 0.05);
         }
 
         .content-container {
-            max-width: 210mm;
-            margin: 0 auto;
-            padding: 10mm 20mm;
+            padding: 20mm 25mm;
             background-color: #000000;
         }
 
         h2 {
-            font-size: 22pt;
-            color: #3b82f6;
-            border-bottom: 1px solid #1e293b;
+            font-size: 20pt;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
             padding-bottom: 10px;
-            margin-top: 40px;
+            margin-top: 30px;
             display: flex;
             align-items: center;
             gap: 15px;
             font-weight: 800;
-            page-break-after: avoid;
         }
 
         h3 {
-            font-size: 15pt;
-            color: #22d3ee;
-            margin-top: 25px;
+            font-size: 14pt;
+            color: var(--accent);
+            margin-top: 20px;
             font-weight: 600;
-            page-break-after: avoid;
         }
 
         p {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             text-align: justify;
             color: #d1d5db;
         }
 
         .info-card,
-        .warning-card {
-            background: #0c0c0c;
-            border: 1px solid #1e293b;
+        .warning-card,
+        .setup-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 15px 20px;
-            margin: 20px 0;
+            padding: 20px;
+            margin: 15px 0;
             page-break-inside: avoid;
         }
 
         .info-card {
-            border-left: 6px solid #3b82f6;
+            border-left: 6px solid var(--primary);
         }
 
         .warning-card {
@@ -132,38 +135,40 @@
             border-color: #3d1a1a;
         }
 
+        .setup-card {
+            background: #0a1a0a;
+            border-left: 6px solid #10b981;
+            border-color: #1a3d2a;
+        }
+
         pre {
             background: #0d1117;
             padding: 15px;
             border-radius: 10px;
-            border: 1px solid #1e293b;
+            border: 1px solid var(--border);
             color: #e6edf3;
             font-family: 'Consolas', monospace;
             font-size: 9.5pt;
-            margin: 20px 0;
+            margin: 15px 0;
             white-space: pre-wrap;
             word-wrap: break-word;
             page-break-inside: avoid;
         }
 
         a {
-            color: #22d3ee;
+            color: var(--accent);
             text-decoration: none;
             font-weight: 600;
         }
 
-        .page-break {
-            page-break-after: always;
-        }
-
         footer {
             text-align: center;
-            padding: 30px;
-            color: #94a3b8;
+            padding: 20px;
+            color: var(--text-muted);
             font-size: 10pt;
-            border-top: 1px solid #1e293b;
+            border-top: 1px solid var(--border);
             background: #050505;
-            margin-top: 40px;
+            margin-top: 20px;
         }
 
         code {
@@ -172,6 +177,16 @@
             border-radius: 4px;
             color: #ffca28;
             font-family: 'Consolas', monospace;
+        }
+
+        ul,
+        ol {
+            color: #d1d5db;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -182,7 +197,7 @@
         <h1 class="main-title">Configuración Total</h1>
         <div class="subtitle">Guía de Puesta en Marcha de Fina Ergen</div>
         <div class="version-badge">APIs, Servicios Pro y Redes IoT</div>
-        <div style="position: absolute; bottom: 30mm; color: #94a3b8;">Fina Ergen © 2026</div>
+        <div style="position: absolute; bottom: 30mm; color: #9403b8;">Fina Ergen © 2026</div>
     </div>
 
     <!-- SECCION 1: Interfaz y APIs -->
@@ -273,79 +288,34 @@
                 <code>EMAIL_PASSWORD = "codigo_de_16_letras"</code>
             </p>
         </div>
-    </div>
 
-
-
-    <!-- SECCION 2: Rutas y Modelos Locales (CRÍTICO) -->
-    <div class="content-container">
         <h2><i class="fas fa-microphone-alt"></i> 2. Modelos de Voz: El Corazón de Fina</h2>
-        <p>Fina necesita dos "cerebros" para hablar y escuchar. Aunque Fina descarga una versión básica al inicio,
-            para
-            la mejor experiencia debes configurar los modelos offline de alta calidad.</p>
+        <p>Fina necesita modelos offline de alta calidad para la mejor experiencia.</p>
 
-        <div class="setup-card"
-            style="background: #0a1a0a; border-left: 6px solid #10b981; border-color: #1a3d2a; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #1e293b;">
-            <h3><span
-                    style="background: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%); width: 30px; height: 30px; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%; color: white; font-weight: bold; margin-right: 10px;">A</span>
-                Escucha: Modelo de Reconocimiento Vosk</h3>
-            <p>Esto permite que Fina te escuche sin depender de internet.</p>
+        <div class="setup-card">
+            <h3>A. Escucha: Vosk</h3>
             <ul>
-                <li><strong>Elección del modelo:</strong> Recomendamos los modelos <strong>Large</strong> (aprox.
-                    1-2GB)
-                    para máxima precisión.</li>
-                <li><strong>Dónde descargar:</strong> Visita <a href="https://alphacephei.com/vosk/models">Vosk
-                        Models</a>.</li>
-                <li><strong>Instalación:</strong>
-                    <ol>
-                        <li>Descarga el modelo de tu idioma (ej. <code>vosk-model-es-0.42</code>).</li>
-                        <li>Descomprímelo dentro de: <code>~/.config/Fina/model/</code></li>
-                        <li>En los Ajustes de Fina, ve a <strong>Dominio Inteligencia > Opciones de Path</strong> y
-                            pega
-                            la ruta de la carpeta.</li>
-                    </ol>
-                </li>
+                <li><strong>Descarga:</strong> <a href="https://alphacephei.com/vosk/models">Vosk Models</a>.</li>
+                <li><strong>Instalación:</strong> Descomprime en <code>~/.config/Fina/model/</code> y configura la ruta
+                    en Ajustes.</li>
             </ul>
         </div>
 
-        <div class="setup-card"
-            style="background: #0a1a0a; border-left: 6px solid #10b981; border-color: #1a3d2a; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #1e293b;">
-            <h3><span
-                    style="background: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%); width: 30px; height: 30px; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%; color: white; font-weight: bold; margin-right: 10px;">B</span>
-                Habla: Modelo de Voz Piper (TTS)</h3>
-            <p>Así es como suena Fina. ¡Puedes tener muchas voces!</p>
+        <div class="setup-card">
+            <h3>B. Habla: Piper (TTS)</h3>
             <ul>
-                <li><strong>Descargas:</strong> Obtén los archivos <code>.onnx</code> y <code>.json</code> desde el
-                    <a href="https://github.com/rhasspy/piper/releases">Repositorio de Piper</a>.
-                </li>
-                <li><strong>Almacenamiento:</strong> Guarda todos los archivos de voz en:
-                    <code>~/.config/Fina/voice_models/</code>
-                </li>
-                <li><strong>Cambio de voz:</strong> Una vez guardados, simplemente dile: <em>"Fina, cambiá la
-                        voz"</em>.
-                </li>
+                <li><strong>Descarga:</strong> Archivos <code>.onnx</code> y <code>.json</code> desde <a
+                        href="https://github.com/rhasspy/piper/releases">Piper</a>.</li>
+                <li><strong>Instalación:</strong> Guarda en <code>~/.config/Fina/voice_models/</code>.</li>
             </ul>
         </div>
-    </div>
 
-
-
-    <!-- SECCION 3: Red y TVs -->
-    <div class="content-container">
-        <h2><i class="fas fa-network-wired"></i> 3. Domótica IoT y Registro de Equipos</h2>
-        <p>Fina es capaz de controlar televisores, aires y luces. El proceso es visual:</p>
-
+        <h2><i class="fas fa-network-wired"></i> 3. Domótica IoT</h2>
         <div class="info-card">
             <h3>Asignación de "Habitaciones"</h3>
-            <p>Si tienes dos televisores iguales (ej. dos Samsung), Fina se confundirá si solo dices "Prende la TV".
-                Por
-                eso, al escanear la red y registrar un dispositivo con el ícono del **Lápiz**, fíjate que aparece un
-                campo llamado **HABITACIÓN**.</p>
-            <p><strong>Truco Pro:</strong> Si asignas un televisor a "Cocina" y otro a "Living", podrás decir:
-                <em>"Fina, prende la tele de la cocina"</em> y el sistema sabrá exactamente que IP disparar,
-                evitando
-                encender la del living por error.
-            </p>
+            <p>Al registrar un equipo, usa el ícono del <strong>Lápiz</strong> para asignar una
+                <strong>HABITACIÓN</strong>.
+                Esto permite comandos como <em>"Fina, prende la tele de la cocina"</em>.</p>
         </div>
     </div>
 
