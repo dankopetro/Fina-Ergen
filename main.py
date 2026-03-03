@@ -439,9 +439,16 @@ async def main():
             manual_lock = os.path.join(CONFIG_DIR, ".manual_opened")
             if not os.path.exists(manual_lock):
                 import webbrowser
-                # Intentar primero el HTML, luego el PDF
-                manual_html = os.path.join(PROJECT_ROOT, "docs", "Manual_Configuration_Guide_Fina_EN.html")
-                manual_pdf = os.path.join(PROJECT_ROOT, "docs", "Manual_Configuration_Guide_Fina_EN.pdf")
+                lang = user_config.get("api_keys", {}).get("FINA_LANGUAGE", "en")
+                
+                # Definir nombres según idioma
+                if lang == "es":
+                    base_name = "Manual_Guia_Configuracion_Fina"
+                else:
+                    base_name = "Manual_Configuration_Guide_Fina_EN"
+                    
+                manual_html = os.path.join(PROJECT_ROOT, "docs", f"{base_name}.html")
+                manual_pdf = os.path.join(PROJECT_ROOT, "docs", f"{base_name}.pdf")
                 
                 opened = False
                 if os.path.exists(manual_html):
