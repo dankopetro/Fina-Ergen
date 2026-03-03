@@ -439,7 +439,7 @@ async def main():
             manual_lock = os.path.join(CONFIG_DIR, ".manual_opened")
             if not os.path.exists(manual_lock):
                 import webbrowser
-                lang = user_config.get("api_keys", {}).get("FINA_LANGUAGE", "en")
+                lang = sys_lang
                 
                 # Definir nombres según idioma
                 if lang == "es":
