@@ -28,6 +28,17 @@ Si vas a correr la versión de terminal/offline, no necesitas nada de esto. Si r
 
 > **ℹ️ Consejo de la Comunidad:** Fina incluye el motor de texto a voz **Piper**, un pequeño milagro open-source. Piper puede brindarte voces acento "Argentino" de gran naturalidad sin tocar el internet y a `0 ms` de velocidad en procesamiento neuronal. Actívalo borrando la clave de ElevenLabs.
 
+### Configurando Fina en tu Idioma (Voz Offline)
+Por defecto, para ahorrar gigabytes de descarga y permitir que tu aplicación inicie el mismo día que la descargas, Fina utiliza y descarga automáticamente un modelo "Mini" e **Inglés** de reconocimiento de voz.
+Sin embargo, tú tienes el control absoluto de qué precisión e idioma deseas.
+
+**Para instalar el idioma de tu preferencia:**
+1. Ingresa a los Ajustes de la App (Tuerca) -> **Inteligencia** -> **Servicios & APIs**.
+2. Desplázate hasta **"Modelos & Heurísticas"**.
+3. Descarga de internet un modelo Vosk compatible (Ej: `vosk-model-es-0.42.zip` para Español nativo - ~2GB) o voces `.onnx` para Piper que encuentres en línea.
+4. Extrae ese archivo y cópialo en la carpeta `~/.config/Fina/model/`.
+5. En la interfaz que abriste en el paso 2, asegúrate de escribir los nombres exactos si difieren, o Fina lo tomará automáticamente porque prioriza los modelos grandes sobre el mini inglés inicial.
+
 ---
 
 ## 3. Comandos de Voz Base (Offline)
