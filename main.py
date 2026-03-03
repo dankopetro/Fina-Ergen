@@ -388,6 +388,10 @@ async def main():
         f.write(f"Python: {sys.executable}\n")
 
     try:
+        import utils
+        # Obtenemos el idioma principal del usuario
+        sys_lang = utils.get_unified_config("FINA_LANGUAGE", "es")
+        
         update_ui_state("idle", "Inicializando sistemas...")
         print("DEBUG: [1] Inicializando Intents...")
         
@@ -404,9 +408,8 @@ async def main():
         
         # 2. Precargar Vosk
         print("DEBUG: [2] Cargando Vosk...")
-        import utils
         try:
-            utils.load_vosk_model("es")
+            utils.load_vosk_model(sys_lang)
             print("DEBUG: [2] Vosk Cargado.")
         except:
             print("⚠️ Vosk no cargado. Funcionamiento limitado.")
@@ -489,7 +492,7 @@ async def main():
         while True:
             update_ui_state("idle", None)
             selected_voice_model, current_voice_name = get_current_voice_info()
-            audio_input = listen(model, language="es")  # Cambio a español
+            audio_input = listen(model, language=sys_lang)  # Cambio a español
             if not audio_input:
                 continue
             
@@ -536,7 +539,7 @@ async def main():
                 speak("¿Querés que te cuente las noticias?", selected_voice_model)
                 
                 update_ui_state("listening", "Esperando respuesta...")
-                response = listen(model, language="es")
+                response = listen(model, language=sys_lang)
                 if response:
                     intent_response, _ = detect_intent(response.lower())
                     if intent_response == "yes":
@@ -558,7 +561,7 @@ async def main():
             update_ui_state("listening", None)
             
             # Listen WITH audio capture for verification
-            listen_result = listen(model, language="es", timeout=20, return_audio=True)
+            listen_result = listen(model, language=sys_lang, timeout=20, return_audio=True)
             
             if not listen_result or listen_result[0] is None:
                 # Si no hay comando (timeout), volvemos al estado idle (Azul Profundo)
@@ -800,7 +803,7 @@ async def main():
                     shutdown(selected_voice_model)
                 elif authenticate_user(voice_model=selected_voice_model, speak_func=speak):  # Autenticación con huella fallback
                     speak("¿Realmente queres apagar el sistema?", selected_voice_model)
-                    command = listen(model, language="es")
+                    command = listen(model, language=sys_lang)
                     intent , confidence = detect_intent(command)
                     if intent == "yes":
                         shutdown(selected_voice_model)
@@ -814,7 +817,7 @@ async def main():
                     reboot(selected_voice_model)
                 elif authenticate_user(voice_model=selected_voice_model, speak_func=speak):
                     speak("¿Realmente querés reiniciar la computadora?", selected_voice_model)
-                    command = listen(model, language="es")
+                    command = listen(model, language=sys_lang)
                     intent_confirm, _ = detect_intent(command)
                     if intent_confirm == "yes":
                         reboot(selected_voice_model)
@@ -904,7 +907,7 @@ async def main():
                 
                 if not target_number:
                     speak("¿A quién le envío el mensaje?", selected_voice_model)
-                    target_name_raw = listen(model, language="es")
+                    target_name_raw = listen(model, language=sys_lang)
                     if target_name_raw:
                         target_name, target_number = await resolve_contact_proactive(target_name_raw, contacts, selected_voice_model, model)
                         
@@ -938,7 +941,7 @@ async def main():
                 # Si no hay cuerpo de mensaje, PREGUNTAR (como le gusta al usuario)
                 if not msg_body or len(msg_body) < 2:
                     speak(f"¿Qué querés que le diga a {target_name}?", selected_voice_model)
-                    msg_body = listen(model, language="es")
+                    msg_body = listen(model, language=sys_lang)
                 
                 if msg_body and len(msg_body) > 1:
                     speak(f"Enviando mensaje a {target_name} por {app_to_use}...", selected_voice_model)
@@ -959,7 +962,7 @@ async def main():
                 
                 if not target_number:
                      speak("¿A quién llamo?", selected_voice_model)
-                     target_name_raw = listen(model, language="es")
+                     target_name_raw = listen(model, language=sys_lang)
                      if target_name_raw:
                         target_name, target_number = await resolve_contact_proactive(target_name_raw, contacts, selected_voice_model, model)
                 
@@ -982,7 +985,7 @@ async def main():
                 unread = count_recent_unread_emails(imap_server, EMAIL_USER, EMAIL_PASSWORD, 7)
                 speak(f"Tienes {unread} correos no leídos en los últimos 7 días", selected_voice_model)
                 speak("¿Quieres que los lea?", selected_voice_model)
-                reply = listen(model, language="es")
+                reply = listen(model, language=sys_lang)
                 if detect_intent(reply.lower())[0] == "yes":
                     from_, subject, date_, unread_msg_nums = read_recent_unread_emails(imap_server, EMAIL_USER, EMAIL_PASSWORD, 7, 4)
                     command = f"Summarize this mail \n_from_: {from_} \ndate: {date_}\nSubject: {subject}"
@@ -992,15 +995,15 @@ async def main():
             elif intent == "send_email":
                 contacts = load_contacts()
                 speak("¿A quién querés enviar el correo?", selected_voice_model)
-                name = clean_input(listen(model, language="es"))
+                name = clean_input(listen(model, language=sys_lang))
                 email = contacts.get(name)
                 if email:
                     speak("¿Asunto?", selected_voice_model)
-                    subject = listen(model, language="es")
+                    subject = listen(model, language=sys_lang)
                     speak("¿Cuerpo del mensaje?", selected_voice_model)
-                    body = listen(model, language="es")
+                    body = listen(model, language=sys_lang)
                     speak("¿Querés que revise faltas de ortografía'?", selected_voice_model)
-                    if detect_intent(listen(model, language="es").lower())[0] == "yes":
+                    if detect_intent(listen(model, language=sys_lang).lower())[0] == "yes":
                         body = await get_mistral_response(f"Fix grammar: {body}")
                     send_email(EMAIL_USER, EMAIL_PASSWORD, email, subject, body)
                     speak(f"Correo enviado a {name}.", selected_voice_model)
@@ -1010,7 +1013,7 @@ async def main():
             # Web search
             elif intent == "web_search":
                 speak("¿Qué tengo buscar?", selected_voice_model)
-                query = listen(model, language="es")
+                query = listen(model, language=sys_lang)
                 output, link = web_search(query)
                 speak(output, selected_voice_model)
 
@@ -1020,9 +1023,9 @@ async def main():
 
             elif intent == "add_reminder":
                 speak("¿Qué debo recordarte?", selected_voice_model)
-                task = listen(model, language="es")
+                task = listen(model, language=sys_lang)
                 speak("¿Cuándo debo recordártelo? (ejemplo: 14:30)", selected_voice_model)
-                time_str = listen(model, language="es")
+                time_str = listen(model, language=sys_lang)
                 result = add_reminder(task, time_str, selected_voice_model)
                 speak(result, selected_voice_model)
 
@@ -1042,7 +1045,7 @@ async def main():
 
             elif intent == "wiki_summary":
                 speak("¿Qué debo buscar en Wikipedia?", selected_voice_model)
-                query = listen(model, language="es")
+                query = listen(model, language=sys_lang)
                 result = wiki_summary(query)
                 speak(result, selected_voice_model)
 
@@ -1070,9 +1073,9 @@ async def main():
 
             elif intent == "translate":
                 speak("¿Qué texto debo traducir?", selected_voice_model)
-                text = listen(model, language="es")
+                text = listen(model, language=sys_lang)
                 speak("¿A qué idioma?", selected_voice_model)
-                lang = listen(model, language="es")
+                lang = listen(model, language=sys_lang)
                 translated = translate_text(text, lang)
                 speak(translated, selected_voice_model)
 
@@ -1102,7 +1105,7 @@ async def main():
                 else:
                     # Preguntar si no se entendió
                     speak("¿Cuántos minutos?", selected_voice_model)
-                    resp_text = listen(model, language="es")
+                    resp_text = listen(model, language=sys_lang)
                     if resp_text:
                         val_resp = extract_val(resp_text)
                         if val_resp > 0:
@@ -1130,7 +1133,7 @@ async def main():
 
             elif intent == "create_note":
                 speak("¿Qué debo escribir?", selected_voice_model)
-                note = listen(model, language="es")
+                note = listen(model, language=sys_lang)
                 result = create_note(note)
                 speak(result, selected_voice_model)
 
@@ -1139,7 +1142,7 @@ async def main():
 
             elif intent == "youtube_search":
                 speak("¿Qué busco en YouTube?", selected_voice_model)
-                query = listen(model, language="es")
+                query = listen(model, language=sys_lang)
                 # Open YouTube search in Chrome browser
                 search_url = f"https://www.youtube.com/results?search_query={query.replace(' ', '+')}"
                 try:
@@ -1152,7 +1155,7 @@ async def main():
 
             elif intent == "find_file":
                 speak("¿Qué archivo estás buscando?", selected_voice_model)
-                filename = listen(model, language="es")
+                filename = listen(model, language=sys_lang)
                 path = find_file(filename)
                 speak(path, selected_voice_model)
 
@@ -1162,7 +1165,7 @@ async def main():
 
             elif intent == "convert_currency":
                 speak("¿Cuánto y qué moneda?", selected_voice_model)
-                info = listen(model, language="es")
+                info = listen(model, language=sys_lang)
                 parts = info.split()
                 if len(parts) == 3:
                     amount, from_curr, to_curr = parts
@@ -1173,7 +1176,7 @@ async def main():
 
             elif intent == "generate_image":
                 speak("¿Qué imagen debo generar?", selected_voice_model)
-                prompt = listen(model, language="es")
+                prompt = listen(model, language=sys_lang)
                 image_url = await generate_image(prompt)
                 speak(f"Imagen generada: {image_url}", selected_voice_model)
 
@@ -1183,7 +1186,7 @@ async def main():
 
             elif intent == "read_pdf":
                 speak("Introduce la ruta del archivo PDF", selected_voice_model)
-                path = listen(model, language="es")
+                path = listen(model, language=sys_lang)
                 text = read_pdf(path)
                 speak(text[:500], selected_voice_model)  # Read a preview
 
@@ -1199,7 +1202,7 @@ async def main():
 
             elif intent == "port_scan":
                 speak("¿Qué IP o host escaneo?", selected_voice_model)
-                host = listen(model, language="es")
+                host = listen(model, language=sys_lang)
                 result = scan_ports(host)
                 speak(result, selected_voice_model)
 
@@ -1213,7 +1216,7 @@ async def main():
 
             elif intent == "save_voice_note":
                 speak("Di tu nota.", selected_voice_model)
-                text = listen(model, language="es")
+                text = listen(model, language=sys_lang)
                 result = save_voice_note(text)
                 speak(result, selected_voice_model)
 
@@ -1222,13 +1225,13 @@ async def main():
 
             elif intent == "battery_saver":
                 speak("¿Activo o desactivo el ahorro de batería?", selected_voice_model)
-                mode = listen(model, language="es").lower()
+                mode = listen(model, language=sys_lang).lower()
                 result = toggle_battery_saver(mode)
                 speak(result, selected_voice_model)
 
             elif intent == "play_ambient":
                 speak("¿Qué sonido ambiental? (lluvia, bosque, océano)", selected_voice_model)
-                type_ = listen(model, language="es")
+                type_ = listen(model, language=sys_lang)
                 result = play_ambient_sound(type_)
                 speak(result, selected_voice_model)
 
@@ -1238,14 +1241,14 @@ async def main():
 
             elif intent == "take_photo":
                 speak("Listo?", selected_voice_model)
-                user_status = listen(model="tiny", language="es")
+                user_status = listen(model="tiny", language=sys_lang)
                 intent , confidence = detect_intent(user_status)
                 if intent == "yes":
                     speak("cheese!", selected_voice_model)
                     result, path = take_webcam_photo()
                     speak(result, selected_voice_model)
                     speak("¿Querés que abra tu foto?", selected_voice_model)
-                    user_choice = listen(model="tiny", language="es")
+                    user_choice = listen(model="tiny", language=sys_lang)
                     intent , confidence = detect_intent(user_choice)
                     if intent == "yes":
                         command = f'firefox {path}'
@@ -1262,7 +1265,7 @@ async def main():
 
             elif intent == "download_instagram":
                 speak("Pegue la URL del reel de Instagram.", selected_voice_model)
-                url = listen(model, language="es")
+                url = listen(model, language=sys_lang)
                 result = download_instagram_reel(url)
                 speak(result, selected_voice_model)
 
@@ -1312,13 +1315,13 @@ async def main():
             
             elif intent == "open_app":
                 speak("¿Qué aplicación quieres abrir?", selected_voice_model)
-                app_name = listen(model, language="es")
+                app_name = listen(model, language=sys_lang)
                 result = open_app(app_name)
                 speak(result, selected_voice_model)
             
             elif intent == "close_app":
                 speak("¿Qué aplicación quieres cerrar?", selected_voice_model)
-                app_name = listen(model, language="es")
+                app_name = listen(model, language=sys_lang)
                 result = close_app(app_name)
                 speak(result, selected_voice_model)
             
@@ -1413,7 +1416,7 @@ async def main():
                          tv_set_channel_cmd(channel_name, selected_voice_model)
                     else:
                         speak("¿Qué canal pongo?", selected_voice_model)
-                        num_response = listen(model, language="es")
+                        num_response = listen(model, language=sys_lang)
                         if num_response:
                              # Intentar buscar número o usar texto completo
                              more_nm = re.findall(r'\d+[.,]?\d*', num_response.replace(" punto ", "."))
@@ -1443,7 +1446,7 @@ async def main():
                    tv_open_app_cmd(target_app, selected_voice_model)
                 else:
                    # Fallback: ask specifically
-                   app_response = listen(model, language="es")
+                   app_response = listen(model, language=sys_lang)
                    if app_response:
                        tv_open_app_cmd(app_response, selected_voice_model)
             

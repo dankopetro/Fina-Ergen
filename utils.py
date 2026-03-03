@@ -538,53 +538,66 @@ def speak(text, selected_model=None, sink=None, wait=True):
 # Flag para no saturar el log con errores de modelo
 vosk_error_reported = False
 
-def _download_vosk_model(dest_path):
-    """Descarga y extrae el modelo de Vosk pequeño en INGLÉS (Universal Fallback) automáticamente"""
+VOSK_MODELS = {
+    "es": ("vosk-model-small-es-0.42", "https://alphacephei.com/vosk/models/vosk-model-small-es-0.42.zip"),
+    "en": ("vosk-model-small-en-us-0.15", "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"),
+    "fr": ("vosk-model-small-fr-0.22", "https://alphacephei.com/vosk/models/vosk-model-small-fr-0.22.zip"),
+    "de": ("vosk-model-small-de-0.15", "https://alphacephei.com/vosk/models/vosk-model-small-de-0.15.zip"),
+    "ja": ("vosk-model-small-ja-0.22", "https://alphacephei.com/vosk/models/vosk-model-small-ja-0.22.zip"),
+    "zh": ("vosk-model-small-cn-0.22", "https://alphacephei.com/vosk/models/vosk-model-small-cn-0.22.zip")
+}
+
+def _download_vosk_model(dest_path, language="es"):
+    """Descarga y extrae el modelo de Vosk pequeño automáticamente según el idioma de ajustes"""
     import zipfile
     import requests
     from io import BytesIO
+    import shutil
     
-    # Modelo universal fallback: pequeño de inglés, así no ahogamos conexiones de primer mundo y no pesamos 2.4gb
-    url = "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"
+    # Elegimos el modelo según idioma
+    model_name, url = VOSK_MODELS.get(language, VOSK_MODELS["en"])
     model_dir = os.path.dirname(dest_path) # ~/.config/Fina/model
     
     try:
-        logger.info(f"👂 Fina está logrando una conexión básica de voz cruzada (Universal English Fallback)...")
-        update_ui_state("idle", process="Descargando modelo de voz universal...")
+        logger.info(f"👂 Fina está descargando configuración de idioma '{language}' para uso local...")
+        update_ui_state("idle", process=f"Descargando modelo de voz ({language})...")
         
         response = requests.get(url, timeout=60)
         if response.status_code == 200:
             with zipfile.ZipFile(BytesIO(response.content)) as zip_ref:
                 zip_ref.extractall(model_dir)
                 
-                extracted_dir = os.path.join(model_dir, "vosk-model-small-en-us-0.15")
+                extracted_dir = os.path.join(model_dir, model_name)
                 if os.path.exists(extracted_dir) and extracted_dir != dest_path:
                     if os.path.exists(dest_path): shutil.rmtree(dest_path)
                     os.rename(extracted_dir, dest_path)
                     
-            logger.info("✅ Fallback de oído de Fina descargado.")
+            logger.info("✅ Idioma de escucha Fina instalado.")
             return True
     except Exception as e:
-        logger.error(f"❌ No se pudo descargar el modelo fallback (Vosk): {e}")
+        logger.error(f"❌ No se pudo descargar el modelo Vosk para {language}: {e}")
     return False
 
-def load_vosk_model(language="es"):
+def load_vosk_model(language=None):
     global vosk_model, vosk_recognizer, loaded_language, vosk_error_reported
+    
+    if not language:
+        language = get_unified_config("FINA_LANGUAGE", "es")
+        if not language: language = "es"
+
     if vosk_model is not None and loaded_language == language: return
     
     try:
         from vosk import Model, KaldiRecognizer, SetLogLevel
         SetLogLevel(-1)
         
-        # 0. Nombres de modelo a buscar (priorizando español grande si el usuario lo pone, sino fallback a lo que elija lenguaje, sino fallback universal inglés)
-        model_names_to_try = []
-        if language == "es":
-            model_names_to_try = ["vosk-model-es-0.42", "vosk-model-small-es-0.42"]
-        elif language == "en":
-            model_names_to_try = ["vosk-model-en-us-0.22", "vosk-model-small-en-us-0.15"]
-        
-        # Siempre añadir fallback universal inglés pase lo que pase si fallan los nativos
-        model_names_to_try.append("vosk-model-small-en-us-0.15")
+        # 0. Nombres de modelo a buscar (priorizando español/idioma grande si el usuario lo pone, sino fallback al seleccionado)
+        model_name_small, _ = VOSK_MODELS.get(language, VOSK_MODELS["es"])
+        model_names_to_try = [f"vosk-model-{language}-0.42", model_name_small]
+        if language == "en":
+            model_names_to_try = ["vosk-model-en-us-0.22", model_name_small]
+            
+        model_names_to_try.append("vosk-model-small-en-us-0.15") # Fallback extremo por si falla el download o no existe
 
         loaded_path = None
         for m_name in model_names_to_try:
@@ -603,17 +616,16 @@ def load_vosk_model(language="es"):
             vosk_recognizer = KaldiRecognizer(vosk_model, 16000)
             loaded_language = language
             vosk_error_reported = False
-            logger.info(f"✅ Vosk cargado desde: {loaded_path}")
+            logger.info(f"✅ Vosk cargado desde: {loaded_path} ({language})")
         else:
-            # AUTO-DESCARGA SI NO EXISTE NADA
-            logger.info("ℹ️ Modelo no encontrado. Intentando auto-descargar fallback universal inglés...")
-            # Si forzosamente vamos a descargar el fallback, el path a reemplazar será el del fallback inglés
-            fallback_dest = os.path.join(CONFIG_DIR, "model", "vosk-model-small-en-us-0.15")
+            # AUTO-DESCARGA DEL IDIOMA SOLICITADO SI NO EXISTE
+            logger.info(f"ℹ️ Modelo no encontrado. Intentando auto-descargar modelo '{language}'...")
+            fallback_dest = os.path.join(CONFIG_DIR, "model", model_name_small)
             
-            if _download_vosk_model(fallback_dest):
+            if _download_vosk_model(fallback_dest, language):
                 vosk_model = Model(fallback_dest)
                 vosk_recognizer = KaldiRecognizer(vosk_model, 16000)
-                loaded_language = "en" # Forzamos idioma interno porque descargamos inglés
+                loaded_language = language
                 vosk_error_reported = False
             else:
                 if not vosk_error_reported:

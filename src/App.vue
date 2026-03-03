@@ -3887,14 +3887,30 @@ const registerMasterPassword = () => {
                                                         </div>
                                                     </div>
                                                 </div>
-
                                                 <!-- BLOQUE MODELOS (Agregado para Novatos) -->
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
                                                     <span
                                                         class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">Modelos
                                                         & Heurísticas</span>
-                                                    <div v-for="(label, key) in { VOICE_MODELS_PATH: 'Carpeta de Voces (Piper)', VOSK_MODEL_PATH: 'Modelo Reconocimiento (Vosk)' }"
+                                                    
+                                                    <div class="space-y-2">
+                                                        <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">Idioma Universal (Voz y Escucha)</label>
+                                                        <select v-model="userSettings.apis.FINA_LANGUAGE"
+                                                            @change="() => notifyFina('REQUIERE REINICIO PARA APLICAR IDIOMA')"
+                                                            class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs font-black text-indigo-300 focus:border-indigo-500 outline-none transition-all appearance-none cursor-pointer">
+                                                            <option value="" disabled>Seleccione un idioma...</option>
+                                                            <option value="es">Español (Recomendado)</option>
+                                                            <option value="en">Inglés (English)</option>
+                                                            <option value="fr">Francés (Français)</option>
+                                                            <option value="de">Alemán (Deutsch)</option>
+                                                            <option value="ja">Japonés (日本語)</option>
+                                                            <option value="zh">Chino (中文)</option>
+                                                        </select>
+                                                        <p class="text-[9px] text-slate-500 italic px-2">Fina descargará automáticamente los modelos en el próximo inicio.</p>
+                                                    </div>
+
+                                                    <div v-for="(label, key) in { VOICE_MODELS_PATH: 'Carpeta de Voces Custom (Opcional)', VOSK_MODEL_PATH: 'Modelo Vosk Custom (Opcional)' }"
                                                         :key="key" class="space-y-2">
                                                         <label
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
