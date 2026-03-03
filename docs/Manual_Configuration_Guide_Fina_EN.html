@@ -19,6 +19,15 @@
             --gradient: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%);
         }
 
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        html {
+            background-color: var(--bg-body);
+        }
+
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-body);
@@ -27,6 +36,7 @@
             padding: 0;
             line-height: 1.8;
             font-size: 11pt;
+            width: 100%;
         }
 
         .cover-page {
@@ -195,19 +205,23 @@
     <!-- SECTION 1: Voices and Models (CRITICAL) -->
     <div class="content-container">
         <h2><i class="fas fa-microphone-alt"></i> 1. Voice Models: The Core of Fina</h2>
-        <p>Fina needs two types of "brains" to talk and listen. While Fina downloads a basic version on first start, for the best experience you should set up high-quality offline models.</p>
+        <p>Fina needs two types of "brains" to talk and listen. While Fina downloads a basic version on first start, for
+            the best experience you should set up high-quality offline models.</p>
 
         <div class="setup-card">
             <h3><span class="step-number">A</span> Listen: Vosk Recognition Model</h3>
             <p>This allows Fina to hear you without an internet connection.</p>
             <ul>
-                <li><strong>Choosing the model:</strong> We recommend the <strong>Large</strong> models (around 1-2GB) for maximum accuracy.</li>
-                <li><strong>Where to download:</strong> Go to <a href="https://alphacephei.com/vosk/models">Vosk Models</a>.</li>
-                <li><strong>Installation:</strong> 
+                <li><strong>Choosing the model:</strong> We recommend the <strong>Large</strong> models (around 1-2GB)
+                    for maximum accuracy.</li>
+                <li><strong>Where to download:</strong> Go to <a href="https://alphacephei.com/vosk/models">Vosk
+                        Models</a>.</li>
+                <li><strong>Installation:</strong>
                     <ol>
                         <li>Download the model for your language (e.g., <code>vosk-model-en-us-0.42</code>).</li>
                         <li>Unzip it inside: <code>~/.config/Fina/model/</code></li>
-                        <li>In Fina's Settings, go to <strong>Intelligence Domain > Path Options</strong> and paste the folder path.</li>
+                        <li>In Fina's Settings, go to <strong>Intelligence Domain > Path Options</strong> and paste the
+                            folder path.</li>
                     </ol>
                 </li>
             </ul>
@@ -217,9 +231,11 @@
             <h3><span class="step-number">B</span> Speak: Piper Speech Model (TTS)</h3>
             <p>This is how Fina's voice sounds. You can have multiple voices!</p>
             <ul>
-                <li><strong>Downloads:</strong> Get <code>.onnx</code> and <code>.json</code> files from the <a href="https://github.com/rhasspy/piper/releases">Piper Repository</a>.</li>
+                <li><strong>Downloads:</strong> Get <code>.onnx</code> and <code>.json</code> files from the <a
+                        href="https://github.com/rhasspy/piper/releases">Piper Repository</a>.</li>
                 <li><strong>Storage:</strong> Place all voice files in: <code>~/.config/Fina/voice_models/</code></li>
-                <li><strong>Switching:</strong> Once files are there, you can simply tell Fina: <em>"Fina, change your voice"</em>.</li>
+                <li><strong>Switching:</strong> Once files are there, you can simply tell Fina: <em>"Fina, change your
+                        voice"</em>.</li>
             </ul>
         </div>
     </div>
@@ -259,7 +275,8 @@
 
         <div class="warning-card">
             <p><strong>Gmail Notifications:</strong><br>
-                Enable "Two-Step Verification" in your Google account and generate an <strong>"App Password"</strong>.<br>
+                Enable "Two-Step Verification" in your Google account and generate an <strong>"App
+                    Password"</strong>.<br>
                 <strong>Link:</strong> <a href="https://myaccount.google.com/apppasswords">Google App Passwords</a>
             </p>
         </div>
@@ -271,7 +288,8 @@
         <p>Fina can control TVs, lights, and AC units by scanning your local network.</p>
         <div class="info-card">
             <p><strong>Pro Tip: Room Assignment</strong><br>
-                When a device is detected, click the <strong>Pencil icon</strong> to assign it to a "Room" (e.g., 'Kitchen' or 'Living Room'). This prevents Fina from getting confused if you have multiple TVs.
+                When a device is detected, click the <strong>Pencil icon</strong> to assign it to a "Room" (e.g.,
+                'Kitchen' or 'Living Room'). This prevents Fina from getting confused if you have multiple TVs.
             </p>
         </div>
     </div>

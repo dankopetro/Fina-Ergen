@@ -25,6 +25,10 @@
             background: #000000;
         }
 
+        html {
+            background-color: var(--bg-body);
+        }
+
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-body);
@@ -33,6 +37,7 @@
             padding: 0;
             line-height: 1.8;
             font-size: 11pt;
+            width: 100%;
         }
 
         .cover-page {
@@ -319,7 +324,8 @@
                 <li><strong>Descargas:</strong> Obtén los archivos <code>.onnx</code> y <code>.json</code> desde el <a
                         href="https://github.com/rhasspy/piper/releases">Repositorio de Piper</a>.</li>
                 <li><strong>Almacenamiento:</strong> Guarda todos los archivos de voz en:
-                    <code>~/.config/Fina/voice_models/</code></li>
+                    <code>~/.config/Fina/voice_models/</code>
+                </li>
                 <li><strong>Cambio de voz:</strong> Una vez guardados, simplemente dile: <em>"Fina, cambiá la voz"</em>.
                 </li>
             </ul>
