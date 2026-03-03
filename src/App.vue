@@ -2665,7 +2665,7 @@ const registerMasterPassword = () => {
                             <p class="text-[11px] text-cyan-100 font-medium whitespace-pre-line">
                                 {{ msg.text }}</p>
                             <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{ msg.time
-                            }}</span>
+                                }}</span>
                         </div>
                     </transition-group>
                 </div>
@@ -3199,7 +3199,7 @@ const registerMasterPassword = () => {
                                             </svg>
                                             <span class="absolute text-xs font-black text-white">{{
                                                 Math.round(systemStats.cpu?.percent || 0)
-                                            }}%</span>
+                                                }}%</span>
                                         </div>
                                         <span
                                             class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">{{
@@ -3222,7 +3222,7 @@ const registerMasterPassword = () => {
                                             </svg>
                                             <span class="absolute text-xs font-black text-white">{{
                                                 Math.round(systemStats.ram.percent)
-                                            }}%</span>
+                                                }}%</span>
                                         </div>
                                         <span
                                             class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">{{
@@ -3235,9 +3235,9 @@ const registerMasterPassword = () => {
                                     <div class="flex justify-between items-center mb-1">
                                         <span class="text-[9px] font-bold text-slate-500 uppercase">{{ t('ui_storage',
                                             'Almacenamiento (Root)')
-                                        }}</span>
+                                            }}</span>
                                         <span class="text-[9px] font-bold text-white">{{ systemStats.disk.percent
-                                        }}%</span>
+                                            }}%</span>
                                     </div>
                                     <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                         <div class="h-full bg-gradient-to-r from-cyan-600 to-blue-500 transition-all duration-1000"
@@ -3291,7 +3291,7 @@ const registerMasterPassword = () => {
                                                     'Acceder a') }}</span>
                                         <span class="text-sm font-black text-white uppercase tracking-wider">{{
                                             t('ui_sentinel', 'CENTINELA')
-                                        }}</span>
+                                            }}</span>
                                     </div>
                                 </button>
                             </div>
@@ -3338,7 +3338,7 @@ const registerMasterPassword = () => {
                                                     'border-pink-500/50': index % 3 === 2
                                                 }">
                                                 <span class="text-[11px] font-bold text-white">{{ reminder.task
-                                                }}</span>
+                                                    }}</span>
                                                 <span
                                                     class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{
                                                         reminder.time }}</span>
@@ -3508,7 +3508,7 @@ const registerMasterPassword = () => {
                                                 </p>
                                                 <span class="text-[9px] text-slate-500 font-bold uppercase">{{
                                                     t('ui_release', 'Release')
-                                                }}</span>
+                                                    }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -3525,7 +3525,7 @@ const registerMasterPassword = () => {
                                     </h4>
                                     <div class="flex items-center gap-2">
                                         <span class="text-[9px] font-black text-slate-500">{{ t('ui_sync', 'SÍNC.')
-                                        }}</span>
+                                            }}</span>
                                         <i class="fa-solid fa-arrows-rotate text-[10px] text-emerald-400"></i>
                                     </div>
                                 </div>
@@ -3849,7 +3849,7 @@ const registerMasterPassword = () => {
                                                         <div class="flex flex-col items-center">
                                                             <span class="text-4xl font-black text-white leading-none">{{
                                                                 neuralActivity
-                                                            }}%</span>
+                                                                }}%</span>
                                                             <span
                                                                 class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-2">{{
                                                                     t('ui_neural_activity', 'Actividad Neural') }}</span>
@@ -4001,7 +4001,8 @@ const registerMasterPassword = () => {
                                                     <div class="space-y-2">
                                                         <label
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                                t('ui_universal_language', 'Idioma Universal (Voz y Escucha)') }}</label>
+                                                                t('ui_universal_language', `Idioma Universal (Voz y
+                                                            Escucha)`) }}</label>
 
                                                         <select v-model="userSettings.apis.FINA_LANGUAGE"
                                                             @change="() => notifyFina('REQUIERE REINICIO PARA APLICAR IDIOMA')"
@@ -4017,9 +4018,9 @@ const registerMasterPassword = () => {
                                                             <option value="zh">Chino (中文)</option>
                                                         </select>
                                                         <p class="text-[9px] text-slate-500 italic px-2">{{
-                                                            t('ui_language_download_hint', 'Fina descargará automáticamente los modelos en el próximo   
-
-                                                            inicio.') }}</p>
+                                                            t('ui_language_download_hint', `Fina descargará
+                                                            automáticamente los modelos en el
+                                                            próximo inicio.`) }}</p>
                                                     </div>
 
                                                     <div v-for="(label, key) in { VOICE_MODELS_PATH: t('ui_custom_voices_folder_opt', 'Carpeta de Voces Custom (Opcional)'), VOSK_MODEL_PATH: t('ui_custom_vosk_model_opt', 'Modelo Vosk Custom (Opcional)') }"
@@ -4310,7 +4311,7 @@ const registerMasterPassword = () => {
                                                 class="p-4 mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-2">
                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
                                                 <span class="text-xs font-bold text-red-200 uppercase">{{ mobileHubError
-                                                }}</span>
+                                                    }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4388,7 +4389,8 @@ const registerMasterPassword = () => {
                                                         class="fa-solid fa-plug-circle-xmark text-3xl text-slate-600"></i>
                                                     <span
                                                         class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{{
-                                                            t('ui_connect_device_for_apps', 'Conecte el dispositivo para ver apps') }}</span>
+                                                            t('ui_connect_device_for_apps', `Conecte el dispositivo para ver
+                                                        apps`) }}</span>
 
                                                 </div>
                                             </div>
@@ -4840,7 +4842,7 @@ const registerMasterPassword = () => {
                                 class="flex items-center gap-2 bg-cyan-400/10 px-3 py-1 rounded-full border border-cyan-400/20">
                                 <span class="text-[10px] font-mono text-cyan-400 font-bold tracking-widest uppercase">{{
                                     version
-                                }}</span>
+                                    }}</span>
                             </div>
                         </div>
                         <div class="p-10 space-y-8">
@@ -5035,7 +5037,7 @@ const registerMasterPassword = () => {
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">CPU</span>
                                     <span class="text-xl font-black text-white">{{ Math.round(systemStats.cpu?.percent
                                         || 0)
-                                    }}%</span>
+                                        }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.cpu?.freq }}
                                         MHz</span>
                                 </div>
@@ -5059,7 +5061,7 @@ const registerMasterPassword = () => {
                                         (M)</span>
                                     <div class="flex flex-col items-center leading-none">
                                         <span class="text-[11px] text-emerald-400 font-bold">↑ {{ systemStats.net?.sent
-                                        }} MB</span>
+                                            }} MB</span>
                                         <span class="text-[11px] text-cyan-400 font-bold">↓ {{ systemStats.net?.recv }}
                                             MB</span>
                                     </div>
@@ -5555,9 +5557,9 @@ const registerMasterPassword = () => {
                         <!-- Footer Info -->
                         <div class="p-6 bg-black/40 border-t border-white/5 text-center shrink-0">
                             <p class="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">{{
-                                t('ui_plugin_install_hint', 'Los plugins se instalan automáticamente en la carpeta de ejecución   
-
-                                local.') }}</p>
+                                t('ui_plugin_install_hint', `Los plugins se instalan automáticamente en la carpeta de
+                                ejecución
+                                local.`) }}</p>
                         </div>
                     </div>
                 </div>
