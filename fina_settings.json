@@ -1,0 +1,24 @@
+{
+    "apis": {
+        "GITHUB_TOKEN": "",
+        "OPENAI_API_KEY": "",
+        "ELEVENLABS_API_KEY": "",
+        "FINA_VOICE_ID": "",
+        "WEATHER_API_KEY": "",
+        "WEATHER_CITY_ID": "",
+        "NEWS_API_KEY": "",
+        "UNSPLASH_ACCESS_KEY": "",
+        "RUNAWAY_API_KEY": "",
+        "EMAIL_USER": "",
+        "EMAIL_PASSWORD": "",
+        "VOICE_MODELS_PATH": "",
+        "VOSK_MODEL_PATH": "",
+        "USER_NAME": "",
+        "UNSPLASH_SECRET_KEY": "",
+        "FINA_LANGUAGE": "en"
+    },
+    "disabled_channels": [],
+    "preferences": {
+        "theme": "dark"
+    }
+}

@@ -28,7 +28,7 @@ env/
 
 # Configuración y Secretos
 config.py
-fina_settings.json
+
 config/settings.json
 user_data.json
 *.env
@@ -57,3 +57,9 @@ plugins/*/.env
 plugins/tv/
 plugins/doorbell/
 plugins/clima/
+# User specific configurations and personal data files
+
+config/channels.json
+config/channels_telecentro.json
+config/settings.json
+config/contacts_personales.json
