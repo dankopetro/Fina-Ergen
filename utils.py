@@ -538,44 +538,53 @@ def speak(text, selected_model=None, sink=None, wait=True):
 # Flag para no saturar el log con errores de modelo
 vosk_error_reported = False
 
-VOSK_MODELS = {
-    "es": ("vosk-model-small-es-0.42", "https://alphacephei.com/vosk/models/vosk-model-small-es-0.42.zip"),
-    "en": ("vosk-model-small-en-us-0.15", "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"),
-    "fr": ("vosk-model-small-fr-0.22", "https://alphacephei.com/vosk/models/vosk-model-small-fr-0.22.zip"),
-    "de": ("vosk-model-small-de-0.15", "https://alphacephei.com/vosk/models/vosk-model-small-de-0.15.zip"),
-    "ja": ("vosk-model-small-ja-0.22", "https://alphacephei.com/vosk/models/vosk-model-small-ja-0.22.zip"),
-    "zh": ("vosk-model-small-cn-0.22", "https://alphacephei.com/vosk/models/vosk-model-small-cn-0.22.zip")
+VOSK_MODELS_LARGE = {
+    "es": ("vosk-model-es-0.42", "https://alphacephei.com/vosk/models/vosk-model-es-0.42.zip"),
+    "en": ("vosk-model-en-us-0.22", "https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip"),
+    "fr": ("vosk-model-fr-0.22", "https://alphacephei.com/vosk/models/vosk-model-fr-0.22.zip"),
+    "de": ("vosk-model-de-0.21", "https://alphacephei.com/vosk/models/vosk-model-de-0.21.zip"),
+    "ja": ("vosk-model-ja-0.22", "https://alphacephei.com/vosk/models/vosk-model-ja-0.22.zip"),
+    "zh": ("vosk-model-cn-0.22", "https://alphacephei.com/vosk/models/vosk-model-cn-0.22.zip")
 }
 
-def _download_vosk_model(dest_path, language="es"):
-    """Descarga y extrae el modelo de Vosk pequeño automáticamente según el idioma de ajustes"""
+def _download_vosk_model(dest_path, model_name, url, language):
+    """Descarga el modelo Vosk grande guardando a disco para evitar desbordar RAM."""
     import zipfile
     import requests
     from io import BytesIO
     import shutil
     
-    # Elegimos el modelo según idioma
-    model_name, url = VOSK_MODELS.get(language, VOSK_MODELS["en"])
     model_dir = os.path.dirname(dest_path) # ~/.config/Fina/model
     
     try:
-        logger.info(f"👂 Fina está descargando configuración de idioma '{language}' para uso local...")
-        update_ui_state("idle", process=f"Descargando modelo de voz ({language})...")
+        logger.info(f"👂 Fina está descargando el modelo completo ('{model_name}') para idioma '{language}'... Esto tomará un tiempo.")
+        update_ui_state("idle", process=f"Descargando Inteligencia ({language}) [PESADO]...")
         
-        response = requests.get(url, timeout=60)
+        # Stream=True para no cargar 2GB en RAM
+        response = requests.get(url, stream=True)
         if response.status_code == 200:
-            with zipfile.ZipFile(BytesIO(response.content)) as zip_ref:
+            zip_path = os.path.join(model_dir, f"{model_name}.zip")
+            with open(zip_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            
+            logger.info("📦 Descarga completada. Extrayendo archivos...")
+            update_ui_state("idle", process=f"Extrayendo Modelo ({language})...")
+            
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(model_dir)
                 
-                extracted_dir = os.path.join(model_dir, model_name)
-                if os.path.exists(extracted_dir) and extracted_dir != dest_path:
-                    if os.path.exists(dest_path): shutil.rmtree(dest_path)
-                    os.rename(extracted_dir, dest_path)
-                    
-            logger.info("✅ Idioma de escucha Fina instalado.")
+            os.remove(zip_path) # Limpiar el zip
+            
+            extracted_dir = os.path.join(model_dir, model_name)
+            if os.path.exists(extracted_dir) and extracted_dir != dest_path:
+                if os.path.exists(dest_path): shutil.rmtree(dest_path)
+                os.rename(extracted_dir, dest_path)
+                
+            logger.info("✅ Modelo pesado Fina instalado correctamente.")
             return True
     except Exception as e:
-        logger.error(f"❌ No se pudo descargar el modelo Vosk para {language}: {e}")
+        logger.error(f"❌ No se pudo descargar el modelo Vosk ({model_name}): {e}")
     return False
 
 def load_vosk_model(language=None):
@@ -591,13 +600,12 @@ def load_vosk_model(language=None):
         from vosk import Model, KaldiRecognizer, SetLogLevel
         SetLogLevel(-1)
         
-        # 0. Nombres de modelo a buscar (priorizando español/idioma grande si el usuario lo pone, sino fallback al seleccionado)
-        model_name_small, _ = VOSK_MODELS.get(language, VOSK_MODELS["es"])
-        model_names_to_try = [f"vosk-model-{language}-0.42", model_name_small]
-        if language == "en":
-            model_names_to_try = ["vosk-model-en-us-0.22", model_name_small]
-            
-        model_names_to_try.append("vosk-model-small-en-us-0.15") # Fallback extremo por si falla el download o no existe
+        # Obtenemos info del modelo grande correspondiente al idioma seleccionado
+        model_name, url_large = VOSK_MODELS_LARGE.get(language, VOSK_MODELS_LARGE["es"])
+        
+        # Nombres de modelo a buscar (Prioridad 1: Idioma Local Grande -> Prioridad 2: Idioma Local Chico)
+        model_names_to_try = [model_name, f"vosk-model-small-{language}-0.42", f"vosk-model-small-{language}-0.22", f"vosk-model-small-{language}-0.15"]
+        model_names_to_try.append("vosk-model-small-en-us-0.15") # Fallback universal inglés
 
         loaded_path = None
         for m_name in model_names_to_try:
@@ -618,18 +626,33 @@ def load_vosk_model(language=None):
             vosk_error_reported = False
             logger.info(f"✅ Vosk cargado desde: {loaded_path} ({language})")
         else:
-            # AUTO-DESCARGA DEL IDIOMA SOLICITADO SI NO EXISTE
-            logger.info(f"ℹ️ Modelo no encontrado. Intentando auto-descargar modelo '{language}'...")
-            fallback_dest = os.path.join(CONFIG_DIR, "model", model_name_small)
+            # SI NO HAY MODELO SELECCIONADO: 
+            # 1. Si el idioma interno es "es" y NO ENCUENTRA NINGUNO (primer arranque puro), bajamos el inglés rápido.
+            # 2. Si el usuario seleccionó explícitamente otro idioma o requiere el grande, lo descargamos.
             
-            if _download_vosk_model(fallback_dest, language):
-                vosk_model = Model(fallback_dest)
+            # Condición de "Primer Arranque Cero":
+            if language == "es":
+                logger.info("ℹ️ Primer arranque detectado. Auto-descargando fallback universal en inglés para inicio veloz...")
+                fallback_dest = os.path.join(CONFIG_DIR, "model", "vosk-model-small-en-us-0.15")
+                _download_vosk_model(fallback_dest, "vosk-model-small-en-us-0.15", "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip", "en")
+                if os.path.exists(fallback_dest):
+                    vosk_model = Model(fallback_dest)
+                    vosk_recognizer = KaldiRecognizer(vosk_model, 16000)
+                    loaded_language = "en"
+                    vosk_error_reported = False
+                    return
+            
+            logger.info(f"ℹ️ Modelo pesado no encontrado. Intentando auto-descargar el modelo completo '{language}' (~1GB+)...")
+            target_dest = os.path.join(CONFIG_DIR, "model", model_name)
+            
+            if _download_vosk_model(target_dest, model_name, url_large, language):
+                vosk_model = Model(target_dest)
                 vosk_recognizer = KaldiRecognizer(vosk_model, 16000)
                 loaded_language = language
                 vosk_error_reported = False
             else:
                 if not vosk_error_reported:
-                    logger.error(f"⚠️ Modelo Vosk no encontrado y la auto-descarga falló.")
+                    logger.error(f"⚠️ La descarga del modelo Vosk pesado falló.")
                     vosk_error_reported = True
     except ImportError:
         if not vosk_error_reported:
