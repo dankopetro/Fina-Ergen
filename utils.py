@@ -188,13 +188,13 @@ except Exception as e:
     logger.error(f"❌ Error cargando lang.json: {e}")
 
 def get_sys_lang():
-    return get_unified_config("FINA_LANGUAGE", "es")
+    return get_unified_config("FINA_LANGUAGE", "en")
 
 def i18n(key, fallback=""):
     lang = get_sys_lang()
     # Si FINA_LANGUAGE no es uno de los listados en lang.json, usamos 'es'
     if lang not in I18N_DATA:
-        lang = "es"
+        lang = "en"
     
     # Intenta obtener el idioma
     translations = I18N_DATA.get(lang, {})
@@ -616,8 +616,8 @@ def load_vosk_model(language=None):
     global vosk_model, vosk_recognizer, loaded_language, vosk_error_reported
     
     if not language:
-        language = get_unified_config("FINA_LANGUAGE", "es")
-        if not language: language = "es"
+        language = get_unified_config("FINA_LANGUAGE", "en")
+        if not language: language = "en"
 
     if vosk_model is not None and loaded_language == language: return
     

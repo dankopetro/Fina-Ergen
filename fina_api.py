@@ -264,7 +264,7 @@ current_fina_state = {
 }
 
 scan_state = {"active": False, "progress": 0, "last_result": {}}
-enroll_info = {"active": False, "message": "Esperando...", "progress": 0}
+received_password = None
 
 # --- Helper Functions ---
 def load_settings_data():
@@ -331,6 +331,20 @@ async def queue_command(command: dict):
     print(f"📥 Comando encolado: {command.get('name')}", flush=True)
     return {"status": "queued"}
 
+@app.get("/api/auth/password")
+async def get_received_password():
+    global received_password
+    pwd = received_password
+    received_password = None # Clear after read
+    return {"password": pwd}
+
+@app.post("/api/auth/password")
+async def post_received_password(data: dict):
+    global received_password
+    received_password = data.get("password")
+    print(f"🔑 API: Contraseña recibida desde la UI", flush=True)
+    return {"status": "ok"}
+
 @app.get("/api/shutdown")
 async def shutdown_api():
     print("⚠️ Orden de apagado recibida", flush=True)
@@ -350,6 +364,11 @@ async def get_user_data():
     except Exception as e:
         print(f"❌ Error cargando user_data: {e}", flush=True)
         return {"notes": [], "reminders": []}
+
+@app.get("/api/i18n")
+async def get_i18n():
+    from utils import I18N_DATA
+    return I18N_DATA
 
 @app.get("/api/settings")
 async def get_settings():
@@ -410,7 +429,7 @@ async def get_system_info():
         "python_path": sys.executable,
         "project_root": PROJECT_ROOT,
         "config_dir": CONFIG_DIR,
-        "version": "3.5.4-18"
+        "version": "3.5.5 (03/03/2026 16:15)"
     }
 
 # --- Static ---

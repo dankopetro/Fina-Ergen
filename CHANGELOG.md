@@ -10,6 +10,17 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
+## [v3.5.5] - 2026-03-03 (Edición de Internacionalización Completa)
+Esta versión concluye la reestructuración completa de los archivos de localización, permitiendo que la interfaz cambie dinámicamente de idioma (Inglés/Español) sin valores estáticos en código.
+
+### Añadido
+* **Soporte Completo i18n**: Internacionalización nativa de todas las vistas, ajustes de TV, biometría, y el panel de Market de Plugins y nodos de red.
+* **Actualización del paquete**: Bump de la versión base y dependencias pre-empaquetadas para compilación sólida en Debian/Ubuntu.
+
+### Arreglado
+* **Parches Quirúrgicos de Sintaxis HTML**: Resolución exhaustiva de etiquetas sin cierre, literales no terminados y atributos de clases duplicadas en Vue.
+* **Componentes de UI de Seguridad**: Se reescribieron los widgets de escaneo de red que provocaban errores de parseo por cadenas incompletas.
+
 ## [v3.5.4-18] - 2026-02-22 (Edición "Tanque" Inteligente)
 Esta versión perfecciona la portabilidad y la experiencia de primer usuario ("Out-of-the-box"), asegurando que Fina configure su propio cerebro sin intervención manual y facilitando la gestión de voces locales.
 

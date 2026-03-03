@@ -141,7 +141,7 @@ config, CONFIG_FOUND = load_config()
 
 # --- DIAGNÓSTICO INICIAL ---
 import getpass
-print(f"--- Fina Ergen Cerebro V3.5.4 ---", flush=True)
+print(f"--- Fina Ergen Cerebro V3.5.5 (03/03/2026 16:15) ---", flush=True)
 print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
 if os.getuid() == 0:
     print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)
@@ -332,10 +332,10 @@ def get_all_voice_models():
             try:
                 for f in os.listdir(s_dir):
                     if f.endswith(".onnx"):
-                        # Crear un nombre amigable a partir del archivo si no existe
+                        # Crear un nombre amigable
                         nice_name = f.replace(".onnx", "").replace("-", " ").replace("_", " ").title()
                         path = os.path.join(s_dir, f)
-                        if nice_name not in models and "low" not in f: # Evitar procesar jsons o versiones low si hay high
+                        if nice_name not in models:
                              models[nice_name] = path
             except: pass
             
@@ -343,7 +343,20 @@ def get_all_voice_models():
 
 # Carga dinámica al arrancar
 VOICE_MODELS = get_all_voice_models()
-DEFAULT_VOICE = VOICE_MODELS.get("Daniela", list(VOICE_MODELS.values())[0])
+
+# PRIORIDAD: 1. VOICE_MODEL de settings, 2. Daniela, 3. Primera disponible
+selected_voice_id = get_unified_config("VOICE_MODEL")
+DEFAULT_VOICE = None
+
+if selected_voice_id:
+    # Buscar si el ID está en los valores o si coincide con alguna clave (formato amigable)
+    for name, path in VOICE_MODELS.items():
+        if selected_voice_id in path or selected_voice_id.lower() in name.lower():
+            DEFAULT_VOICE = path
+            break
+
+if not DEFAULT_VOICE:
+    DEFAULT_VOICE = VOICE_MODELS.get("Daniela", list(VOICE_MODELS.values())[0])
 
 # Funcionalidad de cambio de voz
 voice_model_names = list(VOICE_MODELS.keys())

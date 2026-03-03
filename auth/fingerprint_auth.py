@@ -131,19 +131,53 @@ def password_fallback(voice_model=None, speak_func=None):
         speak_func("Activando sistema de respaldo por contraseña.", voice_model)
     
     max_password_attempts = 3
+    api_url_get = "http://127.0.0.1:18000/api/auth/password"
+    
+    # Asegurarnos de que importamos requests
+    import requests
+    from utils import update_ui_state
     
     for attempt in range(1, max_password_attempts + 1):
         try:
             logger.info(f"Intento de contraseña {attempt} de {max_password_attempts}")
             print(f"\nIntento {attempt}/{max_password_attempts}")
+            
+            msg = f"Intento {attempt} de {max_password_attempts}. Ingresa tu contraseña."
             if speak_func:
-                speak_func(f"Intento {attempt} de {max_password_attempts}. Ingresa tu contraseña.", voice_model)
+                speak_func(msg, voice_model)
             
-            # Solicitar contraseña del usuario del sistema
-            username = getpass.getuser()
-            password = getpass.getpass(f"Ingresa la contraseña para {username}: ")
+            # Notificar a la UI que muestre el campo de contraseña
+            update_ui_state("authenticating", msg, extra_payload={"show_password_field": True})
             
-            # Verificar contraseña usando PAM
+            # Polling del API esperando que la UI mande la contraseña
+            password = None
+            timeout_seconds = 45 # Un poco más de los 30 para dar margen
+            start_time = time.time()
+            
+            print("⏳ Esperando contraseña desde la interfaz...", flush=True)
+            
+            while time.time() - start_time < timeout_seconds:
+                try:
+                    resp = requests.get(api_url_get, timeout=1)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        password = data.get("password")
+                        if password:
+                            break
+                except Exception as e:
+                    logger.debug(f"Error polling API: {e}")
+                
+                time.sleep(1) # Esperar 1 segundo entre polls
+            
+            if not password:
+                logger.warning(f"Tiempo agotado esperando contraseña (intento {attempt})")
+                print("⏱ Tiempo agotado esperando entrada del usuario.")
+                if speak_func:
+                    speak_func("Tiempo agotado.", voice_model)
+                continue # Probar siguiente intento si no se agotaron
+
+            # Verificar contraseña usando sudo (PAM)
+            # -S lee de stdin, -k invalida el cache de sudo
             result = subprocess.run(
                 ['sudo', '-S', '-k', 'true'],
                 input=password,
@@ -155,6 +189,8 @@ def password_fallback(voice_model=None, speak_func=None):
             if result.returncode == 0:
                 logger.info("✓ Autenticación por contraseña exitosa")
                 print("✓ Contraseña correcta!")
+                # Limpiar UI
+                update_ui_state("speaking", "Contraseña correcta")
                 return True
             else:
                 logger.warning(f"✗ Contraseña incorrecta (intento {attempt})")
@@ -162,12 +198,10 @@ def password_fallback(voice_model=None, speak_func=None):
                 print(f"✗ Contraseña incorrecta. Intentos restantes: {remaining}")
                 if speak_func and remaining > 0:
                     speak_func(f"Contraseña incorrecta. Te quedan {remaining} intentos.", voice_model)
+                # Notificar error a la UI
+                update_ui_state("authenticating", "Contraseña incorrecta", extra_payload={"auth_error": True, "show_password_field": True})
+                time.sleep(2) # Pausa para que el usuario vea el error
                 
-        except subprocess.TimeoutExpired:
-            logger.warning(f"Timeout en verificación de contraseña (intento {attempt})")
-            print("⏱ Tiempo agotado.")
-            if speak_func:
-                speak_func("Tiempo agotado.", voice_model)
         except Exception as e:
             logger.error(f"Error durante verificación de contraseña: {e}")
             print(f"⚠ Error: {e}")
@@ -176,6 +210,7 @@ def password_fallback(voice_model=None, speak_func=None):
     print("\n✗ Autenticación fallida. Acceso denegado.")
     if speak_func:
         speak_func("Autenticación fallida. Acceso denegado.", voice_model)
+    update_ui_state("idle", "Acceso denegado", extra_payload={"show_password_field": false})
     return False
 
 

@@ -83,11 +83,22 @@ import WeatherModule from "./components/WeatherModule.vue";
 import iconAvatar from "./assets/iconoergen.png";
 
 // --- STATE ---
+const i18nData = ref({});
+const t = (key, fallback = "") => {
+    const lang = userSettings.value.apis?.FINA_LANGUAGE || "en";
+    const translations = i18nData.value[lang] || {};
+    const englishFallback = i18nData.value["en"] || {};
+    return translations[key] || englishFallback[key] || fallback || key;
+};
+
 const finaState = ref({
     status: "idle",
-    process: "SISTEMA LISTO",
-    intensity: 0.0
+    process: t('systems_ready', 'SISTEMA LISTO'),
+    intensity: 0.0,
+    showPasswordField: false,
+    authError: false
 });
+const authPassword = ref("");
 const isFetchingMails = ref(false);
 const mailError = ref(""); // Para capturar errores como 'App Password required'
 const isSendingComm = ref(false);
@@ -125,8 +136,8 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.4-18";
-const buildDate = "Dom 22 Feb 2026 14:05";
+const version = "Fina Ergen v 3.5.5 (03/03/2026 16:15)";
+const buildDate = "Mar 03 Mar 2026 16:15";
 
 const userSettings = ref({
     apis: {
@@ -304,7 +315,7 @@ const updateNeuralState = () => {
         if (Math.random() > 0.8) {
             const thoughts = [
                 "Procesando entrada de voz...",
-                "Escaneando nodos locales...",
+                t('ui_scanning_nodes', 'Escaneando nodos locales...'),
                 "Ajustando parámetros de latencia...",
                 "Ergen Core estable.",
                 "Actualizando heurísticas...",
@@ -690,6 +701,22 @@ const pairAndroid14Device = async () => {
 };
 
 // Función para reintentar conexión después de que el usuario siga las instrucciones
+
+const submitAuthPassword = async () => {
+    if (!authPassword.value) return;
+    try {
+        await fetch("http://127.0.0.1:18000/api/auth/password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password: authPassword.value })
+        });
+        authPassword.value = "";
+        finaState.value.authError = false;
+        // La UI se ocultará cuando el polling detecte que show_password_field es false
+    } catch (e) {
+        console.error("Error submitting password:", e);
+    }
+};
 
 // --- APP DETECTION ---
 const logPerf = (msg) => {
@@ -1581,43 +1608,43 @@ const refreshDoorbellStatus = async () => {
 
 const fetchSettings = async (maxRetries = 60, delayMs = 1000) => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        const response = await fetch("http://127.0.0.1:18000/api/settings");
-        if (!response.ok) throw new Error(`API HTTP ${response.status}`);
-        const loaded = await response.json();
-        console.log(`📂 Settings OK (intento ${attempt}):`, loaded);
+        try {
+            const response = await fetch("http://127.0.0.1:18000/api/settings");
+            if (!response.ok) throw new Error(`API HTTP ${response.status}`);
+            const loaded = await response.json();
+            console.log(`📂 Settings OK (intento ${attempt}):`, loaded);
 
-        // MERGE INTELIGENTE (Evita que undefined rompa el UI)
-        if (loaded.apis) {
-            // Formato Nuevo { apis: {...}, tvs: [...] }
-            userSettings.value.apis = { ...userSettings.value.apis, ...loaded.apis };
-            if (loaded.tvs) userSettings.value.tvs = loaded.tvs;
-            if (loaded.devices) userSettings.value.devices = loaded.devices;
-            if (loaded.disabled_channels) userSettings.value.disabled_channels = loaded.disabled_channels;
-            if (loaded.tv_apps) userSettings.value.tv_apps = loaded.tv_apps;
-            if (loaded.linked_apps) userSettings.value.linked_apps = loaded.linked_apps;
-        } else {
-            // Formato Viejo/Plano { GITHUB_TOKEN: "..." }
-            // Asumimos que todo lo plano va a apis
-            userSettings.value.apis = { ...userSettings.value.apis, ...loaded };
-            if (loaded.tvs) userSettings.value.tvs = loaded.tvs;
-            if (loaded.devices) userSettings.value.devices = loaded.devices;
-            if (loaded.disabled_channels) userSettings.value.disabled_channels = loaded.disabled_channels;
-            if (loaded.tv_apps) userSettings.value.tv_apps = loaded.tv_apps;
-            if (loaded.linked_apps) userSettings.value.linked_apps = loaded.linked_apps;
-        }
+            // MERGE INTELIGENTE (Evita que undefined rompa el UI)
+            if (loaded.apis) {
+                // Formato Nuevo { apis: {...}, tvs: [...] }
+                userSettings.value.apis = { ...userSettings.value.apis, ...loaded.apis };
+                if (loaded.tvs) userSettings.value.tvs = loaded.tvs;
+                if (loaded.devices) userSettings.value.devices = loaded.devices;
+                if (loaded.disabled_channels) userSettings.value.disabled_channels = loaded.disabled_channels;
+                if (loaded.tv_apps) userSettings.value.tv_apps = loaded.tv_apps;
+                if (loaded.linked_apps) userSettings.value.linked_apps = loaded.linked_apps;
+            } else {
+                // Formato Viejo/Plano { GITHUB_TOKEN: "..." }
+                // Asumimos que todo lo plano va a apis
+                userSettings.value.apis = { ...userSettings.value.apis, ...loaded };
+                if (loaded.tvs) userSettings.value.tvs = loaded.tvs;
+                if (loaded.devices) userSettings.value.devices = loaded.devices;
+                if (loaded.disabled_channels) userSettings.value.disabled_channels = loaded.disabled_channels;
+                if (loaded.tv_apps) userSettings.value.tv_apps = loaded.tv_apps;
+                if (loaded.linked_apps) userSettings.value.linked_apps = loaded.linked_apps;
+            }
 
-        console.log("✅ Settings Merged:", userSettings.value);
-        updateWeather();
-        return; // Éxito => salir del loop
-      } catch (e) {
-        if (attempt < maxRetries) {
-          console.warn(`⏳ API no lista aún (intento ${attempt}/${maxRetries}). Reintentando en ${delayMs}ms...`);
-          await new Promise(r => setTimeout(r, delayMs));
-        } else {
-          console.warn("⚠️ API no respondió tras todos los intentos. Usando defaults.");
+            console.log("✅ Settings Merged:", userSettings.value);
+            updateWeather();
+            return; // Éxito => salir del loop
+        } catch (e) {
+            if (attempt < maxRetries) {
+                console.warn(`⏳ API no lista aún (intento ${attempt}/${maxRetries}). Reintentando en ${delayMs}ms...`);
+                await new Promise(r => setTimeout(r, delayMs));
+            } else {
+                console.warn("⚠️ API no respondió tras todos los intentos. Usando defaults.");
+            }
         }
-      }
     }
 };
 
@@ -1984,6 +2011,11 @@ const closeWindow = async () => {
 };
 
 onMounted(async () => {
+    try {
+        const i18nResp = await fetch("http://127.0.0.1:18000/api/i18n");
+        if (i18nResp.ok) i18nData.value = await i18nResp.json();
+    } catch (e) { console.error("i18n load error", e); }
+
     syncSystemInfo(); // Obtener rutas del backend inmediatamente
     updateClock();
     setInterval(updateClock, 1000);
@@ -2091,6 +2123,15 @@ onMounted(async () => {
                     // Si es un mensaje RELEVANTE (no sistema listo), lo mostramos y bloqueamos el borrado por 3s
                     finaState.value.status = newStatus;
                     finaState.value.process = data.process;
+
+                    // Manejo de flag de contraseña
+                    if (data.show_password_field !== undefined) {
+                        finaState.value.showPasswordField = data.show_password_field;
+                        if (!data.show_password_field) authPassword.value = ""; // Limpiar si se oculta
+                    }
+                    if (data.auth_error !== undefined) {
+                        finaState.value.authError = data.auth_error;
+                    }
 
                     if (newStatus === 'speaking' || (data.process && data.process.length > 3)) {
                         window.lockTextUntil = Date.now() + 3000;
@@ -2433,6 +2474,9 @@ const scanTvApps = async () => {
     const scriptPath = `${projectRoot.value}/plugins/tv/${modelFolder}/list_tv_apps.py`;
 
     try {
+        const i18nResp = await fetch("http://127.0.0.1:18000/api/i18n");
+        if (i18nResp.ok) i18nData.value = await i18nResp.json();
+
         await invoke("execute_shell_command", { command: `${pyPath} "${scriptPath}" --ip ${ip}` });
         // Recargar settings para ver nuevas apps
         await fetchSettings();
@@ -2508,34 +2552,39 @@ const registerMasterPassword = () => {
                     :class="activeTab === 'dashboard' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-500/5' : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'">
                     <i class="fa-solid fa-gauge-high text-lg w-10"></i>
                     <span v-if="!isSidebarCollapsed"
-                        class="text-sm font-black tracking-widest uppercase leading-none">Panel</span>
+                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_dashboard', 'Panel')
+                        }}</span>
                 </button>
                 <button @click="setTab('clima')"
                     class="group flex items-center h-14 rounded-2xl transition-all w-full px-4"
                     :class="activeTab === 'clima' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-500/5' : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'">
                     <i class="fa-solid fa-house-laptop text-lg w-10"></i>
                     <span v-if="!isSidebarCollapsed"
-                        class="text-sm font-black tracking-widest uppercase leading-none">Casa</span>
+                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_iot', 'Casa')
+                        }}</span>
                 </button>
                 <button @click="setTab('seguridad')"
                     class="group flex items-center h-14 rounded-2xl transition-all w-full px-4"
                     :class="activeTab === 'seguridad' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-500/5' : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'">
                     <i class="fa-solid fa-shield-virus text-lg w-10"></i>
                     <span v-if="!isSidebarCollapsed"
-                        class="text-sm font-black tracking-widest uppercase leading-none">Seguridad</span>
+                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_biometrics',
+                            'Seguridad') }}</span>
                 </button>
                 <button @click="setTab('agenda')"
                     class="group flex items-center h-14 rounded-2xl transition-all w-full px-4"
                     :class="activeTab === 'agenda' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-500/5' : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'">
                     <i class="fa-solid fa-calendar-check text-lg w-10"></i>
                     <span v-if="!isSidebarCollapsed"
-                        class="text-sm font-black tracking-widest uppercase leading-none">Agenda</span>
+                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_agenda', 'Agenda')
+                        }}</span>
                 </button>
                 <button @click="setTab('ajustes')"
                     class="group flex items-center h-14 rounded-2xl transition-all w-full px-4 text-slate-600 hover:bg-white/5 hover:text-slate-400">
                     <i class="fa-solid fa-sliders text-lg w-10"></i>
                     <span v-if="!isSidebarCollapsed"
-                        class="text-sm font-black tracking-widest uppercase leading-none">Ajustes</span>
+                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_settings', 'Ajustes')
+                        }}</span>
                 </button>
             </nav>
 
@@ -2572,15 +2621,13 @@ const registerMasterPassword = () => {
                     <div v-if="activeTab !== 'dashboard'"
                         class="flex items-center gap-3 px-4 py-1.5 rounded-xl bg-slate-900/50 border border-white/5 shadow-inner">
                         <i class="fa-solid" :class="weatherIcon + ' text-orange-500 text-sm'"></i>
-                        <span class="text-xs font-black text-slate-400 tracking-widest">{{
-                            weatherDisplay }}</span>
+                        <span class="text-xs font-black text-slate-400 tracking-widest">{{ weatherDisplay }}</span>
                     </div>
                     <div
                         class="flex items-center gap-2 px-4 py-1.5 rounded-xl border border-cyan-500/20 bg-cyan-900/10">
                         <div class="w-1.5 h-1.5 rounded-full" :class="systemStatus.dot"></div>
                         <span class="text-[10px] font-black tracking-[0.25em] uppercase leading-none"
-                            :class="systemStatus.color">{{ systemStatus.text
-                            }}</span>
+                            :class="systemStatus.color">{{ systemStatus.text }}</span>
                     </div>
                 </div>
 
@@ -2617,8 +2664,7 @@ const registerMasterPassword = () => {
                             class="px-4 py-2 bg-slate-900/80 backdrop-blur-xl border border-cyan-500/30 rounded-2xl rounded-tr-none shadow-xl animate-in fade-in slide-in-from-right-4">
                             <p class="text-[11px] text-cyan-100 font-medium whitespace-pre-line">
                                 {{ msg.text }}</p>
-                            <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{
-                                msg.time
+                            <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{ msg.time
                             }}</span>
                         </div>
                     </transition-group>
@@ -2656,6 +2702,24 @@ const registerMasterPassword = () => {
                             </div>
                         </div>
                     </div>
+
+                    <!-- PASSWORS INPUT OVERLAY -->
+                    <div v-if="finaState.showPasswordField"
+                        class="absolute z-50 flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-300">
+                        <div class="relative group">
+                            <input type="password" v-model="authPassword" @keyup.enter="submitAuthPassword"
+                                :placeholder="t('ui_password', 'CONTRASEÑA')" autofocus
+                                class="w-64 px-6 py-4 bg-slate-950/90 backdrop-blur-2xl border-2 border-cyan-500/50 rounded-2xl text-center text-xl font-black tracking-widest text-cyan-400 focus:outline-none focus:border-cyan-400 transition-all shadow-[0_0_20px_rgba(34,211,238,0.2)] placeholder:text-cyan-900" />
+                            <div
+                                class="absolute inset-0 rounded-2xl border border-cyan-400/20 pointer-events-none group-hover:border-cyan-400/40 transition-colors">
+                            </div>
+                        </div>
+                        <p v-if="finaState.authError"
+                            class="text-xs font-black text-red-500 uppercase tracking-widest animate-pulse">{{
+                                t('auth_fail', 'Contraseña Incorrecta') }}</p>
+                        <p class="text-[10px] font-bold text-cyan-700 uppercase tracking-[0.3em]">{{ t('ui_validate',
+                            'Presiona Enter para Validar') }}</p>
+                    </div>
                 </div>
 
                 <!-- ESTADO DE PROCESO (TEXTO ABAJO) -->
@@ -2688,41 +2752,43 @@ const registerMasterPassword = () => {
                                     class="fa-solid fa-fan text-orange-400 text-xl w-12 h-12 flex items-center justify-center bg-orange-500/10 rounded-2xl shadow-lg"></i>
                                 <div class="flex-1 flex flex-col px-4">
                                     <span
-                                        class="text-xl font-black text-white tracking-tighter uppercase leading-none">Aire
-                                        Acond</span>
-                                    <span
-                                        class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">SALA
-                                        PRINCIPAL</span>
+                                        class="text-xl font-black text-white tracking-tighter uppercase leading-none">{{
+                                            t('ui_ac', 'Aire Acond') }}</span>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">{{
+                                        t('ui_main_room', 'SALA PRINCIPAL') }}</span>
                                 </div>
                                 <div class="flex flex-col items-end gap-1">
-                                    <span class="text-3xl font-light text-white leading-none">{{
-                                        acState.temp }}°</span>
+                                    <span class="text-3xl font-light text-white leading-none">{{ acState.temp }}°</span>
                                     <div class="grid grid-cols-[45px_35px] gap-x-1 mt-2 items-center leading-none">
-                                        <span
-                                            class="text-right text-[15px] font-black text-cyan-500 uppercase">EXT:</span>
+                                        <span class="text-right text-[15px] font-black text-cyan-500 uppercase">{{
+                                            t('ui_ext', 'EXT') }}:</span>
                                         <span class="text-left text-[15px] font-black text-cyan-400 ml-1 uppercase">{{
                                             acState.outdoor }}°</span>
 
                                         <span
-                                            class="text-right text-[15px] font-black text-orange-500 uppercase mt-1">INT:</span>
+                                            class="text-right text-[15px] font-black text-orange-500 uppercase mt-1">{{
+                                                t('ui_int', 'INT') }}:</span>
                                         <span
                                             class="text-left text-[15px] font-black text-orange-400 ml-1 uppercase mt-1">{{
                                                 acState.indoor }}°</span>
 
                                         <span
-                                            class="text-right text-[11.5px] font-bold text-green-500 uppercase mt-1">HUM:</span>
+                                            class="text-right text-[11.5px] font-bold text-green-500 uppercase mt-1">{{
+                                                t('ui_hum', 'HUM') }}:</span>
                                         <span
                                             class="text-left text-[11.5px] font-bold text-green-400 ml-1 uppercase mt-1">{{
                                                 weatherHumidity }}%</span>
 
                                         <span v-if="acState.watts !== undefined"
-                                            class="text-right text-[12.5px] font-black text-yellow-500 uppercase mt-1">PWR:</span>
+                                            class="text-right text-[12.5px] font-black text-yellow-500 uppercase mt-1">{{
+                                                t('ui_pwr', 'PWR') }}:</span>
                                         <span v-if="acState.watts !== undefined"
                                             class="text-left text-[12.5px] font-black text-yellow-400 ml-1 uppercase mt-1">{{
                                                 acState.watts }}<span class="text-[8px] ml-0.5">W</span></span>
 
                                         <span v-if="acState.total_kwh"
-                                            class="text-right text-[12.5px] font-black text-purple-500 uppercase mt-1">TOT:</span>
+                                            class="text-right text-[12.5px] font-black text-purple-500 uppercase mt-1">{{
+                                                t('ui_tot', 'TOT') }}:</span>
                                         <span v-if="acState.total_kwh"
                                             class="text-left text-[12.5px] font-black text-purple-400 ml-1 uppercase mt-1">{{
                                                 acState.total_kwh }}<span class="text-[8px] ml-0.5">kWh</span></span>
@@ -2736,18 +2802,17 @@ const registerMasterPassword = () => {
                                     class="fa-solid fa-door-open text-cyan-400 text-xl w-12 h-12 flex items-center justify-center bg-cyan-500/10 rounded-2xl shadow-lg"></i>
                                 <div class="flex-1 flex flex-col px-4">
                                     <span
-                                        class="text-xl font-black text-white tracking-tighter uppercase leading-none">Timbre
-                                        Cam</span>
-                                    <span
-                                        class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">PUERTA
-                                        EXTERIOR</span>
+                                        class="text-xl font-black text-white tracking-tighter uppercase leading-none">{{
+                                            t('ui_doorbell', 'Timbre Cam') }}</span>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">{{
+                                        t('ui_outdoor_gate', 'PUERTA EXTERIOR') }}</span>
                                 </div>
                                 <div
                                     class="bg-slate-800/80 px-4 py-2 rounded-xl border border-white/5 shrink-0 flex items-center gap-2">
                                     <i class="fa-solid fa-battery-three-quarters"
                                         :class="parseInt(doorbellBattery) > 20 ? 'text-green-500' : 'text-red-500'"></i>
                                     <span class="text-[10px] font-black text-slate-300 uppercase leading-none">{{
-                                        doorbellBattery }}% BATERÍA</span>
+                                        doorbellBattery }}% {{ t('ui_battery', 'BATERÍA') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -2757,14 +2822,14 @@ const registerMasterPassword = () => {
                                 <div @click="activeCasaView = 'aire'; syncAllDevices(true)"
                                     class="p-6 bg-slate-900/50 backdrop-blur-md border border-white/5 rounded-[30px] hover:border-orange-500/40 transition-all cursor-pointer flex flex-col items-center gap-3">
                                     <i class="fa-solid fa-fan text-2xl text-orange-400"></i>
-                                    <span
-                                        class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-200">Aire</span>
+                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-200">{{
+                                        t('ui_ac_short', 'Aire') }}</span>
                                 </div>
                                 <div @click="activeCasaView = 'tv'; activeTvAppsView = false; activeTvSearch = ''; loadTvChannels()"
                                     class="p-6 bg-slate-900/50 backdrop-blur-md border border-white/5 rounded-[30px] hover:border-green-500/40 transition-all cursor-pointer flex flex-col items-center gap-3">
                                     <i class="fa-solid fa-tv text-2xl text-green-400"></i>
-                                    <span
-                                        class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-200">TV</span>
+                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-200">{{
+                                        t('ui_tv', 'TV') }}</span>
                                 </div>
                             </div>
 
@@ -2775,7 +2840,7 @@ const registerMasterPassword = () => {
                                     <button
                                         @click="activeCasaView = 'main'; activeTvAppsView = false; activeTvSearch = ''"
                                         class="px-4 py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-green-500 hover:text-black transition-all">←
-                                        Volver</button>
+                                        {{ t('ui_back', 'Volver') }}</button>
                                     <div class="flex items-center gap-3">
                                         <h3
                                             class="text-xl font-black text-white italic tracking-tighter uppercase flex items-center gap-3">
@@ -2783,7 +2848,7 @@ const registerMasterPassword = () => {
                                             <!-- Connection Status Dot -->
                                             <span
                                                 class="w-2.5 h-2.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)] border border-black/50"
-                                                :title="isTvConnected ? 'Conectado' : 'Desconectado'"
+                                                :title="isTvConnected ? t('ui_connected', 'Conectado') : t('ui_disconnected', 'Desconectado')"
                                                 :class="isTvConnected ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)]'"></span>
                                         </h3>
                                     </div>
@@ -2805,16 +2870,17 @@ const registerMasterPassword = () => {
                                         <template v-if="!isScanningTv">
                                             <button v-if="!activeTvAppsView" @click="scanChannels"
                                                 class="px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-xl text-[10px] font-black text-green-400 uppercase tracking-widest hover:bg-green-500 hover:text-black transition-all">
-                                                Escanear
+                                                {{ t('ui_scan', 'Escanear') }}
                                             </button>
                                             <button @click="activeTvAppsView = !activeTvAppsView"
                                                 class="px-4 py-2 bg-purple-500/10 border border-purple-500/30 rounded-xl text-[10px] font-black text-purple-400 uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all">
-                                                {{ activeTvAppsView ? 'CANALES' : 'APPS' }}
+                                                {{ activeTvAppsView ? t('ui_channels', 'CANALES') : t('ui_apps', 'APPS')
+                                                }}
                                             </button>
                                         </template>
                                         <button v-else @click="cancelTvScan"
                                             class="px-6 py-2 bg-red-500/20 border border-red-500/50 rounded-xl text-[10px] font-black text-red-500 uppercase tracking-[.2em] animate-pulse hover:bg-red-500 hover:text-white transition-all">
-                                            <i class="fa-solid fa-stop mr-2"></i> Cancelar
+                                            <i class="fa-solid fa-stop mr-2"></i> {{ t('ui_cancel', 'Cancelar') }}
                                         </button>
                                     </div>
                                 </div>
@@ -2830,7 +2896,8 @@ const registerMasterPassword = () => {
                                                         class="text-sm font-black text-white uppercase group-hover:text-green-400 transition-colors">{{
                                                             name }}</span>
                                                     <span
-                                                        class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-0.5">CANAL
+                                                        class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{{
+                                                            t('ui_channel', 'CANAL') }}
                                                         {{ num }}</span>
                                                 </div>
                                                 <div
@@ -2894,7 +2961,8 @@ const registerMasterPassword = () => {
                                                     </div>
                                                 </div>
                                                 <span
-                                                    class="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-3 mr-1">Online</span>
+                                                    class="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-3 mr-1">{{
+                                                        t('ui_online', 'Online') }}</span>
                                             </div>
                                         </div>
 
@@ -2934,9 +3002,9 @@ const registerMasterPassword = () => {
                                             <div v-if="Object.keys(filteredTvApps).length === 0"
                                                 class="w-full flex flex-col items-center justify-center text-slate-600 py-20">
                                                 <i class="fa-solid fa-ghost text-4xl mb-4 opacity-20"></i>
-                                                <span class="text-[10px] font-black uppercase tracking-[0.3em]">No hay
-                                                    apps
-                                                    disponibles</span>
+                                                <span class="text-[10px] font-black uppercase tracking-[0.3em]">{{
+                                                    t('ui_no_apps', 'No hay apps disponibles') }}</span>
+
                                             </div>
                                         </div>
 
@@ -2964,27 +3032,32 @@ const registerMasterPassword = () => {
                                             <i class="fa-solid fa-tv-slash text-5xl opacity-30"></i>
                                         </div>
                                         <span
-                                            class="text-[11px] font-black uppercase tracking-[0.4em] text-red-500/50">TV
-                                            Desconectada</span>
+                                            class="text-[11px] font-black uppercase tracking-[0.4em] text-red-500/50">{{
+                                                t('ui_tv_disconnected', 'TV Desconectada') }}</span>
+
                                     </div>
                                 </div>
 
                                 <div class="mt-6 flex flex-col gap-3">
                                     <div class="grid grid-cols-6 gap-3">
                                         <button @click="tvPower"
-                                            class="h-12 rounded-xl bg-red-500/20 border border-red-500/30 text-red-500 font-black text-[10px] uppercase">Power</button>
+                                            class="h-12 rounded-xl bg-red-500/20 border border-red-500/30 text-red-500 font-black text-[10px] uppercase">{{
+                                                t('ui_power', 'Power') }}</button>
                                         <button @click="tvInput"
-                                            class="h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-black text-[10px] uppercase">TV/Aire</button>
+                                            class="h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-black text-[10px] uppercase">{{
+                                                t('ui_input', 'TV/Aire') }}</button>
                                         <button @click="tvDeco"
-                                            class="h-12 rounded-xl bg-blue-500/20 border border-blue-500/30 text-blue-400 font-black text-[10px] uppercase">HDMI</button>
+                                            class="h-12 rounded-xl bg-blue-500/20 border border-blue-500/30 text-blue-400 font-black text-[10px] uppercase">{{
+                                                t('ui_hdmi', 'HDMI') }}</button>
                                         <button @mousedown="startVolDown" @mouseup="stopVol" @mouseleave="stopVol"
-                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-white font-black text-[10px] uppercase">Vol
-                                            -</button>
+                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-white font-black text-[10px] uppercase">{{
+                                                t('ui_vol_down', 'Vol -') }}</button>
                                         <button @mousedown="startVolUp" @mouseup="stopVol" @mouseleave="stopVol"
-                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-white font-black text-[10px] uppercase">Vol
-                                            +</button>
+                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-white font-black text-[10px] uppercase">{{
+                                                t('ui_vol_up', 'Vol +') }}</button>
                                         <button @click="tvMute"
-                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-slate-400 font-black text-[10px] uppercase hover:text-white">Mute</button>
+                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-slate-400 font-black text-[10px] uppercase hover:text-white">{{
+                                                t('ui_mute', 'Mute') }}</button>
                                     </div>
                                     <div class="grid grid-cols-4 gap-3">
                                         <button @click="setTvVolume(10)"
@@ -3011,7 +3084,7 @@ const registerMasterPassword = () => {
                                     <button @click="activeCasaView = 'main'"
                                         class="absolute -top-4 left-10 text-[10px] font-black text-white px-6 py-2 bg-slate-900 border-2 border-orange-500/40 rounded-full hover:bg-orange-500 hover:text-black transition-all uppercase tracking-widest z-50">
                                         <i class="fa-solid fa-chevron-left mr-2"></i>
-                                        Volver a Casa
+                                        {{ t('ui_back_home', 'Volver a Casa') }}
                                     </button>
 
                                     <div
@@ -3022,7 +3095,7 @@ const registerMasterPassword = () => {
                                         </div>
                                         <div
                                             class="mt-4 px-4 py-1.5 bg-orange-500/10 border border-orange-500/30 rounded-full font-black text-orange-400 text-[10px] tracking-widest uppercase shadow-inner">
-                                            SALA PRINCIPAL</div>
+                                            {{ t('ui_main_room', 'SALA PRINCIPAL') }}</div>
                                     </div>
 
                                     <div class="flex-1 grid grid-cols-6 gap-3">
@@ -3036,34 +3109,44 @@ const registerMasterPassword = () => {
                                             TEMP</button>
                                         <button @click="toggleAcTurbo"
                                             class="h-12 rounded-xl border text-[9px] font-black uppercase transition-all"
-                                            :class="acState.turbo ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-white/5 border-white/5 text-slate-600'">TURBO</button>
+                                            :class="acState.turbo ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-white/5 border-white/5 text-slate-600'">{{
+                                                t('ui_turbo', 'TURBO') }}</button>
                                         <button @click="toggleAcSwing"
                                             class="h-12 rounded-xl border text-[9px] font-black uppercase transition-all"
-                                            :class="acState.swing ? 'bg-purple-500/20 border-purple-500 text-purple-400' : 'bg-white/5 border-white/5 text-slate-600'">SWING</button>
+                                            :class="acState.swing ? 'bg-purple-500/20 border-purple-500 text-purple-400' : 'bg-white/5 border-white/5 text-slate-600'">{{
+                                                t('ui_swing', 'SWING') }}</button>
                                         <button @click="acState.eco = !acState.eco"
                                             class="h-12 rounded-xl border text-[9px] font-black uppercase transition-all"
-                                            :class="acState.eco ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-white/5 border-white/5 text-slate-600'">ECO</button>
+                                            :class="acState.eco ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-white/5 border-white/5 text-slate-600'">{{
+                                                t('ui_eco', 'ECO') }}</button>
                                         <button @click="acState.sleep = !acState.sleep"
                                             class="h-12 rounded-xl border text-[9px] font-black uppercase transition-all"
-                                            :class="acState.sleep ? 'bg-indigo-500/20 border-indigo-500 text-indigo-400' : 'bg-white/5 border-white/5 text-slate-600'">SLEEP</button>
+                                            :class="acState.sleep ? 'bg-indigo-500/20 border-indigo-500 text-indigo-400' : 'bg-white/5 border-white/5 text-slate-600'">{{
+                                                t('ui_sleep', 'SLEEP') }}</button>
 
                                         <button @click="setAcMode('cool')"
                                             class="h-10 rounded-lg border text-[8px] font-black uppercase transition-all"
-                                            :class="acState.mode === 'cool' ? 'bg-blue-600/30 border-blue-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">COOL</button>
+                                            :class="acState.mode === 'cool' ? 'bg-blue-600/30 border-blue-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{
+                                                t('ui_cool', 'COOL') }}</button>
                                         <button @click="setAcMode('heat')"
                                             class="h-10 rounded-lg border text-[8px] font-black uppercase transition-all"
-                                            :class="acState.mode === 'heat' ? 'bg-orange-600/30 border-orange-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">HEAT</button>
+                                            :class="acState.mode === 'heat' ? 'bg-orange-600/30 border-orange-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{
+                                                t('ui_heat', 'HEAT') }}</button>
                                         <button @click="setAcMode('dry')"
                                             class="h-10 rounded-lg border text-[8px] font-black uppercase transition-all"
-                                            :class="acState.mode === 'dry' ? 'bg-teal-600/30 border-teal-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">DRY</button>
+                                            :class="acState.mode === 'dry' ? 'bg-teal-600/30 border-teal-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{
+                                                t('ui_dry', 'DRY') }}</button>
                                         <button @click="setAcMode('fan')"
                                             class="h-10 rounded-lg border text-[8px] font-black uppercase transition-all"
-                                            :class="acState.mode === 'fan' ? 'bg-slate-700 border-white/30 text-white' : 'bg-white/5 border-white/5 text-slate-700'">FAN</button>
+                                            :class="acState.mode === 'fan' ? 'bg-slate-700 border-white/30 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{
+                                                t('ui_fan', 'FAN') }}</button>
                                         <button @click="toggleAcDisplay"
                                             class="h-10 rounded-lg border text-[8px] font-black uppercase transition-all"
-                                            :class="acState.display ? 'bg-cyan-900/30 border-cyan-700 text-white' : 'bg-white/5 border-white/5 text-slate-700'">DISPLAY</button>
+                                            :class="acState.display ? 'bg-cyan-900/30 border-cyan-700 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{
+                                                t('ui_display', 'DISPLAY') }}</button>
                                         <button
-                                            class="h-10 rounded-lg bg-white/5 border border-white/5 text-[8px] font-black text-slate-700 uppercase">TIMER</button>
+                                            class="h-10 rounded-lg bg-white/5 border border-white/5 text-[8px] font-black text-slate-700 uppercase">{{
+                                                t('ui_timer', 'TIMER') }}</button>
 
                                         <button @click="toggleAcPower"
                                             class="col-span-6 h-14 rounded-2xl flex items-center justify-center gap-6 transition-all font-black text-xs uppercase tracking-[0.5em] shadow-xl border mt-2"
@@ -3089,12 +3172,12 @@ const registerMasterPassword = () => {
                                     <div class="flex flex-col">
                                         <h3
                                             class="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
-                                            Estado Sistema
+                                            {{ t('ui_sys_status', 'Estado Sistema') }}
                                             <span
                                                 class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_lime]"></span>
                                         </h3>
                                         <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-1">
-                                            Tiempo Activo: {{ systemStats.uptime }}
+                                            {{ t('ui_uptime_label', 'Tiempo Activo:') }} {{ systemStats.uptime }}
                                         </p>
                                     </div>
                                     <i class="fa-solid fa-server text-3xl text-indigo-500/30"></i>
@@ -3115,11 +3198,13 @@ const registerMasterPassword = () => {
                                                     :stroke-dashoffset="2 * Math.PI * 28 * (1 - (systemStats.cpu?.percent || 0) / 100)" />
                                             </svg>
                                             <span class="absolute text-xs font-black text-white">{{
-                                                Math.round(systemStats.cpu?.percent || 0) }}%</span>
+                                                Math.round(systemStats.cpu?.percent || 0)
+                                            }}%</span>
                                         </div>
                                         <span
-                                            class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">CARGA
-                                            CPU</span>
+                                            class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">{{
+                                                t('ui_cpu_load',
+                                                    'CARGA CPU') }}</span>
                                     </div>
 
                                     <!-- RAM Circle -->
@@ -3136,18 +3221,21 @@ const registerMasterPassword = () => {
                                                     :stroke-dashoffset="2 * Math.PI * 28 * (1 - systemStats.ram.percent / 100)" />
                                             </svg>
                                             <span class="absolute text-xs font-black text-white">{{
-                                                Math.round(systemStats.ram.percent) }}%</span>
+                                                Math.round(systemStats.ram.percent)
+                                            }}%</span>
                                         </div>
                                         <span
-                                            class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">USO
-                                            RAM</span>
+                                            class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">{{
+                                                t('ui_ram_usage',
+                                                    'USO RAM') }}</span>
                                     </div>
                                 </div>
 
                                 <div class="z-10 mt-auto pt-4 border-t border-white/5 w-full">
                                     <div class="flex justify-between items-center mb-1">
-                                        <span class="text-[9px] font-bold text-slate-500 uppercase">Almacenamiento
-                                            (Root)</span>
+                                        <span class="text-[9px] font-bold text-slate-500 uppercase">{{ t('ui_storage',
+                                            'Almacenamiento (Root)')
+                                        }}</span>
                                         <span class="text-[9px] font-bold text-white">{{ systemStats.disk.percent
                                         }}%</span>
                                     </div>
@@ -3157,7 +3245,8 @@ const registerMasterPassword = () => {
                                     </div>
                                     <div class="flex justify-between items-center mt-1">
                                         <span class="text-[8px] font-mono text-slate-600 uppercase">{{
-                                            systemStats.disk.free }}GB Libres</span>
+                                            systemStats.disk.free }}{{ t('ui_free',
+                                                'GB Libres') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -3174,18 +3263,20 @@ const registerMasterPassword = () => {
                                         <i class="fa-solid fa-shield-halved text-3xl text-red-500"></i>
                                     </div>
                                     <div>
-                                        <h3 class="text-xl font-black text-white uppercase tracking-tighter">
-                                            Firewall</h3>
+                                        <h3 class="text-xl font-black text-white uppercase tracking-tighter">{{
+                                            t('ui_firewall', 'Firewall') }}
+                                        </h3>
                                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-                                            Protección en Tiempo Real</p>
+                                            {{ t('ui_real_time_protection', 'Protección en Tiempo Real') }}</p>
                                     </div>
                                     <div
                                         class="w-full flex items-center justify-between px-6 py-3 bg-white/5 rounded-2xl border border-white/5 mt-2">
-                                        <span class="text-[9px] font-black text-slate-400 uppercase">Estado</span>
+                                        <span class="text-[9px] font-black text-slate-400 uppercase">{{ t('ui_status',
+                                            'Estado') }}</span>
                                         <span
                                             class="text-[9px] font-black text-emerald-500 uppercase flex items-center gap-2">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                            Activado
+                                            {{ t('ui_enabled', 'Activado') }}
                                         </span>
                                     </div>
                                 </div>
@@ -3195,10 +3286,12 @@ const registerMasterPassword = () => {
                                     <i class="fa-solid fa-radar text-red-400 text-lg group-hover/btn:animate-spin"></i>
                                     <div class="flex flex-col items-start leading-none">
                                         <span
-                                            class="text-[9px] font-black text-red-300 uppercase tracking-[0.2em] mb-1">Acceder
-                                            a</span>
-                                        <span
-                                            class="text-sm font-black text-white uppercase tracking-wider">CENTINELA</span>
+                                            class="text-[9px] font-black text-red-300 uppercase tracking-[0.2em] mb-1">{{
+                                                t('ui_access',
+                                                    'Acceder a') }}</span>
+                                        <span class="text-sm font-black text-white uppercase tracking-wider">{{
+                                            t('ui_sentinel', 'CENTINELA')
+                                        }}</span>
                                     </div>
                                 </button>
                             </div>
@@ -3214,8 +3307,8 @@ const registerMasterPassword = () => {
                                             class="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">
                                             Fina</h3>
                                         <span
-                                            class="text-[10px] font-bold text-cyan-400 tracking-[0.4em] uppercase mt-2">Personal
-                                            Assistant</span>
+                                            class="text-[10px] font-bold text-cyan-400 tracking-[0.4em] uppercase mt-2">{{
+                                                t('ui_personal_assistant', 'Personal Assistant') }}</span>
                                     </div>
                                     <div class="flex items-center gap-4">
                                         <i class="fa-solid fa-bell text-slate-500 relative cursor-pointer">
@@ -3234,7 +3327,7 @@ const registerMasterPassword = () => {
                                         class="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-[35px] p-6 shadow-2xl space-y-4">
                                         <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
                                             <i class="fa-solid fa-bell text-cyan-400"></i>
-                                            Recordatorios
+                                            {{ t('ui_reminders', 'Recordatorios') }}
                                         </h4>
                                         <div class="space-y-4">
                                             <div v-for="(reminder, index) in userData.reminders" :key="index"
@@ -3245,14 +3338,14 @@ const registerMasterPassword = () => {
                                                     'border-pink-500/50': index % 3 === 2
                                                 }">
                                                 <span class="text-[11px] font-bold text-white">{{ reminder.task
-                                                    }}</span>
+                                                }}</span>
                                                 <span
                                                     class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{
                                                         reminder.time }}</span>
                                             </div>
                                             <div v-if="!userData.reminders || userData.reminders.length === 0"
                                                 class="text-[10px] text-slate-600 font-bold uppercase py-4">
-                                                Sin recordatorios pendientes
+                                                {{ t('ui_no_reminders', 'Sin recordatorios pendientes') }}
                                             </div>
                                         </div>
                                     </div>
@@ -3270,7 +3363,7 @@ const registerMasterPassword = () => {
                                         <div class="flex items-center justify-between">
                                             <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
                                                 <i class="fa-solid fa-envelope text-red-500"></i>
-                                                Correos
+                                                {{ t('ui_emails', 'Correos') }}
                                             </h4>
                                             <div @click="fetchRecentEmails"
                                                 class="cursor-pointer transition-all duration-500"
@@ -3299,7 +3392,8 @@ const registerMasterPassword = () => {
                                             <div v-else-if="recentEmails.length === 0"
                                                 class="flex flex-col border-r-2 border-slate-500/50 pr-4 py-1 items-end text-right">
                                                 <span class="text-[11px] font-bold text-slate-400">{{ isFetchingMails ?
-                                                    'Actualizando...' : 'Sin asuntos' }}</span>
+                                                    t('ui_fetching',
+                                                        'Actualizando...') : t('ui_no_subjects', 'Sin asuntos') }}</span>
                                                 <span
                                                     class="text-[9px] text-slate-600 uppercase font-black tracking-widest mt-0.5">FINA
                                                     AL DÍA</span>
@@ -3316,15 +3410,15 @@ const registerMasterPassword = () => {
                                     <div class="flex flex-col gap-1">
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
-                                            Mi Día
-                                            <div class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
+                                            {{ t('ui_my_day', 'Mi Día') }}
                                         </h3>
                                         <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">{{
                                             currentDate }}</span>
                                     </div>
                                     <div class="flex items-center gap-4">
-                                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">3
-                                            Eventos Hoy</span>
+                                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">{{
+                                            t('ui_today_events', '3 Eventos Hoy') }}</span>
+
                                         <i class="fa-solid fa-calendar-day text-slate-500"></i>
                                     </div>
                                 </div>
@@ -3355,10 +3449,11 @@ const registerMasterPassword = () => {
                                                     AM</span>
                                                 <p
                                                     class="text-[10px] text-cyan-200 mt-2 font-bold uppercase tracking-tight">
-                                                    Desarrollo Fina V3
+                                                    {{ t('ui_dev_fina', 'Desarrollo Fina V3') }}
                                                 </p>
-                                                <span class="text-[9px] text-slate-500 font-bold uppercase">Sprint
-                                                    Coding</span>
+                                                <span class="text-[9px] text-slate-500 font-bold uppercase">{{
+                                                    t('ui_sprint_coding', 'Sprint Coding') }}</span>
+
                                             </div>
                                         </div>
 
@@ -3382,10 +3477,11 @@ const registerMasterPassword = () => {
                                                 </div>
                                                 <p
                                                     class="text-[10px] text-purple-200 mt-2 font-bold uppercase tracking-tight">
-                                                    Mantenimiento Server
+                                                    {{ t('ui_server_maint', 'Mantenimiento Server') }}
                                                 </p>
-                                                <span class="text-[9px] text-slate-500 font-bold uppercase">Update
-                                                    Logs</span>
+                                                <span class="text-[9px] text-slate-500 font-bold uppercase">{{
+                                                    t('ui_update_logs', 'Update Logs') }}</span>
+
                                             </div>
                                         </div>
 
@@ -3408,10 +3504,11 @@ const registerMasterPassword = () => {
                                                 </div>
                                                 <p
                                                     class="text-[10px] text-pink-200 mt-2 font-bold uppercase tracking-tight">
-                                                    Deploy Producción
+                                                    {{ t('ui_prod_deploy', 'Deploy Producción') }}
                                                 </p>
-                                                <span
-                                                    class="text-[9px] text-slate-500 font-bold uppercase">Release</span>
+                                                <span class="text-[9px] text-slate-500 font-bold uppercase">{{
+                                                    t('ui_release', 'Release')
+                                                }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -3422,10 +3519,13 @@ const registerMasterPassword = () => {
                             <div
                                 class="w-full max-w-7xl bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-[40px] p-8 shadow-2xl shrink-0">
                                 <div class="flex items-center justify-between mb-6">
-                                    <h4 class="text-sm font-black text-white uppercase tracking-[0.2em]">Comunicación
+                                    <h4 class="text-sm font-black text-white uppercase tracking-[0.2em]">{{
+                                        t('ui_communication',
+                                            'Comunicación') }}
                                     </h4>
                                     <div class="flex items-center gap-2">
-                                        <span class="text-[9px] font-black text-slate-500">SÍNC.</span>
+                                        <span class="text-[9px] font-black text-slate-500">{{ t('ui_sync', 'SÍNC.')
+                                        }}</span>
                                         <i class="fa-solid fa-arrows-rotate text-[10px] text-emerald-400"></i>
                                     </div>
                                 </div>
@@ -3437,10 +3537,12 @@ const registerMasterPassword = () => {
                                             <i class="fa-solid fa-comment-dots text-3xl"></i>
                                         </div>
                                         <div class="flex flex-col">
-                                            <span class="text-sm font-black text-white uppercase">Mensajería</span>
+                                            <span class="text-sm font-black text-white uppercase">{{ t('ui_messaging',
+                                                'Mensajería') }}</span>
                                             <span
                                                 class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate max-w-[120px]">{{
-                                                    linkedMobileDevice ? linkedMobileDevice.name : 'Vincular App' }}</span>
+                                                    linkedMobileDevice ? linkedMobileDevice.name : t('ui_link_app',
+                                                        'Vincular App') }}</span>
                                         </div>
                                     </div>
                                     <div @click="handleCallClick"
@@ -3450,10 +3552,12 @@ const registerMasterPassword = () => {
                                             <i class="fa-solid fa-phone-flip text-2xl"></i>
                                         </div>
                                         <div class="flex flex-col">
-                                            <span class="text-sm font-black text-white uppercase">Llamada</span>
+                                            <span class="text-sm font-black text-white uppercase">{{ t('ui_call',
+                                                'Llamada') }}</span>
                                             <span
                                                 class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate max-w-[120px]">{{
-                                                    linkedMobileDevice ? linkedMobileDevice.name : 'Vincular' }}</span>
+                                                    linkedMobileDevice ? linkedMobileDevice.name : t('ui_link', 'Vincular')
+                                                }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -3549,8 +3653,7 @@ const registerMasterPassword = () => {
 
                                     <div class="mt-8 mb-10 px-4">
                                         <h2 class="text-xl font-black text-white uppercase tracking-tighter">
-                                            {{
-                                                activeSettingsDomain }}</h2>
+                                            {{ activeSettingsDomain }}</h2>
                                         <p class="text-[9px] font-black text-cyan-500 uppercase tracking-widest mt-1">
                                             Configuración</p>
                                     </div>
@@ -3693,7 +3796,7 @@ const registerMasterPassword = () => {
                                                         Core: </span>
                                                     <span
                                                         class="text-[10px] font-black text-white uppercase tracking-widest">{{
-                                                            ergenStatus }}</span>
+                                                            t('ui_local_infra', 'Infraestructura Local') }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -3745,17 +3848,19 @@ const registerMasterPassword = () => {
                                                     <div class="flex items-center gap-6 justify-center">
                                                         <div class="flex flex-col items-center">
                                                             <span class="text-4xl font-black text-white leading-none">{{
-                                                                neuralActivity }}%</span>
+                                                                neuralActivity
+                                                            }}%</span>
                                                             <span
-                                                                class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-2">Actividad
-                                                                Neural</span>
+                                                                class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-2">{{
+                                                                    t('ui_neural_activity', 'Actividad Neural') }}</span>
                                                         </div>
                                                         <div class="w-px h-10 bg-white/10"></div>
                                                         <div class="flex flex-col items-center">
                                                             <span
                                                                 class="text-4xl font-black text-white leading-none">V3.2</span>
                                                             <span
-                                                                class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-2">Revisión
+                                                                class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-2">{{
+                                                                    t('ui_revision', 'Revisión') }}
                                                                 Matrix</span>
                                                         </div>
                                                     </div>
@@ -3770,9 +3875,9 @@ const registerMasterPassword = () => {
                                                     <div
                                                         class="p-6 border-b border-white/5 flex items-center justify-between bg-white/5">
                                                         <span
-                                                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Flujo
-                                                            de
-                                                            Pensamiento</span>
+                                                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{
+                                                                t('ui_thought_stream', 'Flujo de') }}
+                                                            {{ t('ui_migrated_core', 'Migración Core') }}</span>
                                                         <div class="flex gap-1">
                                                             <div
                                                                 class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse">
@@ -3800,18 +3905,18 @@ const registerMasterPassword = () => {
                                                     class="bg-gradient-to-br from-indigo-900/40 to-slate-900/60 p-8 rounded-[40px] border border-indigo-500/20 relative group overflow-hidden">
                                                     <div class="flex flex-col gap-4 relative z-10">
                                                         <span
-                                                            class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Modelo
-                                                            Base
-                                                            Activo</span>
+                                                            class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{{
+                                                                t('ui_active_base_model', 'Modelo Base Activo') }}</span>
                                                         <h4
                                                             class="text-2xl font-black text-white italic tracking-tighter">
                                                             {{ activeModel }}</h4>
                                                         <div class="flex items-center gap-2 mt-2">
                                                             <span
-                                                                class="px-2 py-0.5 bg-indigo-600 text-[8px] font-black text-white rounded uppercase">Ultra-Low
-                                                                Latency</span>
+                                                                class="px-2 py-0.5 bg-indigo-600 text-[8px] font-black text-white rounded uppercase">{{
+                                                                    t('ui_ultra_low_latency', 'Ultra-Low Latency') }}</span>
                                                             <span
-                                                                class="px-2 py-0.5 bg-white/10 text-[8px] font-black text-indigo-300 rounded uppercase">Self-Optimizing</span>
+                                                                class="px-2 py-0.5 bg-white/10 text-[8px] font-black text-indigo-300 rounded uppercase">{{
+                                                                    t('ui_self_optimizing', 'Self-Optimizing') }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -3834,14 +3939,13 @@ const registerMasterPassword = () => {
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">Nivel
-                                                        de Inteligencia</span>
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{
+                                                            t('ui_intelligence_level', 'Nivel de Inteligencia') }}</span>
                                                     <div v-for="(label, key) in { GITHUB_TOKEN: 'Mistral (GH Token)', OPENAI_API_KEY: 'OpenAI API Key', ELEVENLABS_API_KEY: 'ElevenLabs SDK', FINA_VOICE_ID: 'ElevenLabs Voice ID' }"
                                                         :key="key" class="space-y-2">
                                                         <label
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                                label
-                                                            }}</label>
+                                                                label }}</label>
                                                         <div class="relative">
                                                             <input
                                                                 :type="showPass[key.toLowerCase().split('_')[0]] ? 'text' : 'password'"
@@ -3860,20 +3964,20 @@ const registerMasterPassword = () => {
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">Servicio
-                                                        de Mensajería</span>
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{
+                                                            t('ui_messaging_service', 'Servicio de Mensajería') }}</span>
                                                     <div class="space-y-6">
                                                         <div class="space-y-2">
                                                             <label
-                                                                class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">Email
-                                                                Usuario</label>
+                                                                class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
+                                                                    t('ui_email_user', 'Email Usuario') }}</label>
                                                             <input type="text" v-model="userSettings.apis.EMAIL_USER"
                                                                 class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs font-mono focus:border-indigo-500 outline-none transition-all" />
                                                         </div>
                                                         <div class="space-y-2">
                                                             <label
-                                                                class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">Password
-                                                                Aplicación</label>
+                                                                class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
+                                                                    t('ui_app_password', 'Password Aplicación') }}</label>
                                                             <div class="relative">
                                                                 <input :type="showPass.email ? 'text' : 'password'"
                                                                     v-model="userSettings.apis.EMAIL_PASSWORD"
@@ -3891,15 +3995,20 @@ const registerMasterPassword = () => {
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">Modelos
-                                                        & Heurísticas</span>
-                                                    
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{
+                                                            t('ui_models_heuristics', 'Modelos & Heurísticas') }}</span>
+
                                                     <div class="space-y-2">
-                                                        <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">Idioma Universal (Voz y Escucha)</label>
+                                                        <label
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
+                                                                t('ui_universal_language', 'Idioma Universal (Voz y Escucha)') }}</label>
+
                                                         <select v-model="userSettings.apis.FINA_LANGUAGE"
                                                             @change="() => notifyFina('REQUIERE REINICIO PARA APLICAR IDIOMA')"
                                                             class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs font-black text-indigo-300 focus:border-indigo-500 outline-none transition-all appearance-none cursor-pointer">
-                                                            <option value="" disabled>Seleccione un idioma...</option>
+                                                            <option value="" disabled>{{ t('ui_select_language',
+                                                                'Seleccione un idioma...') }}
+                                                            </option>
                                                             <option value="es">Español (Recomendado)</option>
                                                             <option value="en">Inglés (English)</option>
                                                             <option value="fr">Francés (Français)</option>
@@ -3907,15 +4016,17 @@ const registerMasterPassword = () => {
                                                             <option value="ja">Japonés (日本語)</option>
                                                             <option value="zh">Chino (中文)</option>
                                                         </select>
-                                                        <p class="text-[9px] text-slate-500 italic px-2">Fina descargará automáticamente los modelos en el próximo inicio.</p>
+                                                        <p class="text-[9px] text-slate-500 italic px-2">{{
+                                                            t('ui_language_download_hint', 'Fina descargará automáticamente los modelos en el próximo   
+
+                                                            inicio.') }}</p>
                                                     </div>
 
-                                                    <div v-for="(label, key) in { VOICE_MODELS_PATH: 'Carpeta de Voces Custom (Opcional)', VOSK_MODEL_PATH: 'Modelo Vosk Custom (Opcional)' }"
+                                                    <div v-for="(label, key) in { VOICE_MODELS_PATH: t('ui_custom_voices_folder_opt', 'Carpeta de Voces Custom (Opcional)'), VOSK_MODEL_PATH: t('ui_custom_vosk_model_opt', 'Modelo Vosk Custom (Opcional)') }"
                                                         :key="key" class="space-y-2">
                                                         <label
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                                label
-                                                            }}</label>
+                                                                label }}</label>
                                                         <input type="text" v-model="userSettings.apis[key]"
                                                             placeholder="Ej: /home/usuario/voces/"
                                                             class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs font-mono focus:border-indigo-500 outline-none transition-all" />
@@ -3926,14 +4037,13 @@ const registerMasterPassword = () => {
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">Sensores
-                                                        Externos</span>
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{
+                                                            t('ui_external_sensors', 'Sensores Externos') }}</span>
                                                     <div v-for="(label, key) in { WEATHER_API_KEY: 'OpenWeather Map', WEATHER_CITY_ID: 'Ciudad ID (Weather)', NEWS_API_KEY: 'NewsAPI.org' }"
                                                         :key="key" class="space-y-2">
                                                         <label
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                                label
-                                                            }}</label>
+                                                                label }}</label>
                                                         <div class="relative">
                                                             <input
                                                                 :type="key.includes('KEY') && !showPass[key.toLowerCase().split('_')[0]] ? 'password' : 'text'"
@@ -3954,14 +4064,13 @@ const registerMasterPassword = () => {
                                                 <div
                                                     class="p-10 bg-indigo-500/5 rounded-[40px] border border-indigo-500/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-indigo-500/10 pb-4 italic">Heurísticas
-                                                        de Sistema</span>
-                                                    <div v-for="(label, key) in { VOICE_MODELS_PATH: 'Ruta Modelos Voz', VOSK_MODEL_PATH: 'Ruta Vosk (Local)' }"
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-indigo-500/10 pb-4 italic">{{
+                                                            t('ui_system_heuristics', 'Heurísticas de Sistema') }}</span>
+                                                    <div v-for="(label, key) in { VOICE_MODELS_PATH: t('ui_voice_models_path_label', 'Ruta Modelos Voz'), VOSK_MODEL_PATH: t('ui_vosk_path_label', 'Ruta Vosk (Local)') }"
                                                         :key="key" class="space-y-2">
                                                         <label
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                                label
-                                                            }}</label>
+                                                                label }}</label>
                                                         <input type="text" v-model="userSettings.apis[key]"
                                                             class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-[10px] font-mono focus:border-indigo-500 outline-none transition-all" />
                                                     </div>
@@ -3971,14 +4080,14 @@ const registerMasterPassword = () => {
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">Generadores
-                                                        Generativos</span>
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{
+                                                            t('ui_generative_generators', 'Generadores Generativos')
+                                                        }}</span>
                                                     <div v-for="(label, key) in { UNSPLASH_ACCESS_KEY: 'Unsplash Access Key', UNSPLASH_SECRET_KEY: 'Unsplash Secret Key', RUNAWAY_API_KEY: 'Runway Gen-2 API' }"
                                                         :key="key" class="space-y-2">
                                                         <label
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                                label
-                                                            }}</label>
+                                                                label }}</label>
                                                         <div class="relative">
                                                             <input
                                                                 :type="showPass[key.toLowerCase().split('_')[0]] ? 'text' : 'password'"
@@ -4015,7 +4124,7 @@ const registerMasterPassword = () => {
                                         <div class="mt-12 pt-10 border-t border-white/5 flex justify-end">
                                             <button @click="saveSettings"
                                                 class="px-16 h-16 bg-gradient-to-r from-indigo-600 to-blue-700 rounded-full font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-indigo-900/40 hover:scale-105 active:scale-95 transition-all text-white">
-                                                GUARDAR CONFIGURACIÓN CORE
+                                                {{ t('ui_save_core', 'GUARDAR CONFIGURACIÓN CORE') }}
                                             </button>
                                         </div>
                                     </div>
@@ -4027,7 +4136,7 @@ const registerMasterPassword = () => {
                                             <h3
                                                 class="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-4 italic text-indigo-400">
                                                 <span class="w-12 h-1 bg-indigo-500 rounded-full"></span>
-                                                Nódulos de Conectividad
+                                                {{ t('ui_connectivity_nodes', 'Nódulos de Conectividad') }}
                                             </h3>
                                             <div class="flex items-center gap-4">
                                                 <!-- BOTÓN MARKET (MOVIDO DESDE AGENDA) -->
@@ -4035,14 +4144,16 @@ const registerMasterPassword = () => {
                                                     class="px-6 py-2 bg-gradient-to-r from-indigo-600/20 to-blue-600/20 hover:from-indigo-600 hover:to-blue-600 border border-indigo-500/30 rounded-full text-white text-[10px] font-black uppercase tracking-widest transition-all group/market">
                                                     <i
                                                         class="fa-solid fa-puzzle-piece mr-2 group-hover/market:rotate-45 transition-transform duration-500"></i>
-                                                    Market de Plugins
+                                                    {{ t('ui_plugin_market', 'Market de Plugins') }}
                                                 </button>
 
                                                 <button @click="scanNetwork" :disabled="isScanningNetwork"
                                                     class="px-6 py-2 bg-indigo-500/10 hover:bg-indigo-500 border border-indigo-500/30 rounded-full text-white text-[10px] font-black uppercase tracking-widest transition-all">
                                                     <i class="fa-solid mr-2 shadow-sm"
                                                         :class="isScanningNetwork ? 'fa-spinner fa-spin' : 'fa-arrows-rotate'"></i>
-                                                    {{ isScanningNetwork ? 'Escaneando...' : 'Escanear Red' }}
+                                                    {{ isScanningNetwork ? t('ui_scanning', 'Escaneando...') :
+                                                        t('ui_scan_network', 'Escanear Red') }}
+
                                                 </button>
                                             </div>
                                         </div>
@@ -4051,8 +4162,8 @@ const registerMasterPassword = () => {
                                             <!-- Panel de Dispositivos Detectados -->
                                             <div class="bg-white/5 rounded-[40px] border border-white/10 p-8">
                                                 <span
-                                                    class="text-[10px] font-black text-indigo-400 uppercase tracking-widest block mb-6 italic">Infraestructura
-                                                    Local</span>
+                                                    class="text-[10px] font-black text-indigo-400 uppercase tracking-widest block mb-6 italic">{{
+                                                        t('ui_local_infra', 'Infraestructura Local') }}</span>
                                                 <div
                                                     class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
                                                     <div v-for="(dev, index) in scannedDevices" :key="index"
@@ -4066,8 +4177,8 @@ const registerMasterPassword = () => {
                                                                 </div>
                                                                 <div class="flex flex-col">
                                                                     <span class="text-xs font-black text-slate-200">{{
-                                                                        dev.assignedName || dev.vendor ||
-                                                                        'Nodo Desconocido' }}</span>
+                                                                        dev.assignedName ||
+                                                                        dev.vendor || 'Nodo Desconocido' }}</span>
                                                                     <span
                                                                         class="text-[9px] font-mono text-slate-500 uppercase tracking-widest">{{
                                                                             dev.ip }}</span>
@@ -4102,16 +4213,18 @@ const registerMasterPassword = () => {
                                                                 <div class="grid grid-cols-2 gap-4">
                                                                     <div class="space-y-1">
                                                                         <label
-                                                                            class="text-[8px] font-black text-slate-500 uppercase ml-2">Nombre
-                                                                            Personalizado</label>
+                                                                            class="text-[8px] font-black text-slate-500 uppercase ml-2">{{
+                                                                                t('ui_custom_name', 'Nombre Personalizado')
+                                                                            }}</label>
                                                                         <input type="text" v-model="customDeviceName"
                                                                             placeholder="Ej: Celular Principal"
                                                                             class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold text-white outline-none focus:border-indigo-500 placeholder-slate-600" />
                                                                     </div>
                                                                     <div class="space-y-1">
                                                                         <label
-                                                                            class="text-[8px] font-black text-slate-500 uppercase ml-2">Habitáculo
-                                                                            (Solo TV)</label>
+                                                                            class="text-[8px] font-black text-slate-500 uppercase ml-2">{{
+                                                                                t('ui_room_solo_tv', 'Habitáculo (Solo TV)')
+                                                                            }}</label>
                                                                         <select v-model="customDeviceRoom"
                                                                             class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold text-white outline-none focus:border-indigo-500 appearance-none">
                                                                             <option v-for="room in roomList" :key="room"
@@ -4148,10 +4261,11 @@ const registerMasterPassword = () => {
                                                         class="fa-solid fa-cloud-arrow-down absolute -right-4 -top-4 text-8xl text-indigo-500/10 group-hover:scale-110 transition-transform"></i>
                                                     <h4
                                                         class="text-sm font-black text-white uppercase tracking-widest mb-4">
-                                                        Instalar Nuevos Plugins
+                                                        {{ t('ui_manual_install', 'Instalar Nuevos Plugins') }}
                                                     </h4>
                                                     <div class="relative">
-                                                        <input type="text" placeholder="URL del repositorio o .zip..."
+                                                        <input type="text"
+                                                            :placeholder="t('ui_repo_url_placeholder', 'URL del repositorio o .zip...')"
                                                             class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono">
                                                         <button
                                                             class="absolute right-3 top-3 w-10 h-10 bg-indigo-500 rounded-xl text-white hover:scale-105 transition-transform"><i
@@ -4164,15 +4278,16 @@ const registerMasterPassword = () => {
                                                     class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex items-center justify-between">
                                                     <div class="flex flex-col">
                                                         <span
-                                                            class="text-sm font-black text-white uppercase tracking-widest">Migración
-                                                            Core</span>
+                                                            class="text-sm font-black text-white uppercase tracking-widest">{{
+                                                                t('ui_migrated_core', 'Migración Core') }}</span>
                                                         <span
-                                                            class="text-[10px] text-slate-500 uppercase font-black mt-1">Sincronizar
-                                                            config
-                                                            raíz</span>
+                                                            class="text-[10px] text-slate-500 uppercase font-black mt-1">{{
+                                                                t('ui_sync_root_config', 'Sincronizar config raíz')
+                                                            }}</span>
                                                     </div>
                                                     <button @click="importFromCore"
-                                                        class="px-8 py-3 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl text-indigo-400 text-[10px] font-black uppercase hover:bg-indigo-500 hover:text-white transition-all text-white">Importar</button>
+                                                        class="px-8 py-3 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl text-indigo-400 text-[10px] font-black uppercase hover:bg-indigo-500 hover:text-white transition-all text-white">{{
+                                                            t('ui_import', 'Importar') }}</button>
                                                 </div>
 
                                                 <!-- ADB -->
@@ -4180,14 +4295,14 @@ const registerMasterPassword = () => {
                                                     class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex items-center justify-between">
                                                     <div class="flex flex-col">
                                                         <span
-                                                            class="text-sm font-black text-white uppercase tracking-widest">Depuración
-                                                            ADB</span>
+                                                            class="text-sm font-black text-white uppercase tracking-widest">{{
+                                                                t('ui_adb_debugging', 'Depuración ADB') }}</span>
                                                         <span
-                                                            class="text-[10px] text-slate-500 uppercase font-black mt-1">Reiniciar
-                                                            servidor TV</span>
+                                                            class="text-[10px] text-slate-500 uppercase font-black mt-1">{{
+                                                                t('ui_restart_tv_server', 'Reiniciar servidor TV') }}</span>
                                                     </div>
                                                     <button
-                                                        class="px-8 py-3 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400 text-[10px] font-black uppercase hover:bg-red-500 hover:text-white transition-all text-white text-white">ADB
+                                                        class="px-8 py-3 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400 text-[10px] font-black uppercase hover:bg-red-500 hover:text-white transition-all text-white">ADB
                                                         Kill</button>
                                                 </div>
                                             </div>
@@ -4195,7 +4310,7 @@ const registerMasterPassword = () => {
                                                 class="p-4 mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-2">
                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
                                                 <span class="text-xs font-bold text-red-200 uppercase">{{ mobileHubError
-                                                    }}</span>
+                                                }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4207,7 +4322,7 @@ const registerMasterPassword = () => {
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter mb-6 flex items-center gap-4">
                                             <span class="w-12 h-1 bg-purple-500 rounded-full"></span>
-                                            Configuración Visual: TV
+                                            {{ t('ui_visual_config_tv', 'Configuración Visual: TV') }}
                                         </h3>
 
                                         <!-- Room Selector -->
@@ -4226,21 +4341,19 @@ const registerMasterPassword = () => {
                                                     class="flex items-center justify-between p-6 bg-purple-500/10 rounded-3xl border border-purple-500/20">
                                                     <div class="flex flex-col">
                                                         <span class="text-xs font-black text-white uppercase">TV
-                                                            {{
-                                                                activeTvRoom
-                                                            }}</span>
+                                                            {{ activeTvRoom }}</span>
                                                         <span
-                                                            class="text-[10px] font-black text-purple-400 mt-1 uppercase tracking-widest leading-relaxed">Dispositivo
-                                                            Principal</span>
+                                                            class="text-[10px] font-black text-purple-400 mt-1 uppercase tracking-widest leading-relaxed">{{
+                                                                t('ui_primary_device', 'Dispositivo Principal') }}</span>
                                                         <span v-if="activeTvIp"
                                                             class="text-[9px] font-mono text-emerald-400 mt-1 font-bold">IPV4:
-                                                            {{ activeTvIp
-                                                            }}</span>
+                                                            {{ activeTvIp }}</span>
                                                         <span v-if="activeTvIp"
-                                                            class="text-[9px] font-bold text-emerald-400 mt-1 uppercase">Sincronizado</span>
+                                                            class="text-[9px] font-bold text-emerald-400 mt-1 uppercase">{{
+                                                                t('ui_synced', 'Sincronizado') }}</span>
                                                         <span v-else
-                                                            class="text-[9px] font-bold text-red-500 mt-1 uppercase">Sin
-                                                            Conexión</span>
+                                                            class="text-[9px] font-bold text-red-500 mt-1 uppercase">{{
+                                                                t('ui_no_connection', 'Sin Conexión') }}</span>
                                                     </div>
                                                     <div class="w-3 h-3 rounded-full shadow-[0_0_10px_lime] animate-pulse"
                                                         :class="activeTvIp ? 'bg-green-500' : 'bg-red-500'">
@@ -4249,14 +4362,15 @@ const registerMasterPassword = () => {
 
                                                 <div v-if="activeTvIp && tvStatuses[activeTvIp]" class="space-y-4">
                                                     <span
-                                                        class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-4">Configuración
-                                                        de Apps</span>
+                                                        class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-4">{{
+                                                            t('ui_apps_config', 'Configuración de Apps') }}</span>
                                                     <div class="grid grid-cols-2 gap-4">
                                                         <div v-for="(pkg, app) in userSettings.tv_apps" :key="app"
                                                             class="p-4 bg-white/5 rounded-2xl border border-white/5">
                                                             <span
                                                                 class="text-[9px] font-black text-purple-400 uppercase block mb-1">{{
-                                                                    app }}</span>
+                                                                    app
+                                                                }}</span>
                                                             <span
                                                                 class="text-[8px] font-mono text-slate-400 truncate block">{{
                                                                     pkg }}</span>
@@ -4265,7 +4379,7 @@ const registerMasterPassword = () => {
                                                     <button @click="scanTvApps"
                                                         class="w-full mt-4 py-3 bg-purple-500/10 border border-purple-500/30 rounded-2xl text-[10px] font-black text-purple-400 uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all">
                                                         <i class="fa-solid fa-magnifying-glass mr-2"></i>
-                                                        Escanear Apps Instaladas
+                                                        {{ t('ui_scan_installed_apps', 'Escanear Apps Instaladas') }}
                                                     </button>
                                                 </div>
                                                 <div v-else
@@ -4273,9 +4387,9 @@ const registerMasterPassword = () => {
                                                     <i
                                                         class="fa-solid fa-plug-circle-xmark text-3xl text-slate-600"></i>
                                                     <span
-                                                        class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Conecte
-                                                        el
-                                                        dispositivo para ver apps</span>
+                                                        class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{{
+                                                            t('ui_connect_device_for_apps', 'Conecte el dispositivo para ver apps') }}</span>
+
                                                 </div>
                                             </div>
 
@@ -4301,11 +4415,13 @@ const registerMasterPassword = () => {
                                                             </div>
                                                             <span class="text-xs font-black"
                                                                 :class="isChannelEnabled(name) ? 'text-white' : 'text-slate-500'">{{
-                                                                    name }}</span>
+                                                                    name
+                                                                }}</span>
                                                         </div>
                                                         <span class="text-[9px] font-mono"
                                                             :class="isChannelEnabled(name) ? 'text-purple-400' : 'text-slate-600'">{{
-                                                                num }}</span>
+                                                                num
+                                                            }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -4318,8 +4434,7 @@ const registerMasterPassword = () => {
                                                 </div>
                                                 <span
                                                     class="text-xs font-black text-slate-500 uppercase tracking-[0.3em]">Sin
-                                                    Conexión con {{
-                                                        activeTvRoom }}</span>
+                                                    Conexión con {{ activeTvRoom }}</span>
                                             </div>
                                         </div>
 
@@ -4615,12 +4730,7 @@ const registerMasterPassword = () => {
                                                             <div class="flex items-baseline">
                                                                 <span
                                                                     class="text-2xl font-mono text-white tracking-tighter leading-none">{{
-                                                                        acState.watts
-                                                                            !==
-                                                                            undefined ?
-                                                                            acState.watts
-                                                                            :
-                                                                            '---'
+                                                                        acState.watts !== undefined ? acState.watts : '---'
                                                                     }}</span>
                                                                 <span
                                                                     class="text-xs font-black text-emerald-400/40 ml-2">W</span>
@@ -4635,8 +4745,7 @@ const registerMasterPassword = () => {
                                                             <div class="flex items-baseline">
                                                                 <span
                                                                     class="text-2xl font-black text-red-400/70 tracking-tighter leading-none">{{
-                                                                        acState.total_kwh
-                                                                    }}</span>
+                                                                        acState.total_kwh }}</span>
                                                                 <span
                                                                     class="text-xs font-black text-purple-400/40 ml-1">kWh</span>
                                                             </div>
@@ -4660,23 +4769,20 @@ const registerMasterPassword = () => {
                                                         <span class="text-xs font-black"
                                                             :class="acState.power ? 'text-emerald-500' : 'text-red-500'">{{
                                                                 acState.power ?
-                                                                    'ENCENDIDO' :
-                                                                    'APAGADO' }}</span>
+                                                                    'ENCENDIDO' : 'APAGADO' }}</span>
                                                     </div>
                                                     <div
                                                         class="flex justify-between items-center border-b border-emerald-500/10 pb-2">
                                                         <span
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Temperatura</span>
                                                         <span class="text-xs font-mono font-bold text-white">{{
-                                                            acState.temp
-                                                        }}°C</span>
+                                                            acState.temp }}°C</span>
                                                     </div>
                                                     <div class="flex justify-between items-center">
                                                         <span
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Modo</span>
                                                         <span class="text-xs font-black text-white uppercase">{{
-                                                            acState.mode
-                                                        }}</span>
+                                                            acState.mode }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -4733,7 +4839,8 @@ const registerMasterPassword = () => {
                             <div
                                 class="flex items-center gap-2 bg-cyan-400/10 px-3 py-1 rounded-full border border-cyan-400/20">
                                 <span class="text-[10px] font-mono text-cyan-400 font-bold tracking-widest uppercase">{{
-                                    version }}</span>
+                                    version
+                                }}</span>
                             </div>
                         </div>
                         <div class="p-10 space-y-8">
@@ -4745,8 +4852,7 @@ const registerMasterPassword = () => {
                                 <div class="p-5 bg-white/5 rounded-3xl border border-white/5">
                                     <span
                                         class="text-[9px] font-black text-slate-500 uppercase block mb-1">Creado</span>
-                                    <span class="text-sm font-bold text-slate-200 uppercase">{{
-                                        buildDate }}</span>
+                                    <span class="text-sm font-bold text-slate-200 uppercase">{{ buildDate }}</span>
                                 </div>
                             </div>
                             <p
@@ -4892,8 +4998,8 @@ const registerMasterPassword = () => {
                                 <div
                                     class="inline-flex items-center gap-3 px-6 py-2 bg-red-500/10 border border-red-500/20 rounded-full mb-4">
                                     <div class="w-2 h-2 bg-red-500 rounded-full animate-blink"></div>
-                                    <span class="text-xs font-black text-red-500 uppercase tracking-widest">Escaneando
-                                        Red</span>
+                                    <span class="text-xs font-black text-red-500 uppercase tracking-widest">{{
+                                        t('ui_scanning_network', 'Escaneando Red...') }}</span>
                                 </div>
                                 <h3 class="text-6xl font-black text-white tracking-tighter drop-shadow-2xl">
                                     NIVEL 4</h3>
@@ -4927,36 +5033,35 @@ const registerMasterPassword = () => {
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">CPU</span>
-                                    <span class="text-xl font-black text-white">{{
-                                        Math.round(systemStats.cpu?.percent || 0) }}%</span>
-                                    <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.cpu?.freq
-                                    }} MHz</span>
+                                    <span class="text-xl font-black text-white">{{ Math.round(systemStats.cpu?.percent
+                                        || 0)
+                                    }}%</span>
+                                    <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.cpu?.freq }}
+                                        MHz</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">RAM</span>
-                                    <span class="text-xl font-black text-white">{{ systemStats.ram?.percent
-                                    }}%</span>
-                                    <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.ram?.used
-                                    }} / {{ systemStats.ram?.total }} GB</span>
+                                    <span class="text-xl font-black text-white">{{ systemStats.ram?.percent }}%</span>
+                                    <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.ram?.used }} / {{
+                                        systemStats.ram?.total }} GB</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">DISCO</span>
-                                    <span class="text-xl font-black text-white">{{ systemStats.disk?.percent
-                                    }}%</span>
-                                    <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.disk?.free
-                                    }} GB Libres</span>
+                                    <span class="text-xl font-black text-white">{{ systemStats.disk?.percent }}%</span>
+                                    <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.disk?.free }} GB
+                                        Libres</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">RED
                                         (M)</span>
                                     <div class="flex flex-col items-center leading-none">
-                                        <span class="text-[11px] text-emerald-400 font-bold">↑ {{
-                                            systemStats.net?.sent }} MB</span>
-                                        <span class="text-[11px] text-cyan-400 font-bold">↓ {{
-                                            systemStats.net?.recv }} MB</span>
+                                        <span class="text-[11px] text-emerald-400 font-bold">↑ {{ systemStats.net?.sent
+                                        }} MB</span>
+                                        <span class="text-[11px] text-cyan-400 font-bold">↓ {{ systemStats.net?.recv }}
+                                            MB</span>
                                     </div>
                                 </div>
                             </div>
@@ -5272,7 +5377,7 @@ const registerMasterPassword = () => {
                         <!-- Actions -->
                         <div class="flex flex-col gap-3 relative z-10">
                             <button
-                                @click="showMobileHelpModal = false; if (mobileHelpContext === 'offline') retryMobileConnection()"
+                                @click="showMobileHelpModal = false; mobileHelpContext === 'offline' && retryMobileConnection()"
                                 class="w-full py-4 bg-cyan-500 text-black font-black rounded-2xl hover:bg-cyan-400 transition-all uppercase tracking-widest text-xs">
                                 {{ mobileHelpContext === 'offline' ? 'ENTENDIDO - VERIFICAR CONEXIÓN' : 'ENTENDIDO' }}
                             </button>
@@ -5379,8 +5484,8 @@ const registerMasterPassword = () => {
                                     <h1 class="text-3xl font-black text-white uppercase tracking-tighter">Fina Market
                                     </h1>
                                     <p class="text-xs text-slate-500 font-bold uppercase tracking-[0.3em] mt-1">
-                                        Ecosistema de
-                                        Complementos Modulares</p>
+                                        {{ t('ui_modular_addons_ecosystem', 'Ecosistema de Complementos Modulares') }}
+                                    </p>
                                 </div>
                             </div>
                             <button @click="showMarket = false"
@@ -5402,8 +5507,7 @@ const registerMasterPassword = () => {
                                     </div>
                                 </div>
                                 <p class="text-cyan-400 font-black uppercase tracking-widest animate-pulse">
-                                    Sincronizando con
-                                    Repositorio Central...</p>
+                                    {{ t('ui_syncing_market', 'Sincronizando con Repositorio Central...') }}</p>
                             </div>
 
                             <!-- Plugin Grid -->
@@ -5436,7 +5540,7 @@ const registerMasterPassword = () => {
                                         <button @click="installMarketPlugin(plugin)"
                                             class="flex-1 py-4 bg-cyan-500 text-black font-black rounded-2xl hover:bg-cyan-400 transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2">
                                             <i class="fa-solid fa-download"></i>
-                                            INSTALAR PODER
+                                            {{ t('ui_install_plugin', 'INSTALAR PODER') }}
                                         </button>
                                         <a :href="'https://github.com/dankopetro/Fina-Plugins-Market/tree/main/' + plugin.category + '/' + plugin.path"
                                             target="_blank"
@@ -5450,9 +5554,10 @@ const registerMasterPassword = () => {
 
                         <!-- Footer Info -->
                         <div class="p-6 bg-black/40 border-t border-white/5 text-center shrink-0">
-                            <p class="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">Los plugins se
-                                instalan
-                                automáticamente en la carpeta de ejecución local.</p>
+                            <p class="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">{{
+                                t('ui_plugin_install_hint', 'Los plugins se instalan automáticamente en la carpeta de ejecución   
+
+                                local.') }}</p>
                         </div>
                     </div>
                 </div>
