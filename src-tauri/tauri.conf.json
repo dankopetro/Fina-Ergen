@@ -78,7 +78,6 @@
       "../secondaryClassifier.py",
       "../plugin_manager.py",
       "../fina_plugin_integration.py",
-      "../intents.json",
       "../fina_settings.json",
       "../requirements.txt",
       "../iot/**/*",
