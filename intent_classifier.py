@@ -1,6 +1,8 @@
 import logging
 import json
 import os
+import utils
+
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
@@ -23,10 +25,18 @@ def _initialize_model():
 
     import torch
     from sentence_transformers import SentenceTransformer, util
-    logger.info("⏳ Initializing intent classifier model (this may take a moment)...")
     
-    # Load intents
-    INTENTS_PATH = os.path.join(os.path.dirname(__file__), 'intents.json')
+    lang = utils.get_unified_config("FINA_LANGUAGE", "es")
+    logger.info(f"⏳ Initializing intent classifier ({lang}) model...")
+    
+    # Load intents based on language
+    intents_file = f'intents-{lang}.json'
+    INTENTS_PATH = os.path.join(os.path.dirname(__file__), intents_file)
+    
+    if not os.path.exists(INTENTS_PATH):
+        logger.warning(f"⚠️ {intents_file} not found, falling back to intents-es.json")
+        INTENTS_PATH = os.path.join(os.path.dirname(__file__), 'intents-es.json')
+
     with open(INTENTS_PATH, 'r') as f:
         intents = json.load(f)
 
@@ -44,39 +54,42 @@ def _initialize_model():
 
     # Precompute embeddings (Silencioso)
     phrase_embeddings = embedder.encode(intent_phrases, convert_to_tensor=True, show_progress_bar=False)
-    logger.info("✅ Intent classifier initialized")
+    logger.info(f"✅ Intent classifier initialized ({len(intent_phrases)} phrases)")
 
 def detect_intent(text, confidence_threshold=0.55):
     """Returns (intent, confidence) using semantic similarity"""
     _initialize_model()
     
     text = text.lower().strip()
+    lang = utils.get_unified_config("FINA_LANGUAGE", "es")
 
-    # Regla específica: "noticias" en la tele vs noticias de internet
-    if "noticia" in text:
-        has_tv_word = any(w in text for w in [" tele", " tv", " televisión", " television"])
-        wants_to_watch = "ver las noticias" in text  # ej: "quiero ver las noticias"
-
-        if has_tv_word or wants_to_watch:
-            # Forzar que frases tipo "quiero ver las noticias (en la tele)" vayan a TV
+    # Regla específica: "noticias" vs noticias de internet
+    news_words = ["noticia", "news", "nouvelles", "nachrichten", "ニュース", "新闻"]
+    if any(w in text for w in news_words):
+        tv_words = ["tele", "tv", "televisión", "television", "télé", "fernseher", "テレビ", "电视"]
+        watch_words = ["ver", "watch", "regarder", "sehen", "見る", "看"]
+        
+        if any(w in text for w in tv_words) or any(w in text for w in watch_words):
             return "tv_set_channel", 0.99
         else:
-            # Frases como "dame las noticias", "noticias" sin "tele" van al intent de noticias generales
             return "news", 0.99
             
     # Regla específica: Aire Acondicionado vs TV (Antena de Aire)
-    if "aire" in text:
-        # Si menciona la tele o "ver", probablemente es la entrada de TV
-        if any(w in text for w in ["tele", "tv", "ver", "antena", "entrada"]):
+    ac_words = ["aire", "air", "clim", "klima", "エアコン", "空调"]
+    if any(w in text for w in ac_words):
+        tv_trigger = ["tele", "tv", "ver", "antena", "entrada", "entrée", "input", "テレビ", "电视"]
+        if any(w in text for w in tv_trigger):
             return "tv_set_input", 0.95
-        # "poné el aire", "subí el aire" sin mencionar TV -> Aire Acondicionado (ac_control)
-        # La lógica semántica por defecto suele llevarlo a ac_control, pero podemos forzarlo
-        if any(w in text for w in ["grados", "temperatura", "frío", "calor", "turbo"]):
+        
+        ac_trigger = ["grados", "degrees", "temp", "frío", "calor", "turbo", "cold", "heat", "温度", "冷", "热"]
+        if any(w in text for w in ac_trigger):
             return "ac_control", 0.95
 
-    # Regla específica: Timer (Hardcode para evitar confusión con screenshot)
-    if any(p in text for p in ["avísame en", "avisame en", "timer", "cronómetro", "cuenta regresiva"]):
+    # Regla específica: Timer
+    timer_words = ["avísame en", "avisame en", "timer", "cronómetro", "cuenta regresiva", "minuteur", "timer", "タイマー", "计时器"]
+    if any(p in text for p in timer_words):
         return "start_timer", 1.0
+
     import torch
     from sentence_transformers import SentenceTransformer, util
     query_embedding = embedder.encode(text, convert_to_tensor=True, show_progress_bar=False)

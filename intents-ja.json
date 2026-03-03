@@ -1,0 +1,305 @@
+{
+  "about": [
+    "誰があなたを作りましたか",
+    "あなたのバージョンは何ですか",
+    "finaについて",
+    "システム情報"
+  ],
+  "location_context": [
+    "location context"
+  ],
+  "ac_control": [
+    "エアコンをつけて",
+    "エアコンを消して",
+    "エアコンを24度にして"
+  ],
+  "hangup_doorbell": [
+    "hangup doorbell"
+  ],
+  "exit": [
+    "さようなら",
+    "バイバイ",
+    "寝て",
+    "聞くのをやめて",
+    "静かにして"
+  ],
+  "play_music": [
+    "音楽をかけて",
+    "歌を再生して",
+    "ミュージック",
+    "音楽をお願い"
+  ],
+  "stop_music": [
+    "音楽を止めて",
+    "音楽を消して",
+    "ミュート"
+  ],
+  "pause_music": [
+    "pause music"
+  ],
+  "next_track": [
+    "next track"
+  ],
+  "music_volume_down": [
+    "music volume down"
+  ],
+  "music_volume_up": [
+    "music volume up"
+  ],
+  "shutdown": [
+    "shutdown"
+  ],
+  "restart_pc": [
+    "restart pc"
+  ],
+  "exit_fina": [
+    "exit fina"
+  ],
+  "suspend": [
+    "suspend"
+  ],
+  "sleep": [
+    "sleep"
+  ],
+  "wake_up": [
+    "fina",
+    "起きて",
+    "聞いてる？",
+    "もしもし",
+    "フィナ"
+  ],
+  "read_email": [
+    "read email"
+  ],
+  "send_email": [
+    "send email"
+  ],
+  "web_search": [
+    "ウェブで検索して",
+    "ググって",
+    "ネットで調べて"
+  ],
+  "get_weather": [
+    "天気はどうですか",
+    "天気予報",
+    "雨降る？"
+  ],
+  "weather_tomorrow": [
+    "weather tomorrow"
+  ],
+  "when_will_rain": [
+    "when will rain"
+  ],
+  "yes": [
+    "はい",
+    "了解",
+    "もちろん",
+    "おｋ"
+  ],
+  "change_wallpaper": [
+    "change wallpaper"
+  ],
+  "add_reminder": [
+    "add reminder"
+  ],
+  "list_reminders": [
+    "list reminders"
+  ],
+  "news": [
+    "news"
+  ],
+  "take_screenshot": [
+    "take screenshot"
+  ],
+  "increase_volume": [
+    "increase volume"
+  ],
+  "decrease_volume": [
+    "decrease volume"
+  ],
+  "battery_status": [
+    "battery status"
+  ],
+  "wiki_summary": [
+    "wiki summary"
+  ],
+  "get_ip": [
+    "get ip"
+  ],
+  "get_stats": [
+    "get stats"
+  ],
+  "translate": [
+    "translate"
+  ],
+  "start_timer": [
+    "start timer"
+  ],
+  "joke": [
+    "joke"
+  ],
+  "create_note": [
+    "create note"
+  ],
+  "increase_brightness": [
+    "increase brightness"
+  ],
+  "decrease_brightness": [
+    "decrease brightness"
+  ],
+  "current_datetime": [
+    "current datetime"
+  ],
+  "youtube_search": [
+    "youtube search"
+  ],
+  "find_file": [
+    "find file"
+  ],
+  "clipboard": [
+    "clipboard"
+  ],
+  "convert_currency": [
+    "convert currency"
+  ],
+  "generate_image": [
+    "generate image"
+  ],
+  "delete_notes": [
+    "delete notes"
+  ],
+  "read_pdf": [
+    "read pdf"
+  ],
+  "update_assistant": [
+    "update assistant"
+  ],
+  "greeting": [
+    "greeting"
+  ],
+  "uptime": [
+    "uptime"
+  ],
+  "port_scan": [
+    "port scan"
+  ],
+  "public_ip": [
+    "public ip"
+  ],
+  "wifi_scan": [
+    "wifi scan"
+  ],
+  "save_voice_note": [
+    "save voice note"
+  ],
+  "motivation": [
+    "motivation"
+  ],
+  "battery_saver": [
+    "battery saver"
+  ],
+  "play_ambient": [
+    "play ambient"
+  ],
+  "take_photo": [
+    "take photo"
+  ],
+  "backup_files": [
+    "backup files"
+  ],
+  "download_instagram": [
+    "download instagram"
+  ],
+  "toggle_night_mode": [
+    "toggle night mode"
+  ],
+  "change_voice": [
+    "change voice"
+  ],
+  "open_spotify": [
+    "open spotify"
+  ],
+  "open_app": [
+    "open app"
+  ],
+  "open_audio_editor": [
+    "open audio editor"
+  ],
+  "close_app": [
+    "close app"
+  ],
+  "turn_on_tv": [
+    "turn on tv"
+  ],
+  "turn_off_tv": [
+    "turn off tv"
+  ],
+  "tv_mute": [
+    "tv mute"
+  ],
+  "tv_unmute": [
+    "tv unmute"
+  ],
+  "tv_volume_up": [
+    "tv volume up"
+  ],
+  "tv_volume_down": [
+    "tv volume down"
+  ],
+  "tv_channel_up": [
+    "tv channel up"
+  ],
+  "tv_channel_down": [
+    "tv channel down"
+  ],
+  "tv_open_app": [
+    "tv open app"
+  ],
+  "tv_exit_app": [
+    "tv exit app"
+  ],
+  "tv_set_input": [
+    "tv set input"
+  ],
+  "check_doorbell": [
+    "check doorbell"
+  ],
+  "show_doorbell_camera": [
+    "show doorbell camera"
+  ],
+  "show_doorbell_stream": [
+    "show doorbell stream"
+  ],
+  "tv_set_channel": [
+    "tv set channel"
+  ],
+  "tv_set_volume": [
+    "tv set volume"
+  ],
+  "tv_increase_brightness": [
+    "tv increase brightness"
+  ],
+  "tv_decrease_brightness": [
+    "tv decrease brightness"
+  ],
+  "lights_increase_brightness": [
+    "lights increase brightness"
+  ],
+  "lights_decrease_brightness": [
+    "lights decrease brightness"
+  ],
+  "send_message": [
+    "send message"
+  ],
+  "make_call": [
+    "make call"
+  ],
+  "tv_on": [
+    "テレビをつけて",
+    "テレビオン"
+  ],
+  "tv_off": [
+    "テレビを消して",
+    "テレビオフ"
+  ]
+}

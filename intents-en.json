@@ -1,0 +1,460 @@
+{
+  "about": [
+    "who created you",
+    "who made you",
+    "what version are you",
+    "about fina",
+    "system info",
+    "credits",
+    "developer information",
+    "what is your version",
+    "tell me about yourself"
+  ],
+  "location_context": [
+    "bedroom",
+    "living room",
+    "kitchen",
+    "bathroom",
+    "room",
+    "dining room",
+    "patio",
+    "garden",
+    "laundry"
+  ],
+  "ac_control": [
+    "turn off the ac",
+    "turn on the ac",
+    "set ac to 24 degrees",
+    "turn off the air conditioning",
+    "air conditioning",
+    "ac on",
+    "ac off",
+    "turn up the air",
+    "turn down the heat",
+    "make it cooler",
+    "make it warmer"
+  ],
+  "hangup_doorbell": [
+    "hangup doorbell",
+    "can you hangup doorbell"
+  ],
+  "exit": [
+    "bye",
+    "goodbye",
+    "go to sleep",
+    "stop listening",
+    "silence",
+    "stop",
+    "see you later",
+    "shutdown for now",
+    "peace out",
+    "fina bye"
+  ],
+  "play_music": [
+    "play some music",
+    "start music",
+    "play a song",
+    "start the player",
+    "music please",
+    "play my playlist",
+    "turn on the tunes",
+    "give me some beats",
+    "play some rock",
+    "play something relaxing"
+  ],
+  "stop_music": [
+    "stop the music",
+    "pause the song",
+    "music off",
+    "stop playback",
+    "mute the audio",
+    "be quiet",
+    "stop the noise",
+    "don't play music",
+    "silence music"
+  ],
+  "pause_music": [
+    "pause the music",
+    "pause it",
+    "hold the music",
+    "put it on pause",
+    "break the music"
+  ],
+  "next_track": [
+    "next song",
+    "next track",
+    "skip this song",
+    "play next",
+    "change song",
+    "another one",
+    "next one"
+  ],
+  "music_volume_down": [
+    "music volume down",
+    "can you music volume down"
+  ],
+  "music_volume_up": [
+    "music volume up",
+    "can you music volume up"
+  ],
+  "shutdown": [
+    "shutdown",
+    "can you shutdown"
+  ],
+  "restart_pc": [
+    "restart pc",
+    "can you restart pc"
+  ],
+  "exit_fina": [
+    "exit fina",
+    "can you exit fina"
+  ],
+  "suspend": [
+    "suspend",
+    "can you suspend"
+  ],
+  "sleep": [
+    "sleep",
+    "can you sleep"
+  ],
+  "wake_up": [
+    "fina",
+    "wake up fina",
+    "are you there",
+    "listen to me",
+    "hello assistant",
+    "hey fina",
+    "wake up",
+    "wakey wakey",
+    "are you listening"
+  ],
+  "read_email": [
+    "read email",
+    "can you read email"
+  ],
+  "send_email": [
+    "send email",
+    "can you send email"
+  ],
+  "web_search": [
+    "search the web",
+    "google this",
+    "find this online",
+    "search for info",
+    "look it up",
+    "check on the web",
+    "what does the internet say about",
+    "search google for"
+  ],
+  "get_weather": [
+    "how is the weather",
+    "what's the weather like",
+    "weather forecast",
+    "will it rain today",
+    "is it sunny",
+    "check the weather",
+    "current temperature",
+    "how is it outside"
+  ],
+  "weather_tomorrow": [
+    "weather tomorrow",
+    "can you weather tomorrow"
+  ],
+  "when_will_rain": [
+    "when will rain",
+    "can you when will rain"
+  ],
+  "yes": [
+    "yes",
+    "yeah",
+    "sure",
+    "of course",
+    "okay",
+    "do it",
+    "confirm",
+    "correct",
+    "yep"
+  ],
+  "change_wallpaper": [
+    "change wallpaper",
+    "can you change wallpaper"
+  ],
+  "add_reminder": [
+    "add reminder",
+    "can you add reminder"
+  ],
+  "list_reminders": [
+    "list reminders",
+    "can you list reminders"
+  ],
+  "news": [
+    "news",
+    "can you news"
+  ],
+  "take_screenshot": [
+    "take screenshot",
+    "can you take screenshot"
+  ],
+  "increase_volume": [
+    "increase volume",
+    "can you increase volume"
+  ],
+  "decrease_volume": [
+    "decrease volume",
+    "can you decrease volume"
+  ],
+  "battery_status": [
+    "battery status",
+    "can you battery status"
+  ],
+  "wiki_summary": [
+    "wiki summary",
+    "can you wiki summary"
+  ],
+  "get_ip": [
+    "get ip",
+    "can you get ip"
+  ],
+  "get_stats": [
+    "get stats",
+    "can you get stats"
+  ],
+  "translate": [
+    "translate",
+    "can you translate"
+  ],
+  "start_timer": [
+    "start timer",
+    "can you start timer"
+  ],
+  "joke": [
+    "joke",
+    "can you joke"
+  ],
+  "create_note": [
+    "create note",
+    "can you create note"
+  ],
+  "increase_brightness": [
+    "increase brightness",
+    "can you increase brightness"
+  ],
+  "decrease_brightness": [
+    "decrease brightness",
+    "can you decrease brightness"
+  ],
+  "current_datetime": [
+    "what time is it",
+    "tell me the time",
+    "what day is today",
+    "date and time",
+    "give me the current time"
+  ],
+  "youtube_search": [
+    "youtube search",
+    "can you youtube search"
+  ],
+  "find_file": [
+    "find file",
+    "can you find file"
+  ],
+  "clipboard": [
+    "clipboard",
+    "can you clipboard"
+  ],
+  "convert_currency": [
+    "convert currency",
+    "can you convert currency"
+  ],
+  "generate_image": [
+    "generate image",
+    "can you generate image"
+  ],
+  "delete_notes": [
+    "delete notes",
+    "can you delete notes"
+  ],
+  "read_pdf": [
+    "read pdf",
+    "can you read pdf"
+  ],
+  "update_assistant": [
+    "update assistant",
+    "can you update assistant"
+  ],
+  "greeting": [
+    "greeting",
+    "can you greeting"
+  ],
+  "uptime": [
+    "uptime",
+    "can you uptime"
+  ],
+  "port_scan": [
+    "port scan",
+    "can you port scan"
+  ],
+  "public_ip": [
+    "public ip",
+    "can you public ip"
+  ],
+  "wifi_scan": [
+    "wifi scan",
+    "can you wifi scan"
+  ],
+  "save_voice_note": [
+    "save voice note",
+    "can you save voice note"
+  ],
+  "motivation": [
+    "motivation",
+    "can you motivation"
+  ],
+  "battery_saver": [
+    "battery saver",
+    "can you battery saver"
+  ],
+  "play_ambient": [
+    "play ambient",
+    "can you play ambient"
+  ],
+  "take_photo": [
+    "take photo",
+    "can you take photo"
+  ],
+  "backup_files": [
+    "backup files",
+    "can you backup files"
+  ],
+  "download_instagram": [
+    "download instagram",
+    "can you download instagram"
+  ],
+  "toggle_night_mode": [
+    "toggle night mode",
+    "can you toggle night mode"
+  ],
+  "change_voice": [
+    "change voice",
+    "can you change voice"
+  ],
+  "open_spotify": [
+    "open spotify",
+    "can you open spotify"
+  ],
+  "open_app": [
+    "open app",
+    "can you open app"
+  ],
+  "open_audio_editor": [
+    "open audio editor",
+    "can you open audio editor"
+  ],
+  "close_app": [
+    "close app",
+    "can you close app"
+  ],
+  "turn_on_tv": [
+    "turn on tv",
+    "can you turn on tv"
+  ],
+  "turn_off_tv": [
+    "turn off tv",
+    "can you turn off tv"
+  ],
+  "tv_mute": [
+    "tv mute",
+    "can you tv mute"
+  ],
+  "tv_unmute": [
+    "tv unmute",
+    "can you tv unmute"
+  ],
+  "tv_volume_up": [
+    "tv volume up",
+    "can you tv volume up"
+  ],
+  "tv_volume_down": [
+    "tv volume down",
+    "can you tv volume down"
+  ],
+  "tv_channel_up": [
+    "tv channel up",
+    "can you tv channel up"
+  ],
+  "tv_channel_down": [
+    "tv channel down",
+    "can you tv channel down"
+  ],
+  "tv_open_app": [
+    "tv open app",
+    "can you tv open app"
+  ],
+  "tv_exit_app": [
+    "tv exit app",
+    "can you tv exit app"
+  ],
+  "tv_set_input": [
+    "tv set input",
+    "can you tv set input"
+  ],
+  "check_doorbell": [
+    "check doorbell",
+    "can you check doorbell"
+  ],
+  "show_doorbell_camera": [
+    "show doorbell camera",
+    "can you show doorbell camera"
+  ],
+  "show_doorbell_stream": [
+    "show doorbell stream",
+    "can you show doorbell stream"
+  ],
+  "tv_set_channel": [
+    "tv set channel",
+    "can you tv set channel"
+  ],
+  "tv_set_volume": [
+    "tv set volume",
+    "can you tv set volume"
+  ],
+  "tv_increase_brightness": [
+    "tv increase brightness",
+    "can you tv increase brightness"
+  ],
+  "tv_decrease_brightness": [
+    "tv decrease brightness",
+    "can you tv decrease brightness"
+  ],
+  "lights_increase_brightness": [
+    "lights increase brightness",
+    "can you lights increase brightness"
+  ],
+  "lights_decrease_brightness": [
+    "lights decrease brightness",
+    "can you lights decrease brightness"
+  ],
+  "send_message": [
+    "send message",
+    "can you send message"
+  ],
+  "make_call": [
+    "make call",
+    "can you make call"
+  ],
+  "tv_on": [
+    "turn on the tv",
+    "power on television",
+    "start the tv",
+    "open the television",
+    "tv on",
+    "turn the tv on"
+  ],
+  "tv_off": [
+    "turn off the tv",
+    "power off television",
+    "tv off",
+    "shut down the tv",
+    "fina turn off tv"
+  ]
+}
