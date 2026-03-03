@@ -97,8 +97,15 @@ fi
 PYTHON_BIN="$USER_VENV/bin/python3"
 
 # Si no existe el VENV, informamos al usuario con una ventana (si hay zenity)
+NEEDS_INSTALL=0
+if [ ! -d "$USER_VENV" ] || [ ! -f "$PYTHON_BIN" ]; then
+    NEEDS_INSTALL=1
+elif ! "$PYTHON_BIN" -c "import fastapi, uvicorn, requests, pydantic, resemblyzer" >/dev/null 2>&1; then
+    NEEDS_INSTALL=1
+fi
+
 if [ ! -f "$PYTHON_BIN" ]; then
-    if command -v zenity >/dev/null 2>&1; then
+    if command -v zenity >/dev/null 2>&1 && [ "$NEEDS_INSTALL" -eq 1 ]; then
         zenity --info --title="Fina Ergen" --text="Fina está preparando su 'cerebro' por primera vez.\nEsto tardará unos minutos dependiendo de tu internet.\nNo cierres el proceso para asegurar que la biometría funcione." --width=400 &
     fi
     
@@ -115,7 +122,7 @@ if [ -f "$PYTHON_BIN" ]; then
 
     if [ "$NEEDS_INSTALL" -eq 1 ]; then
         # Instalación con Barra de Progreso si zenity existe
-        if command -v zenity >/dev/null 2>&1; then
+        if command -v zenity >/dev/null 2>&1 && [ ! -f "$HOME/.config/Fina/.installed" ] && [ "$NEEDS_INSTALL" -eq 1 ]; then
             echo "📦 Instalando componentes pesados (Torch, Resemblyzer)..."
             (
                 echo "# Actualizando herramientas base (pip)..."; echo "10"
