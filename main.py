@@ -419,7 +419,7 @@ async def main():
         models_missing = not os.path.exists(DEFAULT_VOICE) or not os.path.exists(vosk_path)
         
         if models_missing:
-            msg_novato = "¡HOLA! NECESITO MIS MODELOS (VER MANUAL)"
+            msg_novato = utils.i18n("novice_alert", "¡HOLA! NECESITO MIS MODELOS (VER MANUAL)")
             update_ui_state("idle", msg_novato)
             print(f"💡 Sugerencia para novatos: Mostrando mensaje de configuración inicial.")
             # Intentar abrir el manual automáticamente solo una vez
@@ -446,9 +446,10 @@ async def main():
             
         if CONFIG_FOUND:
             greeting = get_time_based_greeting()
-            speak(f"{greeting}. Sistemas listos. Diga Fina para empezar.", DEFAULT_VOICE)
+            systems_ready_msg = utils.i18n("systems_ready", "Sistemas listos. Diga Fina para empezar.")
+            speak(f"{greeting}. {systems_ready_msg}", DEFAULT_VOICE)
         else:
-            msg = "Bienvenido. Por favor, consulta el manual para configurarme."
+            msg = utils.i18n("systems_ready", "Bienvenido. Por favor, consulta el manual para configurarme.")
             speak(msg, DEFAULT_VOICE)
             
     except Exception as e:
@@ -496,18 +497,18 @@ async def main():
             if not audio_input:
                 continue
             
-            update_ui_state("listening", "Escuchando...")
+            update_ui_state("listening", utils.i18n("listening", "Escuchando..."))
             command = audio_input.lower()
             intent, confidence = detect_intent(command)
             
             # Verificar wake word con sensibilidad original (para que escuche de lejos)
             if intent == "wake_up" and confidence > 0.6:
                 if not user_is_authenticated:
-                    update_ui_state("authenticating", "Esperando autenticación...")
+                    update_ui_state("authenticating", utils.i18n("auth_waiting", "Esperando autenticación..."))
                     temp_voice_model, _ = get_current_voice_info()
                     if authenticate_user(voice_model=temp_voice_model, speak_func=speak):
                         user_is_authenticated = True
-                        update_ui_state("speaking", "Autenticación Exitosa")
+                        update_ui_state("speaking", utils.i18n("auth_success", "Autenticación Exitosa"))
                         speak("Autenticación Exitosa", temp_voice_model)
                     else:
                         speak("Autenticación fallida.", temp_voice_model)
@@ -538,7 +539,7 @@ async def main():
                 
                 speak("¿Querés que te cuente las noticias?", selected_voice_model)
                 
-                update_ui_state("listening", "Esperando respuesta...")
+                update_ui_state("listening", utils.i18n("waiting_response", "Esperando respuesta..."))
                 response = listen(model, language=sys_lang)
                 if response:
                     intent_response, _ = detect_intent(response.lower())
@@ -591,7 +592,7 @@ async def main():
             current_user = "Administrador" if is_admin else "Invitado"
             print(f"🎤 Hablante: {current_user} (Confianza: {score:.2f})")
             
-            update_ui_state("speaking", "Procesando...")
+            update_ui_state("speaking", utils.i18n("thinking", "Procesando..."))
             commandFinal = command.lower()
 
             # --- CORRECCIÓN INTENCIONES DISCORDANTES ---
@@ -669,7 +670,7 @@ async def main():
                 # Si fallamos 3 veces seguidas (por ruido o incomprensión), nos vamos a dormir.
                 if consecutive_failures >= 3:
                     speak("Estoy aquí por si me necesitas. Descanso.", selected_voice_model)
-                    update_ui_state("idle", "Diga 'Fina' para empezar")
+                    update_ui_state("idle", utils.i18n("idle_msg", "Diga 'Fina' para empezar"))
                     break # ROMPER BUCLE -> Volver a esperar "Fina"
 
                 # Análisis del tipo de fallo para dar feedback adecuado:
@@ -775,7 +776,7 @@ async def main():
                         authenticated = True
                     else:
                         speak("Autenticación fallida totalmente. El sistema permanecerá activo.", selected_voice_model)
-                        update_ui_state("idle", "Diga 'Fina' para empezar")
+                        update_ui_state("idle", utils.i18n("idle_msg", "Diga 'Fina' para empezar"))
                         continue
 
                 if authenticated:
@@ -784,7 +785,7 @@ async def main():
                     sleep_now(selected_voice_model)
                 else:
                     speak("Acceso denegado. El sistema permanecerá activo por seguridad.", selected_voice_model)
-                    update_ui_state("idle", "Diga 'Fina' para empezar")
+                    update_ui_state("idle", utils.i18n("idle_msg", "Diga 'Fina' para empezar"))
                     continue
 
             elif intent == "train_voice":

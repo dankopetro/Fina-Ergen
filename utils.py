@@ -177,6 +177,31 @@ def _ensure_config_exists():
 # Ejecutar migración silenciosa para asegurar que el AppImage tenga algo que leer
 _ensure_config_exists()
 
+# --- I18N SUPPORT ---
+I18N_DATA = {}
+try:
+    lang_path = os.path.join(ERGEN_ROOT, "lang.json")
+    if os.path.exists(lang_path):
+        with open(lang_path, 'r', encoding='utf-8') as f:
+            I18N_DATA = json.load(f)
+except Exception as e:
+    logger.error(f"❌ Error cargando lang.json: {e}")
+
+def get_sys_lang():
+    return get_unified_config("FINA_LANGUAGE", "es")
+
+def i18n(key, fallback=""):
+    lang = get_sys_lang()
+    # Si FINA_LANGUAGE no es uno de los listados en lang.json, usamos 'es'
+    if lang not in I18N_DATA:
+        lang = "es"
+    
+    # Intenta obtener el idioma
+    translations = I18N_DATA.get(lang, {})
+    
+    # Intenta obtener la clave
+    return translations.get(key, fallback)
+
 # --- CONFIGURATION UNIFICATION (UI Priority) ---
 def get_unified_config(key, default=None):
     """Prioriza settings.json (UI) sobre config.py (Código)"""
