@@ -539,34 +539,33 @@ def speak(text, selected_model=None, sink=None, wait=True):
 vosk_error_reported = False
 
 def _download_vosk_model(dest_path):
-    """Descarga y extrae el modelo de Vosk automáticamente"""
+    """Descarga y extrae el modelo de Vosk pequeño en INGLÉS (Universal Fallback) automáticamente"""
     import zipfile
     import requests
     from io import BytesIO
     
-    url = "https://alphacephei.com/vosk/models/vosk-model-small-es-0.42.zip"
+    # Modelo universal fallback: pequeño de inglés, así no ahogamos conexiones de primer mundo y no pesamos 2.4gb
+    url = "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"
     model_dir = os.path.dirname(dest_path) # ~/.config/Fina/model
     
     try:
-        logger.info(f"👂 Fina está preparando su oído (descargando modelo de voz)...")
-        update_ui_state("idle", process="Descargando modelo de voz...")
+        logger.info(f"👂 Fina está logrando una conexión básica de voz cruzada (Universal English Fallback)...")
+        update_ui_state("idle", process="Descargando modelo de voz universal...")
         
         response = requests.get(url, timeout=60)
         if response.status_code == 200:
             with zipfile.ZipFile(BytesIO(response.content)) as zip_ref:
-                # El zip contiene una carpeta con el nombre del modelo
                 zip_ref.extractall(model_dir)
-                # Renombramos si el nombre del zip no coincide exactamente con la carpeta interna
-                # (Vosk small zip suele extraerse como vosk-model-small-es-0.42)
-                extracted_dir = os.path.join(model_dir, "vosk-model-small-es-0.42")
+                
+                extracted_dir = os.path.join(model_dir, "vosk-model-small-en-us-0.15")
                 if os.path.exists(extracted_dir) and extracted_dir != dest_path:
                     if os.path.exists(dest_path): shutil.rmtree(dest_path)
                     os.rename(extracted_dir, dest_path)
                     
-            logger.info("✅ Oído de Fina configurado correctamente.")
+            logger.info("✅ Fallback de oído de Fina descargado.")
             return True
     except Exception as e:
-        logger.error(f"❌ No se pudo descargar el oído (Vosk): {e}")
+        logger.error(f"❌ No se pudo descargar el modelo fallback (Vosk): {e}")
     return False
 
 def load_vosk_model(language="es"):
@@ -576,25 +575,45 @@ def load_vosk_model(language="es"):
     try:
         from vosk import Model, KaldiRecognizer, SetLogLevel
         SetLogLevel(-1)
-        # 1. Buscar en ~/.config/Fina/model/ (Ideal para usuarios de .deb)
-        user_config_path = os.path.join(CONFIG_DIR, "model", "vosk-model-es-0.42")
-        # 2. Buscar en la raíz del proyecto (Modo desarrollo)
-        project_path = os.path.join(ERGEN_ROOT, "model", "vosk-model-es-0.42")
         
-        path = user_config_path if os.path.exists(user_config_path) else project_path
+        # 0. Nombres de modelo a buscar (priorizando español grande si el usuario lo pone, sino fallback a lo que elija lenguaje, sino fallback universal inglés)
+        model_names_to_try = []
+        if language == "es":
+            model_names_to_try = ["vosk-model-es-0.42", "vosk-model-small-es-0.42"]
+        elif language == "en":
+            model_names_to_try = ["vosk-model-en-us-0.22", "vosk-model-small-en-us-0.15"]
         
-        if os.path.exists(path):
-            vosk_model = Model(path)
+        # Siempre añadir fallback universal inglés pase lo que pase si fallan los nativos
+        model_names_to_try.append("vosk-model-small-en-us-0.15")
+
+        loaded_path = None
+        for m_name in model_names_to_try:
+            user_config_path = os.path.join(CONFIG_DIR, "model", m_name)
+            project_path = os.path.join(ERGEN_ROOT, "model", m_name)
+            
+            if os.path.exists(user_config_path):
+                loaded_path = user_config_path
+                break
+            elif os.path.exists(project_path):
+                loaded_path = project_path
+                break
+
+        if loaded_path:
+            vosk_model = Model(loaded_path)
             vosk_recognizer = KaldiRecognizer(vosk_model, 16000)
             loaded_language = language
             vosk_error_reported = False
+            logger.info(f"✅ Vosk cargado desde: {loaded_path}")
         else:
-            # AUTO-DESCARGA SI NO EXISTE
-            logger.info("ℹ️ Modelo no encontrado. Intentando auto-descarga...")
-            if _download_vosk_model(user_config_path):
-                vosk_model = Model(user_config_path)
+            # AUTO-DESCARGA SI NO EXISTE NADA
+            logger.info("ℹ️ Modelo no encontrado. Intentando auto-descargar fallback universal inglés...")
+            # Si forzosamente vamos a descargar el fallback, el path a reemplazar será el del fallback inglés
+            fallback_dest = os.path.join(CONFIG_DIR, "model", "vosk-model-small-en-us-0.15")
+            
+            if _download_vosk_model(fallback_dest):
+                vosk_model = Model(fallback_dest)
                 vosk_recognizer = KaldiRecognizer(vosk_model, 16000)
-                loaded_language = language
+                loaded_language = "en" # Forzamos idioma interno porque descargamos inglés
                 vosk_error_reported = False
             else:
                 if not vosk_error_reported:
