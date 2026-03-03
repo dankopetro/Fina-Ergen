@@ -89,7 +89,7 @@
       "../static/**/*",
       "../tools/**/*",
       "../auth/**/*",
-      "../config/**/*",
+      "../config/contact.json",
       "../docs/**/*"
     ],
     "linux": {
