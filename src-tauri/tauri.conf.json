@@ -75,7 +75,6 @@
       "../fina_api.py",
       "../utils.py",
       "../intent_classifier.py",
-      "../secondaryClassifier.py",
       "../plugin_manager.py",
       "../fina_plugin_integration.py",
       "../intents-*.json",
@@ -88,7 +87,6 @@
       "../plugins/system/**/*",
       "../plugins/web_apps/**/*",
       "../static/**/*",
-      "../tools/**/*",
       "../auth/**/*",
       "../config/contact.json",
       "../docs/**/*"
