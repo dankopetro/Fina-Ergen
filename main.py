@@ -403,8 +403,21 @@ async def main():
 
     try:
         import utils
-        # Obtenemos el idioma principal del usuario
-        sys_lang = utils.get_unified_config("FINA_LANGUAGE", "es")
+        # Obtenemos el idioma principal del usuario (Auto-detección si no existe)
+        sys_lang = utils.get_sys_lang()
+        
+        # En la primera ejecución guardamos el idioma detectado para que la UI lo use
+        if not utils.get_unified_config("FINA_LANGUAGE"):
+            try:
+                if os.path.exists(SETTINGS_PATH):
+                    with open(SETTINGS_PATH, 'r') as f:
+                        data = json.load(f)
+                    if "apis" not in data: data["apis"] = {}
+                    data["apis"]["FINA_LANGUAGE"] = sys_lang
+                    with open(SETTINGS_PATH, 'w') as f:
+                        json.dump(data, f, indent=4)
+                    print(f"🌍 Idioma '{sys_lang.upper()}' auto-detectado y guardado.")
+            except: pass
         
         update_ui_state("idle", "Inicializando sistemas...")
         print("DEBUG: [1] Inicializando Intents...")
@@ -429,8 +442,9 @@ async def main():
             print("⚠️ Vosk no cargado. Funcionamiento limitado.")
             
         # --- VERIFICACIÓN DE MODELOS PARA NOVATOS ---
-        vosk_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "model", "vosk-model-es-0.42")
-        models_missing = not os.path.exists(DEFAULT_VOICE) or not os.path.exists(vosk_path)
+        vosk_model_name, _ = utils.VOSK_MODELS.get(sys_lang, utils.VOSK_MODELS["en"])
+        vosk_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "model", vosk_model_name)
+        models_missing = (not DEFAULT_VOICE or not os.path.exists(DEFAULT_VOICE)) or (not os.path.exists(vosk_path))
         
         if models_missing:
             msg_novato = utils.i18n("novice_alert", "¡HOLA! NECESITO MIS MODELOS (VER MANUAL)")

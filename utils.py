@@ -188,7 +188,24 @@ except Exception as e:
     logger.error(f"❌ Error cargando lang.json: {e}")
 
 def get_sys_lang():
-    return get_unified_config("FINA_LANGUAGE", "en")
+    # 1. Preferencia establecida?
+    lang = get_unified_config("FINA_LANGUAGE")
+    if lang and lang in I18N_DATA:
+        return lang
+        
+    # 2. Detección automática por localizacion del sistema
+    try:    
+        import locale
+        sys_locale, _ = locale.getdefaultlocale()
+        if sys_locale:
+            detected = sys_locale.split('_')[0].lower()
+            if detected in I18N_DATA:
+                return detected
+    except:
+        pass
+        
+    # 3. Fallback: Inglés
+    return "en"
 
 def i18n(key, fallback=""):
     lang = get_sys_lang()
@@ -335,51 +352,83 @@ def send_ui_command(name, payload):
         requests.post("http://127.0.0.1:18000/api/command", json=data, timeout=0.1)
     except: pass
 
-def _download_piper_model_if_missing():
-    """Descarga un modelo de voz pequeño en INGLÉS si no hay ninguno instalado (Fast Startup)."""
+
+PIPER_MODELS = {
+    "es": {
+        "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/carl/medium/es_ES-carl-medium.onnx",
+        "json": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/carl/medium/es_ES-carl-medium.onnx.json",
+        "name": "es_ES-carl-medium.onnx"
+    },
+    "en": {
+        "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/low/en_US-amy-low.onnx",
+        "json": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/low/en_US-amy-low.onnx.json",
+        "name": "en_US-amy-low.onnx"
+    },
+    "fr": {
+        "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/low/fr_FR-siwis-low.onnx",
+        "json": "https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/low/fr_FR-siwis-low.onnx.json",
+        "name": "fr_FR-siwis-low.onnx"
+    },
+    "de": {
+        "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/thorsten/low/de_DE-thorsten-low.onnx",
+        "json": "https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/thorsten/low/de_DE-thorsten-low.onnx.json",
+        "name": "de_DE-thorsten-low.onnx"
+    },
+    "ja": {
+        "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/main/ja/ja_JP/nanami/low/ja_JP-nanami-low.onnx",
+        "json": "https://huggingface.co/rhasspy/piper-voices/resolve/main/ja/ja_JP/nanami/low/ja_JP-nanami-low.onnx.json",
+        "name": "ja_JP-nanami-low.onnx"
+    },
+    "zh": {
+        "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/main/zh/zh_CN/huayan/medium/zh_CN-huayan-medium.onnx",
+        "json": "https://huggingface.co/rhasspy/piper-voices/resolve/main/zh/zh_CN/huayan/medium/zh_CN-huayan-medium.onnx.json",
+        "name": "zh_CN-huayan-medium.onnx"
+    }
+}
+
+def _download_piper_model_if_missing(language=None):
+    """Descarga un modelo de voz pequeño según el idioma detectado/elegido."""
     import requests
+    if not language: language = get_sys_lang()
+    
+    model_info = PIPER_MODELS.get(language, PIPER_MODELS["en"])
+    onnx_url = model_info["onnx"]
+    json_url = model_info["json"]
+    model_name = model_info["name"]
+    
     user_models_dir = os.path.join(CONFIG_DIR, "voice_models")
-    if not os.path.exists(user_models_dir):
-        os.makedirs(user_models_dir, exist_ok=True)
-        
-    onnx_url = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/low/en_US-amy-low.onnx"
-    json_url = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/low/en_US-amy-low.onnx.json"
-    onnx_dest = os.path.join(user_models_dir, "en_US-amy-low.onnx")
-    json_dest = os.path.join(user_models_dir, "en_US-amy-low.onnx.json")
+    if not os.path.exists(user_models_dir): os.makedirs(user_models_dir, exist_ok=True)
+    
+    onnx_dest = os.path.join(user_models_dir, model_name)
+    json_dest = os.path.join(user_models_dir, model_name + ".json")
+    
+    if os.path.exists(onnx_dest): return onnx_dest
     
     try:
-        logger.info(f"🗣️ Descargando modelo de voz inicial pequeño (Inglés)...")
-        update_ui_state("idle", process=f"Descargando Voz Fina... 0%")
+        logger.info(f"🗣️ Descargando modelo de voz inicial ({language})...")
+        update_ui_state("idle", process=f"Descargando Voz: {language.upper()}...")
+        
+        # Download JSON first (Small)
+        json_resp = requests.get(json_url)
+        with open(json_dest, 'wb') as f: f.write(json_resp.content)
         
         # Download ONNX (Large)
         response = requests.get(onnx_url, stream=True)
-        if response.status_code == 200:
-            total_size = int(response.headers.get('content-length', 0))
-            with open(onnx_dest, 'wb') as f:
-                downloaded = 0
-                last_percent = -1
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
-                        downloaded += len(chunk)
-                        if total_size > 0:
-                            percent = int((downloaded / total_size) * 100)
-                            if percent != last_percent and percent % 5 == 0:
-                                update_ui_state("idle", process=f"Descargando Voz Fina... {percent}%")
-                                last_percent = percent
+        total_size = int(response.headers.get('content-length', 0))
+        with open(onnx_dest, 'wb') as f:
+            downloaded = 0
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    if total_size > 0:
+                        percent = int((downloaded / total_size) * 100)
+                        update_ui_state("idle", process=f"Voz {language.upper()}: {percent}%")
         
-        # Download JSON configuration (Small)
-        update_ui_state("idle", process=f"Instalando Voz Fina...")
-        r_json = requests.get(json_url)
-        if r_json.status_code == 200:
-            with open(json_dest, 'wb') as f:
-                f.write(r_json.content)
-                
-        logger.info("✅ Modelo de voz inicial (Amy/Inglés) instalado con éxito.")
-        update_ui_state("idle", process=f"SISTEMA LISTO")
+        update_ui_state("idle", process=i18n("sys_ready_short", "SISTEMA LISTO"))
         return onnx_dest
     except Exception as e:
-        logger.error(f"❌ Error descargando voz inicial: {e}")
+        logger.error(f"❌ Error descarga Piper: {e}")
         return None
 
 # --- VOICE ENGINE (SEQUENTIAL & CONTROLLED) ---
