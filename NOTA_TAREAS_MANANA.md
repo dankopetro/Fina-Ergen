@@ -1,1 +1,0 @@
-Recordatorio para mañana: Mover todos los scripts innecesarios/experimentales de 'scripts/' y otras carpetas fuera del empaquetado y del repositorio (.gitignore), manteniendo únicamente los archivos estrictamente utilizados por Fina (como janitor.py, etc).

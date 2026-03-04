@@ -16,8 +16,10 @@ Este protocolo es de cumplimiento OBLIGATORIO para el Agente AI (Antigravity) ca
 ### 🚀 ¿Qué archivo descargar en cada Release?
 A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás dos formatos de instaladores `.AppImage`:
 
-1.  **📦 fina-ergen_v..._amd64.AppImage (RECOMENDADO)**: Versión reempaquetada y optimizada. Tiene compresión **XZ** (pesa un 35% menos y descarga más rápido). Contiene parches vitales (`libfuse2`) para garantizar que el ícono de la aplicación y la integración de escritorio funcionen perfectamente en sistemas modernos como **Ubuntu 24.04+** y **Linux Mint 22+**.
-2.  **📦 fina-ergen_v..._x86_64.AppImage**: Versión genérica y cruda generada por el compilador de Tauri. Si la primera opción falla en tu distribución, siempre puedes recurrir a esta.
+1.  **📦 fina-ergen_v..._amd64.deb**: Versión para sistemas basados en Debian (Ubuntu/Mint).
+2.  **📦 fina-ergen-v...-1.x86_64.rpm**: Versión nativa para Fedora, CentOS, openSUSE y sistemas basados en RedHat.
+3.  **📦 fina-ergen_v..._patched_amd64.AppImage (RECOMENDADO)**: Versión universal reempaquetada y optimizada. Tiene compresión **XZ** y parches vitales (`libfuse2`) para garantizar integración en sistemas modernos (Ubuntu 24.04+).
+4.  **📦 fina-ergen_v..._amd64.AppImage**: Versión cruda del compilador Tauri. Usar si la opción parcheada falla.
 
 ---
 _Creado con amor por el equipo de Fina Ergen. ¡Gracias por instalar!_ 🤖✨

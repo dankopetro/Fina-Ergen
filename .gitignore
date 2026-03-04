@@ -63,3 +63,4 @@ config/channels.json
 config/channels_telecentro.json
 config/settings.json
 config/contacts_personales.json
+.local_lab/

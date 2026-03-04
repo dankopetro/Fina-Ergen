@@ -68,7 +68,7 @@ jobs:
             Descarga el archivo `.deb` o `.AppImage` e instálalo normalmente. Fina te guiará en el primer arranque.
           releaseDraft: false
           prerelease: false
-          args: --bundles deb
+          args: --bundles deb,rpm
 
       - name: Build Patched AppImage (from Deb)
         run: |
