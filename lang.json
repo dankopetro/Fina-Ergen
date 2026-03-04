@@ -607,7 +607,11 @@
     "msg_voice_mismatch": "Tu voz no coincide con la de Administrador. Acceso denegado.",
     "msg_voice_not_recon_retry": "Voz no reconocida. Reintentando.",
     "ui_system_ready": "SISTEMA LISTO",
-    "ui_fina_description": "Sistema avanzado de asistencia por voz e integración domótica diseñado para Linux (Mac y Windows también)"
+    "ui_fina_description": "Sistema avanzado de asistencia por voz e integración domótica diseñado para Linux (Mac y Windows también)",
+    "sys_greeting_morning": "Buenos Días",
+    "sys_greeting_afternoon": "Buenas Tardes",
+    "sys_greeting_evening": "Buenas Noches",
+    "msg_fina_hello": "Hola"
   },
   "en": {
     "novice_alert": "HELLO! I NEED MY MODELS (SEE MANUAL)",
@@ -1217,7 +1221,11 @@
     "msg_voice_mismatch": "Your voice does not match the Administrator's. Access denied.",
     "msg_voice_not_recon_retry": "Voice not recognized. Retrying.",
     "ui_system_ready": "SYSTEM READY",
-    "ui_fina_description": "Advanced voice assistance and home automation integration system designed for Linux (Mac and Windows too)"
+    "ui_fina_description": "Advanced voice assistance and home automation integration system designed for Linux (Mac and Windows too)",
+    "sys_greeting_morning": "Good Morning",
+    "sys_greeting_afternoon": "Good Afternoon",
+    "sys_greeting_evening": "Good Evening",
+    "msg_fina_hello": "Hello"
   },
   "fr": {
     "novice_alert": "SALUT ! J'AI BESOIN DE MES MODÈLES (VOIR MANUEL)",
@@ -1661,7 +1669,11 @@
     "msg_voice_mismatch": "Your voice does not match the Administrator's. Access denied.",
     "msg_voice_not_recon_retry": "Voice not recognized. Retrying.",
     "ui_system_ready": "SYSTEM READY",
-    "ui_fina_description": "Advanced voice assistance and home automation integration system designed for Linux (Mac and Windows too)"
+    "ui_fina_description": "Advanced voice assistance and home automation integration system designed for Linux (Mac and Windows too)",
+    "sys_greeting_morning": "Bonjour",
+    "sys_greeting_afternoon": "Bon Après-midi",
+    "sys_greeting_evening": "Bonsoir",
+    "msg_fina_hello": "Bonjour"
   },
   "de": {
     "novice_alert": "HALLO! ICH BRAUCHE MEINE MODELLE (SIEHE HANDBUCH)",
@@ -2105,7 +2117,11 @@
     "msg_voice_mismatch": "Your voice does not match the Administrator's. Access denied.",
     "msg_voice_not_recon_retry": "Voice not recognized. Retrying.",
     "ui_system_ready": "SYSTEM READY",
-    "ui_fina_description": "Advanced voice assistance and home automation integration system designed for Linux (Mac and Windows too)"
+    "ui_fina_description": "Advanced voice assistance and home automation integration system designed for Linux (Mac and Windows too)",
+    "sys_greeting_morning": "Guten Morgen",
+    "sys_greeting_afternoon": "Guten Tag",
+    "sys_greeting_evening": "Guten Abend",
+    "msg_fina_hello": "Hallo"
   },
   "ja": {
     "novice_alert": "こんにちは！モデルが必要です（マニュアルを参照してください）",
@@ -2549,7 +2565,11 @@
     "msg_voice_mismatch": "Your voice does not match the Administrator's. Access denied.",
     "msg_voice_not_recon_retry": "Voice not recognized. Retrying.",
     "ui_system_ready": "SYSTEM READY",
-    "ui_fina_description": "Advanced voice assistance and home automation integration system designed for Linux (Mac and Windows too)"
+    "ui_fina_description": "Advanced voice assistance and home automation integration system designed for Linux (Mac and Windows too)",
+    "sys_greeting_morning": "おはようございます",
+    "sys_greeting_afternoon": "こんにちは",
+    "sys_greeting_evening": "こんばんは",
+    "msg_fina_hello": "こんにちは"
   },
   "zh": {
     "novice_alert": "你好！我需要我的模型（请看手册）",
@@ -2993,6 +3013,10 @@
     "msg_voice_mismatch": "Your voice does not match the Administrator's. Access denied.",
     "msg_voice_not_recon_retry": "Voice not recognized. Retrying.",
     "ui_system_ready": "SYSTEM READY",
-    "ui_fina_description": "Advanced voice assistance and home automation integration system designed for Linux (Mac and Windows too)"
+    "ui_fina_description": "Advanced voice assistance and home automation integration system designed for Linux (Mac and Windows too)",
+    "sys_greeting_morning": "早上好",
+    "sys_greeting_afternoon": "下午好",
+    "sys_greeting_evening": "晚上好",
+    "msg_fina_hello": "你好"
   }
 }
