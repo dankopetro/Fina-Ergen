@@ -369,7 +369,10 @@
       "ui_next_event": "Próximo Evento",
       "ui_todo_tasks": "Tareas Pendientes",
       "ui_sys_state_header": "ESTADO DEL SISTEMA"
-    }
+    },
+    "morning_greet": "Buenos días",
+    "afternoon_greet": "Buenas tardes",
+    "night_greet": "Buenas noches"
   },
   "en": {
     "novice_alert": "HELLO! I NEED MY MODELS (SEE MANUAL)",
@@ -741,7 +744,10 @@
       "ui_next_event": "Next Event",
       "ui_todo_tasks": "Pending Tasks",
       "ui_sys_state_header": "SYSTEM STATE"
-    }
+    },
+    "morning_greet": "Good morning",
+    "afternoon_greet": "Good afternoon",
+    "night_greet": "Good night"
   },
   "fr": {
     "novice_alert": "SALUT ! J'AI BESOIN DE MES MODÈLES (VOIR MANUEL)",
@@ -936,7 +942,10 @@
       "ui_next_event": "Next Event",
       "ui_todo_tasks": "Pending Tasks",
       "ui_sys_state_header": "SYSTEM STATE"
-    }
+    },
+    "morning_greet": "Bonjour",
+    "afternoon_greet": "Bon après-midi",
+    "night_greet": "Bonsoir"
   },
   "de": {
     "novice_alert": "HALLO! ICH BRAUCHE MEINE MODELLE (SIEHE HANDBUCH)",
@@ -1131,7 +1140,10 @@
       "ui_next_event": "Next Event",
       "ui_todo_tasks": "Pending Tasks",
       "ui_sys_state_header": "SYSTEM STATE"
-    }
+    },
+    "morning_greet": "Guten Morgen",
+    "afternoon_greet": "Guten Tag",
+    "night_greet": "Guten Abend"
   },
   "ja": {
     "novice_alert": "こんにちは！モデルが必要です（マニュアルを参照してください）",
@@ -1326,7 +1338,10 @@
       "ui_next_event": "Next Event",
       "ui_todo_tasks": "Pending Tasks",
       "ui_sys_state_header": "SYSTEM STATE"
-    }
+    },
+    "morning_greet": "おはようございます",
+    "afternoon_greet": "こんにちは",
+    "night_greet": "こんばんは"
   },
   "zh": {
     "novice_alert": "你好！我需要我的模型（请看手册）",
@@ -1521,6 +1536,9 @@
       "ui_next_event": "Next Event",
       "ui_todo_tasks": "Pending Tasks",
       "ui_sys_state_header": "SYSTEM STATE"
-    }
+    },
+    "morning_greet": "早上好",
+    "afternoon_greet": "下午好",
+    "night_greet": "晚上好"
   }
 }

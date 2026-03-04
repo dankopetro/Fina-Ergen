@@ -184,16 +184,32 @@ try:
     if os.path.exists(lang_path):
         with open(lang_path, 'r', encoding='utf-8') as f:
             I18N_DATA = json.load(f)
+            logger.info(f"🌍 Idiomas cargados: {list(I18N_DATA.keys())}")
+    else:
+        logger.warning("⚠️ lang.json no encontrado en ERGEN_ROOT. Buscando en working directory...")
+        fallback_lang = os.path.join(os.getcwd(), "lang.json")
+        if os.path.exists(fallback_lang):
+             with open(fallback_lang, 'r', encoding='utf-8') as f:
+                I18N_DATA = json.load(f)
+                logger.info("🌍 lang.json cargado desde el directorio de trabajo.")
 except Exception as e:
     logger.error(f"❌ Error cargando lang.json: {e}")
 
 def get_sys_lang():
-    # 1. Preferencia establecida?
+    # 1. Preferencia establecida en la UI?
     lang = get_unified_config("FINA_LANGUAGE")
     if lang and lang in I18N_DATA:
         return lang
         
-    # 2. Detección automática por localizacion del sistema
+    # 2. Detección por variables de entorno (Prioritario en Linux)
+    for env_var in ['LANG', 'LC_ALL', 'LC_CTYPE']:
+        env_val = os.environ.get(env_var, '')
+        if env_val:
+            detected = env_val.split('_')[0].split('.')[0].lower()
+            if detected in I18N_DATA:
+                return detected
+
+    # 3. Detección por módulo locale (Fallback)
     try:    
         import locale
         sys_locale, _ = locale.getdefaultlocale()
@@ -201,10 +217,9 @@ def get_sys_lang():
             detected = sys_locale.split('_')[0].lower()
             if detected in I18N_DATA:
                 return detected
-    except:
-        pass
+    except: pass
         
-    # 3. Fallback: Inglés
+    # 4. Fallback final: Inglés
     return "en"
 
 def i18n(key, fallback=""):
@@ -1610,9 +1625,9 @@ def toggle_night_mode(*args, **kwargs): pass
 def is_code_worthy(*args, **kwargs): return False
 def get_time_based_greeting(*args, **kwargs): 
     h = datetime.now().hour
-    if h < 12: return "Buenos días."
-    if h < 20: return "Buenas tardes."
-    return "Buenas noches."
+    if h < 12: return i18n("morning_greet", "Buenos días")
+    if h < 20: return i18n("afternoon_greet", "Buenas tardes")
+    return i18n("night_greet", "Buenas noches")
 
 def update_assistant_code(*args, **kwargs):
     return "Función de actualización aún no implementada."
