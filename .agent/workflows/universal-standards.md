@@ -7,6 +7,7 @@ Este documento es de lectura OBLIGATORIA antes de cada modificación de código.
 1.  **CERO Rutas Hardcoded**: Nunca uses `/home/claudio`, `/home/admin` o similares.
 2.  **CERO Dependencias Fantasma**: No añadas librerías que no existan en repositorios estándar de Debian/Mint/Fedora sin proveer un script de instalación o binario.
 3.  **CERO Placeholders**: No asumas que un archivo existe en una ruta fija.
+4.  **CERO `linuxdeploy` (Para AppImage)**: Jamás dependas del bundler nativo de Tauri para AppImage ni de utilidades nativas que usen `linuxdeploy`, dado que falla silenciosamente en distribuciones modernas. Para construir `.AppImage` en Github Actions o local, construye SÓLO el paquete de Debian (`npm run tauri build -- --bundles deb`) y luego extrae manualmente el `/usr` del `.deb` para construir un `AppDir` usando `appimagetool`.
 
 ### ✅ MANDATORIO (OBLIGATORIO)
 1.  **Detección Dinámica**: Usa siempre `os.path.dirname(os.path.abspath(__file__))` en Python o `ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"` en Bash.
