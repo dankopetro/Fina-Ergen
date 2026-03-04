@@ -445,9 +445,9 @@ PIPER_MODELS = {
         "name": "de_DE-thorsten-low.onnx"
     },
     "ja": {
-        "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/main/ja/ja_JP/nanami/low/ja_JP-nanami-low.onnx",
-        "json": "https://huggingface.co/rhasspy/piper-voices/resolve/main/ja/ja_JP/nanami/low/ja_JP-nanami-low.onnx.json",
-        "name": "ja_JP-nanami-low.onnx"
+        "onnx": "https://huggingface.co/ayousanz/piper-plus-tsukuyomi-chan/resolve/main/tsukuyomi-wavlm-300epoch.onnx",
+        "json": "https://huggingface.co/ayousanz/piper-plus-tsukuyomi-chan/resolve/main/config.json",
+        "name": "ja_JP-tsukuyomi-medium.onnx"
     },
     "zh": {
         "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/main/zh/zh_CN/huayan/medium/zh_CN-huayan-medium.onnx",
