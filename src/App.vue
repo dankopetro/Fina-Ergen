@@ -3020,8 +3020,7 @@ const registerMasterPassword = () => {
                                                 class="w-full flex flex-col items-center justify-center text-slate-600 py-20">
                                                 <i class="fa-solid fa-ghost text-4xl mb-4 opacity-20"></i>
                                                 <span class="text-[10px] font-black uppercase tracking-[0.3em]">{{
-                                                    t('ui_no_apps', 'No hay apps
-                                                    disponibles') }}</span>
+                                                    t('ui_no_apps', 'No hay apps disponibles') }}</span>
 
                                             </div>
                                         </div>
@@ -3051,8 +3050,7 @@ const registerMasterPassword = () => {
                                         </div>
                                         <span
                                             class="text-[11px] font-black uppercase tracking-[0.4em] text-red-500/50">{{
-                                                t('ui_tv_disconnected', 'TV
-                                            Desconectada') }}</span>
+                                                t('ui_tv_disconnected', 'TV Desconectada') }}</span>
 
                                     </div>
                                 </div>
@@ -3436,8 +3434,7 @@ const registerMasterPassword = () => {
                                     </div>
                                     <div class="flex items-center gap-4">
                                         <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">{{
-                                            t('ui_today_events', '3
-                                            Eventos Hoy') }}</span>
+                                            t('ui_today_events', '3 Eventos Hoy') }}</span>
 
                                         <i class="fa-solid fa-calendar-day text-slate-500"></i>
                                     </div>
@@ -3472,8 +3469,7 @@ const registerMasterPassword = () => {
                                                     {{ t('ui_dev_fina', 'Desarrollo Fina V3') }}
                                                 </p>
                                                 <span class="text-[9px] text-slate-500 font-bold uppercase">{{
-                                                    t('ui_sprint_coding', 'Sprint
-                                                    Coding') }}</span>
+                                                    t('ui_sprint_coding', 'Sprint Coding') }}</span>
 
                                             </div>
                                         </div>
@@ -3501,8 +3497,7 @@ const registerMasterPassword = () => {
                                                     {{ t('ui_server_maint', 'Mantenimiento Server') }}
                                                 </p>
                                                 <span class="text-[9px] text-slate-500 font-bold uppercase">{{
-                                                    t('ui_update_logs', 'Update
-                                                    Logs') }}</span>
+                                                    t('ui_update_logs', 'Update Logs') }}</span>
 
                                             </div>
                                         </div>
@@ -4187,8 +4182,7 @@ const registerMasterPassword = () => {
                                                     <i class="fa-solid mr-2 shadow-sm"
                                                         :class="isScanningNetwork ? 'fa-spinner fa-spin' : 'fa-arrows-rotate'"></i>
                                                     {{ isScanningNetwork ? t('ui_scanning', 'Escaneando...') :
-                                                    t('ui_scan_network', 'Escanear
-                                                    Red') }}
+                                                    t('ui_scan_network', 'Escanear Red') }}
 
                                                 </button>
                                             </div>
@@ -4490,8 +4484,7 @@ const registerMasterPassword = () => {
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter mb-10 flex items-center gap-4">
                                             <span class="w-12 h-1 bg-purple-500 rounded-full"></span> {{
-                                                t('ui_timbre_title', 'Visual: Timbre
-                                            Tuya') }}
+                                                t('ui_timbre_title', 'Visual: Timbre Tuya') }}
                                         </h3>
                                         <div class="space-y-6">
                                             <div class="flex flex-col gap-2">
@@ -4535,8 +4528,7 @@ const registerMasterPassword = () => {
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter mb-10 flex items-center gap-4">
                                             <span class="w-12 h-1 bg-purple-500 rounded-full"></span> {{
-                                                t('ui_lighting_title', 'Visual:
-                                            Iluminación') }}
+                                                t('ui_lighting_title', 'Visual: Iluminación') }}
                                         </h3>
                                         <div class="grid grid-cols-3 gap-6">
                                             <div v-for="luz in ['Living Principal', 'Cocina', 'Dormitorio', 'Pasillo']"
@@ -4557,8 +4549,7 @@ const registerMasterPassword = () => {
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter mb-6 flex items-center gap-4">
                                             <span class="w-12 h-1 bg-red-500 rounded-full"></span> {{
-                                                t('ui_security_title', 'Seguridad Avanzada
-                                            Fina') }}
+                                                t('ui_security_title', 'Seguridad Avanzada Fina') }}
                                         </h3>
 
                                         <!-- TABLA SUPERIOR (Bio, Camaras, Puertas) -->
@@ -4905,9 +4896,7 @@ const registerMasterPassword = () => {
                                     <span class="text-sm font-bold text-slate-200 uppercase">{{ buildDate }}</span>
                                 </div>
                             </div>
-                            {{ t('ui_fina_description', '"Sistema avanzado de asistencia por voz e integración domótica
-                            diseñado
-                            para Linux(Mac y Windows también)"') }}
+                            {{ t('ui_fina_description', '"Sistema avanzado de asistencia por voz e integración domótica diseñado para Linux(Mac y Windows también)"') }}
 
                             <button @click="showCredits = false"
                                 class="w-full h-14 rounded-3xl bg-cyan-500 text-[#020617] font-black text-xs uppercase tracking-widest shadow-xl shadow-cyan-900/30">{{
@@ -5151,9 +5140,7 @@ const registerMasterPassword = () => {
                                 <div class="flex items-center justify-between mb-3">
                                     <span
                                         class="text-xs font-bold text-yellow-500 uppercase tracking-widest flex items-center gap-2">
-                                        <i class="fa-solid fa-triangle-exclamation"></i> {{ t('ui_global_threat_level',
-                                        'Nivel de
-                                        Amenaza Global') }}
+                                        <i class="fa-solid fa-triangle-exclamation"></i> {{ t('ui_global_threat_level', 'Nivel de Amenaza Global') }}
                                     </span>
                                     <span class="text-xs font-black text-white bg-yellow-500/20 px-2 py-0.5 rounded">{{
                                         t('ui_threat_level_elevated', 'ELEVADO') }}</span>
@@ -5326,8 +5313,7 @@ const registerMasterPassword = () => {
                                 {{ t('ui_pair_android', 'Emparejar Android') }} {{ detectedAndroidVersion }}+
                             </h2>
                             <p class="text-slate-400 text-xs font-medium px-4">
-                                {{ t('ui_android_pairing_desc', 'En tu celular, ve a Ajutes > Opciones de
-                                desarrollador...') }}
+                                {{ t('ui_android_pairing_desc', 'En tu celular, ve a Ajutes > Opciones de desarrollador...') }}
                             </p>
                         </div>
 
@@ -5401,12 +5387,9 @@ const registerMasterPassword = () => {
                                 <span
                                     class="w-8 h-8 shrink-0 bg-cyan-500 text-black font-black flex items-center justify-center rounded-xl text-xs">1</span>
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-white">{{ t('ui_physical_connection', 'Conexión
-                                        Física')
+                                    <span class="text-sm font-bold text-white">{{ t('ui_physical_connection', 'Conexión Física')
                                         }}</span>
-                                    <span class="text-xs text-slate-500">{{ t('ui_usb_conn_desc', 'Conecta tu celular a
-                                        la PC usando
-                                        un cable USB de buena calidad.') }}</span>
+                                    <span class="text-xs text-slate-500">{{ t('ui_usb_conn_desc', 'Conecta tu celular a la PC usando un cable USB de buena calidad.') }}</span>
                                 </div>
                             </div>
                             <div v-if="mobileHelpContext === 'offline'"
@@ -5414,13 +5397,9 @@ const registerMasterPassword = () => {
                                 <span
                                     class="w-8 h-8 shrink-0 bg-cyan-500 text-black font-black flex items-center justify-center rounded-xl text-xs">2</span>
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-white">{{ t('ui_unlock_auth', 'Desbloquear y
-                                        Autorizar')
+                                    <span class="text-sm font-bold text-white">{{ t('ui_unlock_auth', 'Desbloquear y Autorizar')
                                         }}</span>
-                                    <span class="text-xs text-slate-500">{{ t('ui_usb_auth_desc', 'Mira la pantalla de
-                                        tu celular.
-                                        Si aparece "Permitir depuración USB", selecciona "Permitir siempre" y dale a
-                                        Aceptar.')
+                                    <span class="text-xs text-slate-500">{{ t('ui_usb_auth_desc', 'Mira la pantalla de tu celular. Si aparece "Permitir depuración USB", selecciona "Permitir siempre" y dale a Aceptar.')
                                         }}</span>
                                 </div>
                             </div>
@@ -5431,9 +5410,7 @@ const registerMasterPassword = () => {
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold text-white">{{ t('ui_config', 'Configuración')
                                         }}</span>
-                                    <span class="text-xs text-slate-500">{{ t('ui_mobile_config_desc', 'Ve a Ajustes >
-                                        Plugins y
-                                        busca el ícono de Celular para añadir un nuevo dispositivo.') }}</span>
+                                    <span class="text-xs text-slate-500">{{ t('ui_mobile_config_desc', 'Ve a Ajustes > Plugins y busca el ícono de Celular para añadir un nuevo dispositivo.') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -5443,8 +5420,7 @@ const registerMasterPassword = () => {
                             <button
                                 @click="showMobileHelpModal = false; mobileHelpContext === 'offline' && retryMobileConnection()"
                                 class="w-full py-4 bg-cyan-500 text-black font-black rounded-2xl hover:bg-cyan-400 transition-all uppercase tracking-widest text-xs">
-                                {{ mobileHelpContext === 'offline' ? t('ui_understood_v_conn', 'ENTENDIDO - VERIFICAR
-                                CONEXIÓN') :
+                                {{ mobileHelpContext === 'offline' ? t('ui_understood_v_conn', 'ENTENDIDO - VERIFICAR CONEXIÓN') :
                                 t('ui_understood', 'ENTENDIDO') }}
                             </button>
                             <button v-if="mobileHelpContext === 'missing'"
@@ -5514,9 +5490,7 @@ const registerMasterPassword = () => {
                         <!-- Info Text -->
                         <div class="p-4 bg-cyan-900/10 border border-cyan-500/20 rounded-2xl z-10">
                             <p class="text-[10px] text-cyan-200 font-medium leading-relaxed">
-                                {{ t('ui_apps_link_desc', 'Al vincular estas aplicaciones, permitirás que Fina te ayude
-                                a leer y
-                                redactar mensajes.Tienes el control total.') }}
+                                {{ t('ui_apps_link_desc', 'Al vincular estas aplicaciones, permitirás que Fina te ayude a leer y redactar mensajes.Tienes el control total.') }}
                             </p>
                         </div>
 
