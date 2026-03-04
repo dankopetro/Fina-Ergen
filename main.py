@@ -130,7 +130,7 @@ from utils import (
     tv_volume_up_cmd, tv_volume_down_cmd, tv_channel_up_cmd, tv_channel_down_cmd, 
     tv_open_app_cmd, tv_exit_app_cmd, tv_set_channel_cmd, tv_mute_cmd, is_tv_on, 
     ensure_tv_is_on,    tv_set_input_cmd, get_doorbell_status_cmd, show_doorbell_image, 
-    show_doorbell_stream, send_ui_command, check_system_dependencies,
+    show_doorbell_stream, send_ui_command, check_system_dependencies, is_code_worthy,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config
 )
 # --- DEFERRED IMPORTS (Lazy Loading to prevent startup crash) ---
@@ -298,9 +298,9 @@ async def resolve_contact_proactive(query, contacts, voice_model, model_for_list
     return None, None
 
 # --- Metadata del Sistema ---
-FINA_VERSION = "Fina Ergen v 3.5.2"
+FINA_VERSION = "Fina Ergen v 3.5.5"
 FINA_AUTHOR = "Dankopetro"
-FINA_CREATED = "el 30 de Enero de 2026 a las 20:07"
+FINA_CREATED = "el 03 de Marzo de 2026 a las 16:15"
 
 # Get the project root directory
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -312,10 +312,11 @@ def get_all_voice_models():
     # Voces embebidas por defecto
     models = {
         "ElevenLabs": "ElevenLabs",
-        "Daniela": os.path.join(PROJECT_ROOT, "voice_models", "es_AR-daniela-high.onnx"),
-        "Claude": os.path.join(PROJECT_ROOT, "voice_models", "es_MX-claude-high.onnx"),
-        "Laura": os.path.join(PROJECT_ROOT, "voice_models", "es_MX-laura-high.onnx"),
-        "Miro": os.path.join(PROJECT_ROOT, "voice_models", "miro_es-ES.onnx"),
+        "Amy (Inglés)": os.path.join(CONFIG_DIR, "voice_models", "en_US-amy-low.onnx"),
+        "Daniela": os.path.join(CONFIG_DIR, "voice_models", "es_AR-daniela-high.onnx"),
+        "Claude": os.path.join(CONFIG_DIR, "voice_models", "es_MX-claude-high.onnx"),
+        "Laura": os.path.join(CONFIG_DIR, "voice_models", "es_MX-laura-high.onnx"),
+        "Miro": os.path.join(CONFIG_DIR, "voice_models", "miro_es-ES.onnx"),
     }
     
     # 1. Buscar en Carpeta de Usuario (~/.config/Fina/voice_models)
@@ -659,12 +660,15 @@ async def main():
                 try: requests.get("http://127.0.0.1:18000/api/shutdown", timeout=0.5)
                 except: pass
                 
-                # 2. Matar todo explícitamente usando cleanup.sh
+                # 2. Matar todo explícitamente usando janitor.py (si existe)
                 try:
-                    print("🔪 Ejecutando purga con Janitor...")
                     janitor_script = os.path.join(PROJECT_ROOT, "scripts", "janitor.py")
-                    python_venv = "python3"
-                    subprocess.run([python_venv, janitor_script], check=False)
+                    if os.path.exists(janitor_script):
+                        print("🔪 Ejecutando purga con Janitor...")
+                        python_venv = "python3"
+                        subprocess.run([python_venv, janitor_script], check=False)
+                    else:
+                        print("⚠️ janitor.py no encontrado, saltando purga estricta.")
                 except Exception as e: 
                     print(f"Error llamando cleanup: {e}")
 

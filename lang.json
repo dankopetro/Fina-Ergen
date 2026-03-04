@@ -209,7 +209,9 @@
     "ui_release": "Release",
     "ui_dev_fina": "Desarrollo Fina V3",
     "ui_server_maint": "Mantenimiento Server",
-    "ui_prod_deploy": "Deploy Producción"
+    "ui_prod_deploy": "Deploy Producción",
+    "ui_sys_online": "Sistemas Ergen V3 en línea.",
+    "ui_first_time": "⚠️ Aviso: Parece que es tu primera vez. Por favor, completa tus credenciales en Ajustes según el manual de instalación."
   },
   "en": {
     "novice_alert": "HELLO! I NEED MY MODELS (SEE MANUAL)",
@@ -421,7 +423,9 @@
     "ui_release": "Release",
     "ui_dev_fina": "Fina V3 Development",
     "ui_server_maint": "Server Maintenance",
-    "ui_prod_deploy": "Production Deploy"
+    "ui_prod_deploy": "Production Deploy",
+    "ui_sys_online": "Ergen V3 Systems online.",
+    "ui_first_time": "⚠️ Notice: It seems this is your first time. Please complete your credentials in Settings according to the installation manual."
   },
   "fr": {
     "novice_alert": "SALUT ! J'AI BESOIN DE MES MODÈLES (VOIR MANUEL)",
@@ -456,7 +460,9 @@
     "doorbell_call": "Appel terminé",
     "screenshot_taken": "Capture d'écran enregistrée",
     "news_ready": "Préparation des nouvelles...",
-    "auth_fail": "Identité non reconnue"
+    "auth_fail": "Identité non reconnue",
+    "ui_sys_online": "Systèmes Ergen V3 en ligne.",
+    "ui_first_time": "⚠️ Avis : Il semble que ce soit votre première fois. Veuillez remplir vos identifiants dans Paramètres selon le manuel."
   },
   "de": {
     "novice_alert": "HALLO! ICH BRAUCHE MEINE MODELLE (SIEHE HANDBUCH)",
@@ -491,7 +497,9 @@
     "doorbell_call": "Anruf beendet",
     "screenshot_taken": "Screenshot gespeichert",
     "news_ready": "Nachrichten vorbereiten...",
-    "auth_fail": "Identität nicht erkannt"
+    "auth_fail": "Identität nicht erkannt",
+    "ui_sys_online": "Ergen V3-Systeme online.",
+    "ui_first_time": "⚠️ Hinweis: Es sieht nach dem ersten Mal aus. Bitte füllen Sie die Zugangsdaten in den Einstellungen nach Handbuch aus."
   },
   "ja": {
     "novice_alert": "こんにちは！モデルが必要です（マニュアルを参照してください）",
@@ -526,7 +534,9 @@
     "doorbell_call": "通話終了",
     "screenshot_taken": "スクリーンショットを保存しました",
     "news_ready": "ニュースの準備中...",
-    "auth_fail": "身元が確認できません"
+    "auth_fail": "身元が確認できません",
+    "ui_sys_online": "Ergen V3 システムがオンラインです。",
+    "ui_first_time": "⚠️ 注意：初めてのご利用のようです。マニュアルに従って、設定に認証情報を入力してください。"
   },
   "zh": {
     "novice_alert": "你好！我需要我的模型（请看手册）",
@@ -561,6 +571,8 @@
     "doorbell_call": "通话结束",
     "screenshot_taken": "截图已保存",
     "news_ready": "准备新闻中...",
-    "auth_fail": "身份无法识别"
+    "auth_fail": "身份无法识别",
+    "ui_sys_online": "Ergen V3 系统在线。",
+    "ui_first_time": "⚠️ 注意：似乎是您第一次使用。请根据手册在设置中完成您的凭证配置。"
   }
 }

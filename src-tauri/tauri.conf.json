@@ -82,6 +82,7 @@
       "../lang.json",
       "../fina_settings.json",
       "../requirements.txt",
+      "../scripts/**/*",
       "../iot/**/*",
       "../plugins/biometria/**/*",
       "../plugins/system/**/*",

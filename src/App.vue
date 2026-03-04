@@ -9,6 +9,27 @@ import {
     sendWhatsAppMessage
 } from "../plugins/web_apps/messaging_simple.js";
 import QRCode from 'qrcode';
+import FinaAvatar from "./components/FinaAvatar.vue";
+import WeatherModule from "./components/WeatherModule.vue";
+import iconAvatar from "./assets/iconoergen.png";
+
+// --- DIAGNÓSTICO DE ERRORES FATALES ---
+window.onerror = function (msg, url, line, col, error) {
+    fetch("http://127.0.0.1:18000/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "error", process: `JS FATAL: ${msg} (${line}:${col})` })
+    }).catch(() => { });
+};
+window.onunhandledrejection = function (e) {
+    let reason = e.reason;
+    if (reason && reason.message) reason = reason.message;
+    fetch("http://127.0.0.1:18000/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "error", process: `PROMISE REJECT: ${reason}` })
+    }).catch(() => { });
+};
 
 // --- TAURI SAFETY WRAPPERS ---
 // V2 detection uses __TAURI_INTERNALS__ or check if window.__TAURI__ is present in some configurations
@@ -78,12 +99,34 @@ const listen = async (event, handler) => {
     }
     return await tauriListen(event, handler);
 };
-import FinaAvatar from "./components/FinaAvatar.vue";
-import WeatherModule from "./components/WeatherModule.vue";
-import iconAvatar from "./assets/iconoergen.png";
 
 // --- STATE ---
 const i18nData = ref({});
+const userSettings = ref({
+    apis: {
+        GITHUB_TOKEN: "",
+        OPENAI_API_KEY: "",
+        ELEVENLABS_API_KEY: "",
+        FINA_VOICE_ID: "",
+        WEATHER_API_KEY: "",
+        WEATHER_CITY_ID: "",
+        NEWS_API_KEY: "",
+        UNSPLASH_ACCESS_KEY: "",
+        RUNAWAY_API_KEY: "",
+        EMAIL_USER: "",
+        EMAIL_PASSWORD: "",
+        VOICE_MODELS_PATH: "",
+        VOSK_MODEL_PATH: "",
+        AC_IP: "",
+        USER_NAME: "Usuario"
+    },
+    tvs: [],
+    devices: [], // Generic devices storage
+    disabled_channels: [],
+    tv_apps: {},
+    linked_apps: []
+});
+
 const t = (key, fallback = "") => {
     const lang = userSettings.value.apis?.FINA_LANGUAGE || "en";
     const translations = i18nData.value[lang] || {};
@@ -138,31 +181,6 @@ const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
 const version = "Fina Ergen v 3.5.5 (03/03/2026 16:15)";
 const buildDate = "Mar 03 Mar 2026 16:15";
-
-const userSettings = ref({
-    apis: {
-        GITHUB_TOKEN: "",
-        OPENAI_API_KEY: "",
-        ELEVENLABS_API_KEY: "",
-        FINA_VOICE_ID: "",
-        WEATHER_API_KEY: "",
-        WEATHER_CITY_ID: "",
-        NEWS_API_KEY: "",
-        UNSPLASH_ACCESS_KEY: "",
-        RUNAWAY_API_KEY: "",
-        EMAIL_USER: "",
-        EMAIL_PASSWORD: "",
-        VOICE_MODELS_PATH: "",
-        VOSK_MODEL_PATH: "",
-        AC_IP: "",
-        USER_NAME: "Usuario"
-    },
-    tvs: [],
-    devices: [], // Generic devices storage
-    disabled_channels: [],
-    tv_apps: {},
-    linked_apps: []
-});
 
 const showOptInModal = ref(false);
 const newDetectedApps = ref([]);
@@ -2035,7 +2053,7 @@ onMounted(async () => {
     // SECUENCIA DE ARRANQUE [BALANCEADA PARA MAXIMIZAR]
     try {
         finaState.value.process = "CARGANDO SISTEMA";
-        addChatMessage("Sistemas Ergen V3 en línea.");
+        addChatMessage(t('ui_sys_online'));
 
         // --- VERIFICACIÓN DE PRIMERA CONFIGURACIÓN ---
         // Esperar 12s: permite que fetchSettings complete sus reintentos (hasta 10s)
@@ -2043,7 +2061,7 @@ onMounted(async () => {
             const criticalKeys = ['MISTRAL_API_KEY', 'OPENAI_API_KEY', 'WEATHER_API_KEY'];
             const isUnconfigured = criticalKeys.every(k => !userSettings.value.apis[k]);
             if (isUnconfigured) {
-                addChatMessage("⚠️ Aviso: Parece que es tu primera vez. Por favor, completa tus credenciales en Ajustes según el manual de instalación.", 0);
+                addChatMessage(t('ui_first_time'), 0);
             }
         }, 12000);
 
@@ -2665,7 +2683,7 @@ const registerMasterPassword = () => {
                             <p class="text-[11px] text-cyan-100 font-medium whitespace-pre-line">
                                 {{ msg.text }}</p>
                             <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{ msg.time
-                                }}</span>
+                            }}</span>
                         </div>
                     </transition-group>
                 </div>
@@ -3199,7 +3217,7 @@ const registerMasterPassword = () => {
                                             </svg>
                                             <span class="absolute text-xs font-black text-white">{{
                                                 Math.round(systemStats.cpu?.percent || 0)
-                                                }}%</span>
+                                            }}%</span>
                                         </div>
                                         <span
                                             class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">{{
@@ -3222,7 +3240,7 @@ const registerMasterPassword = () => {
                                             </svg>
                                             <span class="absolute text-xs font-black text-white">{{
                                                 Math.round(systemStats.ram.percent)
-                                                }}%</span>
+                                            }}%</span>
                                         </div>
                                         <span
                                             class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">{{
@@ -3235,9 +3253,9 @@ const registerMasterPassword = () => {
                                     <div class="flex justify-between items-center mb-1">
                                         <span class="text-[9px] font-bold text-slate-500 uppercase">{{ t('ui_storage',
                                             'Almacenamiento (Root)')
-                                            }}</span>
+                                        }}</span>
                                         <span class="text-[9px] font-bold text-white">{{ systemStats.disk.percent
-                                            }}%</span>
+                                        }}%</span>
                                     </div>
                                     <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                         <div class="h-full bg-gradient-to-r from-cyan-600 to-blue-500 transition-all duration-1000"
@@ -3291,7 +3309,7 @@ const registerMasterPassword = () => {
                                                     'Acceder a') }}</span>
                                         <span class="text-sm font-black text-white uppercase tracking-wider">{{
                                             t('ui_sentinel', 'CENTINELA')
-                                            }}</span>
+                                        }}</span>
                                     </div>
                                 </button>
                             </div>
@@ -3338,7 +3356,7 @@ const registerMasterPassword = () => {
                                                     'border-pink-500/50': index % 3 === 2
                                                 }">
                                                 <span class="text-[11px] font-bold text-white">{{ reminder.task
-                                                    }}</span>
+                                                }}</span>
                                                 <span
                                                     class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{
                                                         reminder.time }}</span>
@@ -3508,7 +3526,7 @@ const registerMasterPassword = () => {
                                                 </p>
                                                 <span class="text-[9px] text-slate-500 font-bold uppercase">{{
                                                     t('ui_release', 'Release')
-                                                    }}</span>
+                                                }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -3525,7 +3543,7 @@ const registerMasterPassword = () => {
                                     </h4>
                                     <div class="flex items-center gap-2">
                                         <span class="text-[9px] font-black text-slate-500">{{ t('ui_sync', 'SÍNC.')
-                                            }}</span>
+                                        }}</span>
                                         <i class="fa-solid fa-arrows-rotate text-[10px] text-emerald-400"></i>
                                     </div>
                                 </div>
@@ -3849,7 +3867,7 @@ const registerMasterPassword = () => {
                                                         <div class="flex flex-col items-center">
                                                             <span class="text-4xl font-black text-white leading-none">{{
                                                                 neuralActivity
-                                                                }}%</span>
+                                                            }}%</span>
                                                             <span
                                                                 class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-2">{{
                                                                     t('ui_neural_activity', 'Actividad Neural') }}</span>
@@ -4311,7 +4329,7 @@ const registerMasterPassword = () => {
                                                 class="p-4 mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-2">
                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
                                                 <span class="text-xs font-bold text-red-200 uppercase">{{ mobileHubError
-                                                    }}</span>
+                                                }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4842,7 +4860,7 @@ const registerMasterPassword = () => {
                                 class="flex items-center gap-2 bg-cyan-400/10 px-3 py-1 rounded-full border border-cyan-400/20">
                                 <span class="text-[10px] font-mono text-cyan-400 font-bold tracking-widest uppercase">{{
                                     version
-                                    }}</span>
+                                }}</span>
                             </div>
                         </div>
                         <div class="p-10 space-y-8">
@@ -5037,7 +5055,7 @@ const registerMasterPassword = () => {
                                     <span class="text-xs font-black text-slate-500 uppercase mb-1">CPU</span>
                                     <span class="text-xl font-black text-white">{{ Math.round(systemStats.cpu?.percent
                                         || 0)
-                                        }}%</span>
+                                    }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.cpu?.freq }}
                                         MHz</span>
                                 </div>
@@ -5061,7 +5079,7 @@ const registerMasterPassword = () => {
                                         (M)</span>
                                     <div class="flex flex-col items-center leading-none">
                                         <span class="text-[11px] text-emerald-400 font-bold">↑ {{ systemStats.net?.sent
-                                            }} MB</span>
+                                        }} MB</span>
                                         <span class="text-[11px] text-cyan-400 font-bold">↓ {{ systemStats.net?.recv }}
                                             MB</span>
                                     </div>

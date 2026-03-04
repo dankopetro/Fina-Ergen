@@ -274,8 +274,37 @@ vosk_model = None
 vosk_recognizer = None
 loaded_language = None
 
+_translation_cache = {}
+
+def auto_translate(text):
+    """Traduce automáticamente los textos de Fina ('es') al idioma del usuario si este no es español."""
+    if not text or not isinstance(text, str):
+        return text
+        
+    lang = get_sys_lang()
+    # Si Fina está en español o si pasamos un texto muy largo (Wiki/Noticias que ya se obtienen en el propio idioma), evitamos traducir.
+    if lang == "es" or len(text) > 300:
+        return text
+        
+    cache_key = f"{lang}:{text[:50]}"
+    if cache_key in _translation_cache:
+        return _translation_cache[cache_key]
+        
+    try:
+        from deep_translator import GoogleTranslator
+        translated = GoogleTranslator(source='es', target=lang).translate(text)
+        _translation_cache[cache_key] = translated
+        return translated
+    except Exception as e:
+        logger.warning(f"Error de traducción en Fina: {e}")
+        _translation_cache[cache_key] = text
+        return text
+
 def update_ui_state(status, process=None, intensity=0.0, extra_payload=None):
     try:
+        if process:
+            process = auto_translate(process)
+
         payload = {"status": status, "process": process, "intensity": intensity}
         if extra_payload: payload.update(extra_payload)
         
@@ -305,6 +334,53 @@ def send_ui_command(name, payload):
         import requests
         requests.post("http://127.0.0.1:18000/api/command", json=data, timeout=0.1)
     except: pass
+
+def _download_piper_model_if_missing():
+    """Descarga un modelo de voz pequeño en INGLÉS si no hay ninguno instalado (Fast Startup)."""
+    import requests
+    user_models_dir = os.path.join(CONFIG_DIR, "voice_models")
+    if not os.path.exists(user_models_dir):
+        os.makedirs(user_models_dir, exist_ok=True)
+        
+    onnx_url = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/low/en_US-amy-low.onnx"
+    json_url = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/low/en_US-amy-low.onnx.json"
+    onnx_dest = os.path.join(user_models_dir, "en_US-amy-low.onnx")
+    json_dest = os.path.join(user_models_dir, "en_US-amy-low.onnx.json")
+    
+    try:
+        logger.info(f"🗣️ Descargando modelo de voz inicial pequeño (Inglés)...")
+        update_ui_state("idle", process=f"Descargando Voz Fina... 0%")
+        
+        # Download ONNX (Large)
+        response = requests.get(onnx_url, stream=True)
+        if response.status_code == 200:
+            total_size = int(response.headers.get('content-length', 0))
+            with open(onnx_dest, 'wb') as f:
+                downloaded = 0
+                last_percent = -1
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        if total_size > 0:
+                            percent = int((downloaded / total_size) * 100)
+                            if percent != last_percent and percent % 5 == 0:
+                                update_ui_state("idle", process=f"Descargando Voz Fina... {percent}%")
+                                last_percent = percent
+        
+        # Download JSON configuration (Small)
+        update_ui_state("idle", process=f"Instalando Voz Fina...")
+        r_json = requests.get(json_url)
+        if r_json.status_code == 200:
+            with open(json_dest, 'wb') as f:
+                f.write(r_json.content)
+                
+        logger.info("✅ Modelo de voz inicial (Amy/Inglés) instalado con éxito.")
+        update_ui_state("idle", process=f"SISTEMA LISTO")
+        return onnx_dest
+    except Exception as e:
+        logger.error(f"❌ Error descargando voz inicial: {e}")
+        return None
 
 # --- VOICE ENGINE (SEQUENTIAL & CONTROLLED) ---
 voice_queue = queue.Queue()
@@ -385,7 +461,7 @@ def _voice_engine_worker():
                 if not model_path:
                     # 1. Prioridad: carpeta personal del usuario
                     user_models_dir = os.path.join(CONFIG_DIR, "voice_models")
-                    for fname in ["es_AR-daniela-high.onnx", "es_MX-claude-high.onnx", "es_MX-laura-high.onnx", "miro_es-ES.onnx"]:
+                    for fname in ["en_US-amy-low.onnx", "es_AR-daniela-high.onnx", "es_MX-claude-high.onnx", "es_MX-laura-high.onnx", "miro_es-ES.onnx"]:
                         candidate = os.path.join(user_models_dir, fname)
                         if os.path.exists(candidate):
                             model_path = candidate
@@ -419,7 +495,8 @@ def _voice_engine_worker():
                         model_path = potential_models[0]
                         logger.info(f"Usando modelo de rescate: {model_path}")
                     else:
-                        model_path = None
+                        # Auto-descarga si no hay nada
+                        model_path = _download_piper_model_if_missing()
 
                 clean_text = text.replace('"', '').replace("'", "").replace("\n", " ").strip()
                 if not clean_text:
@@ -460,7 +537,7 @@ def _voice_engine_worker():
                     logger.error(f"TTS Error ejecutando Piper: {e}")
                 
                 if piper_stderr:
-                    logger.error(f"Piper stderr: {piper_stderr[:500]}")
+                    logger.debug(f"Piper stderr: {piper_stderr[:500]}")
                 
                 if gen_success and os.path.exists(filepath) and os.path.getsize(filepath) > 0:
                     update_ui_state("speaking", text, 0.8)
@@ -541,6 +618,8 @@ def speak(text, selected_model=None, sink=None, wait=True):
     wait: Si es True (por defecto), espera a que termine de hablar antes de retornar
     """
     if not text: return
+    text = auto_translate(text)
+
     if selected_model == "ElevenLabs":
         from elevenlabs.client import ElevenLabs
         from elevenlabs.play import play
