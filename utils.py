@@ -826,8 +826,7 @@ def load_vosk_model(language=None):
     global vosk_model, vosk_recognizer, loaded_language, vosk_error_reported
     
     if not language:
-        language = get_unified_config("FINA_LANGUAGE", "en")
-        if not language: language = "en"
+        language = get_sys_lang()
 
     if vosk_model is not None and loaded_language == language: return
     

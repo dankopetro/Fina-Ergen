@@ -61,7 +61,7 @@ def detect_intent(text, confidence_threshold=0.55):
     _initialize_model()
     
     text = text.lower().strip()
-    lang = utils.get_unified_config("FINA_LANGUAGE", "es")
+    lang = utils.get_sys_lang()
 
     # Regla específica: "noticias" vs noticias de internet
     news_words = ["noticia", "news", "nouvelles", "nachrichten", "ニュース", "新闻"]
