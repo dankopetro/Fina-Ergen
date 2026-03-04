@@ -313,10 +313,11 @@ def get_all_voice_models():
     models = {
         "ElevenLabs": "ElevenLabs",
         "Amy (Inglés)": os.path.join(CONFIG_DIR, "voice_models", "en_US-amy-low.onnx"),
-        "Daniela": os.path.join(CONFIG_DIR, "voice_models", "es_AR-daniela-high.onnx"),
-        "Claude": os.path.join(CONFIG_DIR, "voice_models", "es_MX-claude-high.onnx"),
-        "Laura": os.path.join(CONFIG_DIR, "voice_models", "es_MX-laura-high.onnx"),
-        "Miro": os.path.join(CONFIG_DIR, "voice_models", "miro_es-ES.onnx"),
+        "Aldo (M): Español": os.path.join(CONFIG_DIR, "voice_models", "es_MX-ald-medium.onnx"),
+        "Daniela (F): Español AR": os.path.join(CONFIG_DIR, "voice_models", "es_AR-daniela-high.onnx"),
+        "Claude (Español)": os.path.join(CONFIG_DIR, "voice_models", "es_MX-claude-high.onnx"),
+        "Laura (Español)": os.path.join(CONFIG_DIR, "voice_models", "es_MX-laura-high.onnx"),
+        "Miro (Español)": os.path.join(CONFIG_DIR, "voice_models", "miro_es-ES.onnx"),
     }
     
     # 1. Buscar en Carpeta de Usuario (~/.config/Fina/voice_models)
@@ -356,11 +357,11 @@ if selected_voice_id:
             break
 
 if not DEFAULT_VOICE:
-    DEFAULT_VOICE = VOICE_MODELS.get("Daniela", list(VOICE_MODELS.values())[0])
+    DEFAULT_VOICE = VOICE_MODELS.get("Aldo (M): Español", list(VOICE_MODELS.values())[0])
 
 # Funcionalidad de cambio de voz
 voice_model_names = list(VOICE_MODELS.keys())
-current_voice_index = voice_model_names.index("Daniela") if "Daniela" in voice_model_names else 0
+current_voice_index = voice_model_names.index("Aldo (M): Español") if "Aldo (M): Español" in voice_model_names else 0
 
 def cycle_voice_model():
     """Cycle to the next voice model"""
@@ -558,9 +559,9 @@ async def main():
                    speak(i18n("msg_try_again", "Intente de nuevo."), selected_voice_model)
                 continue
 
-        # Always reset to Daniela after wake-up
-        if "Daniela" in voice_model_names:
-            current_voice_index = voice_model_names.index("Daniela")
+        # Always reset to Ald after wake-up
+        if "Aldo (M): Español" in voice_model_names:
+            current_voice_index = voice_model_names.index("Aldo (M): Español")
         selected_voice_model, current_voice_name = get_current_voice_info()
         # No repetimos el saludo si ya dijimos "Esperando comando" o lo combinamos
         # speak(get_time_based_greeting(), selected_voice_model)

@@ -425,9 +425,9 @@ def send_ui_command(name, payload):
 
 PIPER_MODELS = {
     "es": {
-        "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/carl/medium/es_ES-carl-medium.onnx",
-        "json": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/carl/medium/es_ES-carl-medium.onnx.json",
-        "name": "es_ES-carl-medium.onnx"
+        "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/ald/medium/es_MX-ald-medium.onnx",
+        "json": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/ald/medium/es_MX-ald-medium.onnx.json",
+        "name": "es_MX-ald-medium.onnx"
     },
     "en": {
         "onnx": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/low/en_US-amy-low.onnx",
@@ -511,31 +511,28 @@ def _voice_engine_worker():
     global current_voice_process
     # Detectar rutas dinámicamente
     import shutil
-    # Estrategia: 1. PATH, 2. Local bin, 3. Assets, 4. Raíz
-    piper_path = shutil.which("piper")
-    
-    if not piper_path:
-        # Buscar en lugares comunes del proyecto
-        potential_locations = [
-            # Ruta REAL donde Tauri/deb instala el sidecar
-            "/usr/lib/fina-ergen/binaries/piper-x86_64-unknown-linux-gnu",
-            "/usr/lib/fina-ergen/binaries/piper",
-            # Tauri externalBin también puede ir a /usr/bin
-            "/usr/bin/piper-x86_64-unknown-linux-gnu",
-            "/usr/bin/piper",
-            "/usr/local/bin/piper",
-            # Rutas dentro del bundle de recursos
-            os.path.join(ERGEN_ROOT, "binaries", "piper", "piper"),
-            os.path.join(ERGEN_ROOT, "binaries", "piper-x86_64-unknown-linux-gnu"),
-            os.path.join(ERGEN_ROOT, "piper-x86_64-unknown-linux-gnu"),
-            os.path.join(ERGEN_ROOT, "piper"),
-            os.path.join(os.path.dirname(ERGEN_ROOT), "binaries", "piper-x86_64-unknown-linux-gnu"),
-            os.path.join(ERGEN_ROOT, "bin", "piper"),
-            "/usr/lib/fina-ergen/_up_/binaries/piper-x86_64-unknown-linux-gnu",
-            os.path.join(os.path.expanduser("~"), ".local", "bin", "piper")
-        ]
-        for loc in potential_locations:
-            if os.path.exists(loc):
+    # Estrategia: 1. Assets empaquetados, 2. Local, 3. PATH
+    piper_path = None
+    potential_locations = [
+        # Ruta REAL donde Tauri/deb instala el sidecar
+        "/usr/lib/fina-ergen/binaries/piper-x86_64-unknown-linux-gnu",
+        "/usr/lib/fina-ergen/binaries/piper",
+        # Tauri externalBin también puede ir a /usr/bin
+        "/usr/bin/piper-x86_64-unknown-linux-gnu",
+        "/usr/bin/piper",
+        "/usr/local/bin/piper",
+        # Rutas dentro del bundle de recursos
+        os.path.join(ERGEN_ROOT, "binaries", "piper", "piper"),
+        os.path.join(ERGEN_ROOT, "binaries", "piper-x86_64-unknown-linux-gnu"),
+        os.path.join(ERGEN_ROOT, "piper-x86_64-unknown-linux-gnu"),
+        os.path.join(ERGEN_ROOT, "piper"),
+        os.path.join(os.path.dirname(ERGEN_ROOT), "binaries", "piper-x86_64-unknown-linux-gnu"),
+        os.path.join(ERGEN_ROOT, "bin", "piper"),
+        "/usr/lib/fina-ergen/_up_/binaries/piper-x86_64-unknown-linux-gnu",
+        os.path.join(os.path.expanduser("~"), ".local", "bin", "piper")
+    ]
+    for loc in potential_locations:
+        if os.path.exists(loc):
                 # Intentar dar permisos si faltan
                 if not os.access(loc, os.X_OK):
                     try: 
@@ -559,6 +556,9 @@ def _voice_engine_worker():
                     piper_path = sidecar
                     break
 
+    if not piper_path:
+        piper_path = shutil.which("piper")
+
     aplay_path = shutil.which("aplay") or "/usr/bin/aplay"
 
     if not piper_path:
@@ -580,7 +580,7 @@ def _voice_engine_worker():
                 if not model_path:
                     # 1. Prioridad: carpeta personal del usuario
                     user_models_dir = os.path.join(CONFIG_DIR, "voice_models")
-                    for fname in ["en_US-amy-low.onnx", "es_AR-daniela-high.onnx", "es_MX-claude-high.onnx", "es_MX-laura-high.onnx", "miro_es-ES.onnx"]:
+                    for fname in ["es_MX-ald-medium.onnx", "en_US-amy-low.onnx", "es_AR-daniela-high.onnx", "es_MX-claude-high.onnx", "es_MX-laura-high.onnx", "miro_es-ES.onnx"]:
                         candidate = os.path.join(user_models_dir, fname)
                         if os.path.exists(candidate):
                             model_path = candidate
@@ -1108,7 +1108,7 @@ def suspend(model):
     subprocess.run("systemctl suspend", shell=True)
 
 def update(): 
-    speak("Actualizando.", "Daniela")
+    speak("Actualizando.", "Aldo (M): Español")
     subprocess.run("sudo pacman -Syu --noconfirm", shell=True)
 
 def get_ip(): 
