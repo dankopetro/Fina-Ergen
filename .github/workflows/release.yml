@@ -53,19 +53,21 @@ jobs:
           tagName: v__VERSION__
           releaseName: "Fina Ergen v__VERSION__"
           releaseBody: |
-            ## 🚀 Fina Ergen v__VERSION__ - Edición "Cero Terminal" y Guía Proactiva
+            ### 🚀 Fina Ergen v__VERSION__ - Edición "Universal & Inteligente"
 
-            Esta actualización transforma a Fina en un asistente modular completamente resiliente y amigable para el usuario novato.
+            Esta actualización transforma a Fina en un asistente verdaderamente global, capaz de adaptarse a tu idioma y entorno desde el primer segundo sin configuraciones manuales tediosas.
 
-            ### 🛠️ Novedades Críticas:
-            * **⚡ Auto-Bootstrap (Zero Terminal)**: Fina ahora detecta automáticamente si faltan librerías críticas de IA (Torch, Vosk, Sounddevice, etc.) y las instala sola en un entorno privado.
-            * **📖 Guía Proactiva para Novatos**: Apertura automática del manual de configuración al detectar falta de modelos de voz/oído.
-            * **🛡️ Blindaje de Configuración**: Fina ya no cierra por errores en `config.py`; ahora arranca siempre y avisa qué falta.
-            * **📐 Manual Centrado y Refinado**: El manual PDF y HTML ahora están integrados en el paquete y diseñados para impresión y web.
-            * **🧹 Limpieza de Logs**: Prevención de saturación de disco por logs repetitivos.
+            ### 🌍 Novedades Críticas:
+            * **🌎 Auto-Detección de Idioma**: Fina ahora detecta el idioma de tu sistema operativo (OS) en el primer arranque para configurar la UI y la voz automáticamente (Soportados: ES, EN, FR, DE, JA, ZH).
+            * **🗣️ Descarga Dinámica de Voces (Piper)**: El sistema de síntesis descarga automáticamente el modelo de voz pequeño correspondiente a tu idioma detectado.
+            * **🧠 Reconocimiento Inteligente (Vosk)**: El motor de oído ahora es consciente del idioma y alerta dinámicamente si falta el modelo específico de tu región.
+            * **⚡ Traducción Visual 100%**: Todo el panel principal, menús de domótica, biometría y estados del sistema han sido traducidos a los 6 idiomas principales.
+            * **⚡ Auto-Bootstrap (Zero Terminal)**: Fina detecta si faltan librerías críticas de IA e intenta instalarlas sola en un entorno aislado.
+            * **📖 Guía Proactiva**: Apertura automática del manual de configuración al detectar falta de modelos.
+            * **🛡️ Blindaje de Configuración**: Mayor resiliencia ante errores en archivos de texto, el sistema arranca siempre y te guía.
 
             ### 📦 Instalación:
-            Descarga el archivo `.deb` o `.AppImage` e instálalo normalmente. Fina te guiará en el primer arranque.
+            Descarga el archivo `.deb` o `.rpm` e instálalo normalmente. Al abrir Fina, ella te saludará en tu idioma y te guiará en los pasos iniciales si detecta que faltan componentes.
           releaseDraft: false
           prerelease: false
           args: --bundles deb,rpm
