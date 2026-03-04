@@ -147,10 +147,10 @@ const mailError = ref(""); // Para capturar errores como 'App Password required'
 const isSendingComm = ref(false);
 const showMobileHelpModal = ref(false);
 const mobileHelpContext = ref('offline'); // 'offline' or 'missing'
-const mobileHelpTitle = computed(() => mobileHelpContext.value === 'missing' ? 'Vincular Celular' : 'Celular Desconectado');
+const mobileHelpTitle = computed(() => mobileHelpContext.value === 'missing' ? t('ui_mobile_link', 'Vincular Celular') : t('ui_mobile_offline', 'Celular Desconectado'));
 const mobileHelpDescription = computed(() => mobileHelpContext.value === 'missing'
-    ? 'Para que Fina pueda enviar mensajes y hacer llamadas, necesitas vincular un dispositivo principal.'
-    : 'Fina no puede comunicarse con tu celular. Sigue los pasos abajo para reconectar.');
+    ? t('ui_mobile_pair_desc', 'Para que Fina pueda enviar mensajes y hacer llamadas, necesitas vincular un dispositivo principal.')
+    : t('ui_mobile_offline_desc', 'Fina no puede comunicarse con tu celular. Sigue los pasos abajo para reconectar.'));
 const showPairingModal = ref(false);
 const pairingIP = ref('');
 const pairingPort = ref('');
@@ -581,7 +581,7 @@ const sendMobileSMS = async (number, msg, forceApp = null) => {
             }
         } catch (e) {
             console.error("Error SMS:", e);
-            finaState.value.process = "ERROR EN ENVÍO";
+            finaState.value.process = t("proc_err_send", "ERROR EN ENVÍO");
             notifyFina("FALLO AL ENVIAR SMS");
 
             await invoke("execute_shell_command", {
@@ -589,7 +589,7 @@ const sendMobileSMS = async (number, msg, forceApp = null) => {
             }).catch(() => { });
         } finally {
             isSendingComm.value = false;
-            setTimeout(() => finaState.value.process = "SISTEMA LISTO", 3000);
+            setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 3000);
         }
     }
     // 2. SI ES WHATSAPP, USAMOS EL NUEVO SISTEMA INVISIBLE
@@ -615,10 +615,10 @@ const sendMobileSMS = async (number, msg, forceApp = null) => {
 
         } catch (e) {
             console.error("Error WhatsApp:", e);
-            finaState.value.process = "ERROR WHATSAPP";
+            finaState.value.process = t("proc_err_whatsapp", "ERROR WHATSAPP");
         } finally {
             isSendingComm.value = false;
-            setTimeout(() => finaState.value.process = "SISTEMA LISTO", 2000);
+            setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
         }
     }
     // 3. OTRAS APPS WEB (Telegram, etc) - Por ahora no implementadas
@@ -783,7 +783,7 @@ const detectMessagingApps = async () => {
 const retryMobileConnection = async () => {
     const dev = linkedMobileDevice.value;
     if (!dev || !dev.ip) {
-        finaState.value.process = "NO HAY DISPOSITIVO CONFIGURADO";
+        finaState.value.process = t("proc_no_device", "NO HAY DISPOSITIVO CONFIGURADO");
         return;
     }
 
@@ -807,7 +807,7 @@ const retryMobileConnection = async () => {
             setTimeout(() => {
                 showCommModal.value = true;
                 if (finaState.value.process.includes("CONECTADO") || finaState.value.process.includes("RECONECTADO"))
-                    finaState.value.process = 'SISTEMA LISTO';
+                    finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
             }, 1500);
             return; // ¡ÉXITO SIN CABLE!
         }
@@ -816,7 +816,7 @@ const retryMobileConnection = async () => {
     }
 
     // SI LLEGAMOS ACÁ, FALLÓ LA RECONEXIÓN AUTOMÁTICA -> PEDIMOS CABLE
-    finaState.value.process = "SOLICITANDO CONEXIÓN USB...";
+    finaState.value.process = t("proc_usb_req", "SOLICITANDO CONEXIÓN USB...");
 
     try {
         // 1. Verificar si hay algún dispositivo conectado por USB
@@ -848,7 +848,7 @@ const retryMobileConnection = async () => {
 
         // 2. Si está "unauthorized", esperar a que el usuario autorice
         if (deviceStatus === 'unauthorized') {
-            finaState.value.process = "ESPERANDO AUTORIZACIÓN EN EL CELULAR...";
+            finaState.value.process = t("proc_wait_auth", "ESPERANDO AUTORIZACIÓN EN EL CELULAR...");
             const hint = "Por favor, acepta la autorización de depuración USB en la pantalla de tu celular.";
             invoke("execute_shell_command", {
                 command: `${pythonExecutable.value} ${projectRoot.value}/utils.py speak "${hint}"`
@@ -870,7 +870,7 @@ const retryMobileConnection = async () => {
         const androidVersion = await detectAndroidVersion();
 
         // 4. MODO ROBUSTO: Activar tcpip 5555
-        finaState.value.process = "CONFIGURANDO MODO INALÁMBRICO...";
+        finaState.value.process = t("proc_wifi_config", "CONFIGURANDO MODO INALÁMBRICO...");
         await invoke("execute_shell_command", { command: `timeout 4 adb -s ${usbDeviceId} tcpip 5555` }).catch(() => { });
         await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -898,7 +898,7 @@ const retryMobileConnection = async () => {
 
             setTimeout(() => {
                 showCommModal.value = true;
-                if (finaState.value.process.includes("CONECTADO")) finaState.value.process = 'SISTEMA LISTO';
+                if (finaState.value.process.includes("CONECTADO")) finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
             }, 2000);
             return;
         }
@@ -923,10 +923,10 @@ const retryMobileConnection = async () => {
         console.error("Error conexión:", e);
         // Solo mostrar error si falló también la conexión USB
         if (e.message.includes("No hay dispositivo USB conectado")) {
-            finaState.value.process = "ESPERANDO CONEXIÓN USB...";
+            finaState.value.process = t("proc_wait_usb", "ESPERANDO CONEXIÓN USB...");
             // No hacemos nada, el usuario verá el modal pidiendo el cable
         } else {
-            finaState.value.process = "ERROR DE CONEXIÓN";
+            finaState.value.process = t("proc_err_conn", "ERROR DE CONEXIÓN");
         }
     }
 };;;
@@ -981,7 +981,7 @@ const initiateMobileCall = async (number) => {
 
         setTimeout(() => {
             mobileHubError.value = null;
-            if (finaState.value.process === 'ERROR AL LLAMAR') finaState.value.process = 'SISTEMA LISTO';
+            if (finaState.value.process === 'ERROR AL LLAMAR') finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
         }, 8000);
     } finally {
         isSendingComm.value = false;
@@ -993,7 +993,7 @@ const marketPlugins = ref([]);
 const isMarketLoading = ref(false);
 
 const openPluginStore = async () => {
-    finaState.value.process = "ABRIENDO MARKET DE PLUGINS";
+    finaState.value.process = t("proc_open_market", "ABRIENDO MARKET DE PLUGINS");
     showMarket.value = true;
     isMarketLoading.value = true;
 
@@ -1032,10 +1032,10 @@ const openPluginStore = async () => {
             }
         }
         marketPlugins.value = plugins;
-        finaState.value.process = "MARKET LISTO";
+        finaState.value.process = t("proc_market_ready", "MARKET LISTO");
     } catch (e) {
         console.error("Market error:", e);
-        finaState.value.process = "ERROR AL CARGAR MARKET";
+        finaState.value.process = t("proc_err_market", "ERROR AL CARGAR MARKET");
     } finally {
         isMarketLoading.value = false;
     }
@@ -1049,12 +1049,12 @@ const installMarketPlugin = async (plugin) => {
             subpath: plugin.path
         });
         addChatMessage(`Plugin ${plugin.name} instalado con éxito.`);
-        finaState.value.process = "INSTALACIÓN COMPLETADA";
-        setTimeout(() => finaState.value.process = "SISTEMA LISTO", 2000);
+        finaState.value.process = t("proc_inst_done", "INSTALACIÓN COMPLETADA");
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
     } catch (e) {
         console.error("Install error:", e);
         addChatMessage("Error al instalar plugin: " + e);
-        finaState.value.process = "ERROR EN INSTALACIÓN";
+        finaState.value.process = t("proc_err_inst", "ERROR EN INSTALACIÓN");
     }
 };
 
@@ -1163,7 +1163,7 @@ const deviceTypesList = [
 ];
 
 const scanNetwork = async () => {
-    finaState.value.process = "ESCANEANDO RED...";
+    finaState.value.process = t("proc_scanning_net", "ESCANEANDO RED...");
     isScanningNetwork.value = true;
     try {
         // Usar comando Tauri directo (Rust) que conoce la ruta real del bundle
@@ -1174,11 +1174,11 @@ const scanNetwork = async () => {
         syncDevicesWithSettings();
     } catch (error) {
         console.error("Error escaneando red:", error);
-        finaState.value.process = "ERROR AL ESCANEAR";
+        finaState.value.process = t("proc_err_scan", "ERROR AL ESCANEAR");
         addChatMessage(`Fina: ⚠ No pude escanear la red: ${error}`);
     } finally {
         isScanningNetwork.value = false;
-        setTimeout(() => finaState.value.process = "SISTEMA LISTO", 3000);
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 3000);
     }
 };
 
@@ -1281,8 +1281,8 @@ const assignDeviceType = (device, type, name) => {
     device.pendingRoom = null;
     assigningDeviceIp.value = null; // Close menu
 
-    finaState.value.process = "DISPOSITIVO ASIGNADO";
-    setTimeout(() => finaState.value.process = "SISTEMA LISTO", 2000);
+    finaState.value.process = t("proc_dev_assigned", "DISPOSITIVO ASIGNADO");
+    setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
 };
 
 const weatherDisplay = computed(() => {
@@ -1365,8 +1365,8 @@ const setPrimaryMobile = (scannedDev) => {
             if (d.ip === scannedDev.ip) d.isPrimary = true;
         });
         saveSettings();
-        finaState.value.process = "DISPOSITIVO PRINCIPAL ACTUALIZADO";
-        setTimeout(() => finaState.value.process = "SISTEMA LISTO", 2000);
+        finaState.value.process = t("proc_dev_updated", "DISPOSITIVO PRINCIPAL ACTUALIZADO");
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
     }
 };
 
@@ -1488,7 +1488,7 @@ const weatherIcon = computed(() => {
 }); const
     testDoorbell = async () => {
         showDoorbell.value = true;
-        finaState.value.process = "Conectando con el timbre...";
+        finaState.value.process = t("proc_doorbell_conn", "Conectando con el timbre...");
 
         // Disparar secuencia de backend (Wake + Cast TV) - ASÍNCRONO REAL
         const pyPath = pythonExecutable.value;
@@ -1512,11 +1512,11 @@ const hangUp = async () => {
         await invoke("spawn_shell_command", { command: `${pyPath} "${hangupScript}"` });
 
         showDoorbell.value = false;
-        finaState.value.process = "SISTEMA LISTO";
+        finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
     } catch (error) {
         console.error("Error colgando:", error);
         showDoorbell.value = false; // Cerrar igual
-        finaState.value.process = "SISTEMA LISTO";
+        finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
     }
 };
 
@@ -1530,12 +1530,12 @@ const systemStatus = computed(() => {
     const p = (finaState.value.process || "").toUpperCase();
 
     if (finaState.value.status === 'stopped') {
-        return { text: "DETENIDO", color: "text-red-500", dot: "bg-red-500 shadow-[0_0_8px_red]" };
+        return { text: t("sys_stopped_short", "DETENIDO"), color: "text-red-500", dot: "bg-red-500 shadow-[0_0_8px_red]" };
     }
 
     if (p.includes("INICIADO") || p.includes("CARGANDO") || p.includes("ESPERANDO")) {
         return {
-            text: "EN PROCESO", color: "text-amber-400", dot: "bg-amber-500 shadow-[0_0_8px_amber] animate-pulse"
+            text: t("sys_process_short", "EN PROCESO"), color: "text-amber-400", dot: "bg-amber-500 shadow-[0_0_8px_amber] animate-pulse"
         };
     }
 
@@ -1545,21 +1545,21 @@ const systemStatus = computed(() => {
 
     if (finaState.value.status === 'speaking') {
         return {
-            text: "EN EJECUCIÓN", color: "text-emerald-400", dot: "bg-emerald-500 shadow-[0_0_10px_lime] animate-pulse"
+            text: t("sys_exec_short", "EN EJECUCIÓN"), color: "text-emerald-400", dot: "bg-emerald-500 shadow-[0_0_10px_lime] animate-pulse"
         };
     }
 
     return {
-        text: "EN EJECUCIÓN", color: "text-emerald-400", dot: "bg-emerald-500 shadow-[0_0_10px_lime]"
+        text: t("sys_exec_short", "EN EJECUCIÓN"), color: "text-emerald-400", dot: "bg-emerald-500 shadow-[0_0_10px_lime]"
     };
 });
 
 const getGreeting = () => {
     const hour = new Date().getHours();
     const name = userSettings.value.apis.USER_NAME || "Usuario";
-    if (hour >= 6 && hour < 12) return `Buenos Días ${name}`;
-    if (hour >= 12 && hour < 20) return `Buenas Tardes ${name}`;
-    return `Buenas Noches ${name}`; // 20:00 - 05:59
+    if (hour >= 6 && hour < 12) return `${t("sys_morning", "Buenos Días")} ${name}`;
+    if (hour >= 12 && hour < 20) return `${t("sys_afternoon", "Buenas Tardes")} ${name}`;
+    return `${t("sys_evening", "Buenas Noches")} ${name}`; // 20:00 - 05:59
 };
 
 const notifyFina = (msg, duration = 4000) => {
@@ -1567,7 +1567,7 @@ const notifyFina = (msg, duration = 4000) => {
     finaState.value.process = msg.toUpperCase();
     setTimeout(() => {
         if (finaState.value.process === msg.toUpperCase()) {
-            finaState.value.process = "SISTEMA LISTO";
+            finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
         }
     }, duration);
 };
@@ -1715,18 +1715,18 @@ const syncContactsFromMobile = async (force = false) => {
 };
 
 const importFromCore = async () => {
-    finaState.value.process = "IMPORTANDO DESDE CORE...";
+    finaState.value.process = t("proc_importing", "IMPORTANDO DESDE CORE...");
     try {
         const rootPath = ".";
         // En Fina-Ergen ya no hay carpeta 'test/fina-ergen', todo es local.
         console.log("Sincronización core saltada: Ya estamos en la carpeta raíz.");
 
         await fetchSettings();
-        finaState.value.process = "IMPORTACIÓN EXITOSA";
-        setTimeout(() => finaState.value.process = "SISTEMA LISTO", 3000);
+        finaState.value.process = t("proc_import_done", "IMPORTACIÓN EXITOSA");
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 3000);
     } catch (e) {
         console.error("Error importing:", e);
-        finaState.value.process = "ERROR EN IMPORTACIÓN";
+        finaState.value.process = t("proc_err_import", "ERROR EN IMPORTACIÓN");
     }
 };
 
@@ -1742,7 +1742,7 @@ const showPass = reactive({
 });
 
 const saveSettings = async () => {
-    finaState.value.process = "GUARDANDO AJUSTES...";
+    finaState.value.process = t("proc_saving", "GUARDANDO AJUSTES...");
     try {
         const jsonContent = JSON.stringify(userSettings.value);
         // Escapamos comillas simples para que no rompa el argumento de bash '...'
@@ -1757,15 +1757,15 @@ const saveSettings = async () => {
         const output = await invoke("execute_shell_command", { command: cmd });
         console.log("Save output:", output);
 
-        finaState.value.process = "AJUSTES GUARDADOS";
-        setTimeout(() => finaState.value.process = "SISTEMA LISTO", 3000);
+        finaState.value.process = t("proc_saved", "AJUSTES GUARDADOS");
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 3000);
 
         // Refrescar clima con nuevos datos inmediatamente
         updateWeather();
 
     } catch (e) {
         console.error("Save Error:", e);
-        finaState.value.process = "ERROR AL GUARDAR";
+        finaState.value.process = t("proc_err_save", "ERROR AL GUARDAR");
     }
 };
 
@@ -1773,7 +1773,7 @@ const appWindow = getCurrentWindow();
 const toggleSidebar = () => isSidebarCollapsed.value = !isSidebarCollapsed.value;
 
 const sendTvCommand = async (script, args = "") => {
-    finaState.value.process = "COMANDO TV...";
+    finaState.value.process = t("proc_tv_cmd", "COMANDO TV...");
 
     // Lógica dinámica de IP
     if (!activeTvIp.value) {
@@ -1785,7 +1785,7 @@ const sendTvCommand = async (script, args = "") => {
 
     if (!ip) ip = activeTv?.ip;
     if (!ip) {
-        finaState.value.process = "IP NO DEFINIDA";
+        finaState.value.process = t("proc_ip_undef", "IP NO DEFINIDA");
         return;
     }
 
@@ -1807,12 +1807,11 @@ const sendTvCommand = async (script, args = "") => {
         console.log(`📺 Enviando comando a ${ip} (${modelFolder}): ${script} ${args}`);
         await invoke("spawn_shell_command", { command });
         setTimeout(() => {
-            if (finaState.value.process === "COMANDO TV...") finaState.value.process =
-                "SISTEMA LISTO";
+            if (finaState.value.process === "COMANDO TV...") finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
         }, 2000);
     } catch (e) {
         console.error("TV Error:", e);
-        finaState.value.process = "ERROR TV";
+        finaState.value.process = t("proc_err_tv", "ERROR TV");
     }
 };
 
@@ -1875,7 +1874,7 @@ const getBarStyle = (n) => {
 
 // FUNCIÓN DE DETECCIÓN DE TV INTELIGENTE
 const detectTvIp = async (silent = false) => {
-    if (!silent) finaState.value.process = "BUSCANDO TV...";
+    if (!silent) finaState.value.process = t("proc_looking_tv", "BUSCANDO TV...");
 
     // 1. Intentar conectar preventivamente a las TVs conocidas (SOLO SI NO ESTAMOS EN MODO SILENCIOSO)
     // Para evitar saturar ADB al inicio si ya hay conexiones vivas
@@ -1914,7 +1913,7 @@ const detectTvIp = async (silent = false) => {
                     const connectedTv = userSettings.value.tvs?.find(t => t.ip === ipToTest);
                     const displayName = connectedTv ? connectedTv.name.toUpperCase() : ipToTest;
                     if (!silent) finaState.value.process = `TV CONECTADA: ${displayName}`;
-                    if (!silent) setTimeout(() => finaState.value.process = "SISTEMA LISTO", 2000);
+                    if (!silent) setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
                     return;
                 } catch {
                     console.log("Cache o IP de habitación no responde.");
@@ -1979,7 +1978,7 @@ const detectTvIp = async (silent = false) => {
         }).catch(() => { });
     }
 
-    if (!silent) setTimeout(() => finaState.value.process = "SISTEMA LISTO", 2000);
+    if (!silent) setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
 };
 
 // FUNCIÓN MAESTRA DE SINCRONIZACIÓN DE DISPOSITIVOS (Optimizada)
@@ -1987,7 +1986,7 @@ let lastSync = 0;
 const syncAllDevices = async (force = false, silent = false) => {
     const now = Date.now();
     if (!force && now - lastSync < 30000) return; // if (!silent)
-    finaState.value.process = "CORROBORANDO ESTADOS"; lastSync = now;
+    finaState.value.process = t("proc_checking_states", "CORROBORANDO ESTADOS"); lastSync = now;
     await Promise.all([
         refreshAcStatus(silent),
         refreshDoorbellStatus(),
@@ -2013,7 +2012,7 @@ const toggleMaximize = async () => {
     else await appWindow.maximize();
 };
 const closeWindow = async () => {
-    finaState.value.process = "APAGANDO SISTEMA...";
+    finaState.value.process = t("proc_shutting_down", "APAGANDO SISTEMA...");
     try {
         // Limpiar ADB antes de cerrar
         await invoke("execute_shell_command", {
@@ -2052,7 +2051,7 @@ onMounted(async () => {
 
     // SECUENCIA DE ARRANQUE [BALANCEADA PARA MAXIMIZAR]
     try {
-        finaState.value.process = "CARGANDO SISTEMA";
+        finaState.value.process = t("proc_loading_sys", "CARGANDO SISTEMA");
         addChatMessage(t('ui_sys_online'));
 
         // --- VERIFICACIÓN DE PRIMERA CONFIGURACIÓN ---
@@ -2078,7 +2077,7 @@ onMounted(async () => {
         // 2. ADB / Móvil
         const mobileDev = linkedMobileDevice.value;
         if (mobileDev && mobileDev.ip) {
-            finaState.value.process = "VINCULANDO MÓVIL";
+            finaState.value.process = t("proc_linking_mobile", "VINCULANDO MÓVIL");
             invoke("execute_shell_command", { command: `timeout 2 adb connect ${mobileDev.ip}:5555` })
                 .catch(() => { });
         }
@@ -2088,11 +2087,11 @@ onMounted(async () => {
         // 3. Saludo
         const greeting = getGreeting();
         finaState.value.status = "speaking";
-        finaState.value.process = "SISTEMA OPERATIVO";
+        finaState.value.process = t("proc_sys_op", "SISTEMA OPERATIVO");
         addChatMessage(greeting);
         await new Promise(r => setTimeout(r, 1500));
         finaState.value.status = "idle";
-        finaState.value.process = "SISTEMA LISTO";
+        finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
 
         // 4. Detección de Apps 5 segundos después de que el sistema esté listo [STRICT]
         setTimeout(() => {
@@ -2132,7 +2131,7 @@ onMounted(async () => {
 
                 // Si la nueva info es "SISTEMA LISTO", solo la aplicamos si ya pasó el tiempo de
                 // lectura
-                if (data.process === "SISTEMA LISTO") {
+                if (data.process === t("sys_ready_short", "SISTEMA LISTO")) {
                     if (!window.lockTextUntil || Date.now() > window.lockTextUntil) {
                         finaState.value.status = newStatus;
                     }
@@ -2169,7 +2168,7 @@ onMounted(async () => {
                     sendMobileSMS(cmd.payload.number, cmd.payload.message, cmd.payload.app);
                 } else if (cmd.name === 'doorbell-ring') {
                     showDoorbell.value = true;
-                    finaState.value.process = "Atendiendo Timbre";
+                    finaState.value.process = t("proc_answering_door", "Atendiendo Timbre");
                     invoke('start_streamer').catch(() => { });
                     setTimeout(() => {
                         streamUrl.value = "http://127.0.0.1:8555/view?t=" + Date.now();
@@ -2177,7 +2176,7 @@ onMounted(async () => {
                     }, 2000);
                 } else if (cmd.name === 'doorbell-hangup') {
                     showDoorbell.value = false;
-                    finaState.value.process = "SISTEMA LISTO";
+                    finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
                 }
             }
 
@@ -2216,12 +2215,12 @@ onMounted(async () => {
             if (window.pollErrors > 15) {
                 const errDetail = `${e.name}: ${e.message}`;
                 console.error("API Error Poll:", e);
-                finaState.value.process = "ESPERANDO API...";
+                finaState.value.process = t("proc_wait_api", "ESPERANDO API...");
                 finaState.value.status = "offline";
             } else {
                 // Durante los primeros segundos, simplemente notificamos el inicio
-                if (finaState.value.process === "SISTEMA LISTO" || !finaState.value.process) {
-                    finaState.value.process = "CONFIGURANDO BACKEND...";
+                if (finaState.value.process === t("sys_ready_short", "SISTEMA LISTO") || !finaState.value.process) {
+                    finaState.value.process = t("proc_config_backend", "CONFIGURANDO BACKEND...");
                 }
             }
         }
@@ -2250,7 +2249,7 @@ onMounted(async () => {
             if (typeof data === 'string') data = JSON.parse(data.trim());
             if (data.type === 'event' && data.name === 'doorbell-ring') {
                 showDoorbell.value = true;
-                finaState.value.process = "Atendiendo Timbre";
+                finaState.value.process = t("proc_answering_door", "Atendiendo Timbre");
                 invoke('start_streamer').catch(() => { });
                 setTimeout(() => {
                     streamUrl.value = "http://127.0.0.1:8555/view?t=" + Date.now();
@@ -2275,11 +2274,11 @@ onMounted(async () => {
                 // LÓGICA DE PERSISTENCIA DE MENSAJES
                 // Si hay un mensaje importante mostrándose, no dejar que "SISTEMA LISTO" lo pise al instante
                 if (window.lockTextUntil && Date.now() < window.lockTextUntil &&
-                    (p.process === "SISTEMA LISTO" || p.process === "ESCUCHANDO...")) {
+                    (p.process === t("sys_ready_short", "SISTEMA LISTO") || p.process === "ESCUCHANDO...")) {
                     // Ignoramos actualización banal para dejar leer al usuario
                 } else {
                     finaState.value.status = p.status || "idle";
-                    if (p.process && p.process !== "SISTEMA LISTO") {
+                    if (p.process && p.process !== t("sys_ready_short", "SISTEMA LISTO")) {
                         finaState.value.process = p.process;
                     }
                     finaState.value.intensity = p.intensity || 0.0;
@@ -2293,7 +2292,7 @@ onMounted(async () => {
                         }
                     }
 
-                    if (finaState.value.process !== "SISTEMA LISTO" && finaState.value.process !== "ESCUCHANDO..." && finaState.value.process !== "Diga 'Fina' para empezar") {
+                    if (finaState.value.process !== t("sys_ready_short", "SISTEMA LISTO") && finaState.value.process !== "ESCUCHANDO..." && finaState.value.process !== "Diga 'Fina' para empezar") {
                         window.lockTextUntil = Date.now() + 3000;
                     }
                 }
@@ -2313,7 +2312,7 @@ onMounted(async () => {
                 setTimeout(() => {
                     if (finaState.value.status === 'speaking') finaState.value.status = "idle";
                     if (finaState.value.process === speechMsg.toUpperCase()) {
-                        finaState.value.process = "SISTEMA LISTO";
+                        finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
                     }
                 }, 8000);
             } else if (data.name === 'ac-status-update') {
@@ -2328,7 +2327,7 @@ onMounted(async () => {
             } else if (data.type === 'event' && (data.name === 'doorbell-hangup' ||
                 data.event === 'doorbell-hangup')) {
                 showDoorbell.value = false;
-                finaState.value.process = "SISTEMA LISTO";
+                finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
             }
         } catch (e) {
             console.error("Error cerebro:", e);
@@ -2391,11 +2390,11 @@ watch(activeTvRoom, async (newRoom) => {
 });
 
 const cancelTvScan = async () => {
-    finaState.value.process = "CANCELANDO...";
+    finaState.value.process = t("proc_cancelling", "CANCELANDO...");
     try {
         await invoke("execute_shell_command", { command: "touch /tmp/fina_cancel_scan" });
         isScanningTv.value = false;
-        setTimeout(() => finaState.value.process = "SISTEMA LISTO", 1500);
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 1500);
     } catch (e) {
         console.error("Cancel error:", e);
     }
@@ -2404,11 +2403,11 @@ const cancelTvScan = async () => {
 const scanChannels = async () => {
     const ip = activeTvIp.value;
     if (!ip) {
-        finaState.value.process = "SELECCIONE UNA TV";
+        finaState.value.process = t("proc_select_tv", "SELECCIONE UNA TV");
         return;
     }
     isScanningTv.value = true;
-    finaState.value.process = "ESCANEANDO CANALES...";
+    finaState.value.process = t("proc_scanning_ch", "ESCANEANDO CANALES...");
     const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
     const modelFolder = activeTv?.type || 'tcl_32s60a';
 
@@ -2457,7 +2456,7 @@ const sendAcCommand = async (args, msg) => {
 const launchTvApp = async (pkg) => {
     const ip = activeTvIp.value;
     if (!ip) {
-        finaState.value.process = "TV NO SELECCIONADA";
+        finaState.value.process = t("proc_tv_not_sel", "TV NO SELECCIONADA");
         return;
     }
     finaState.value.process = `ABRIENDO APP...`;
@@ -2469,22 +2468,22 @@ const launchTvApp = async (pkg) => {
 
     try {
         await invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --package ${pkg} --ip ${ip}` });
-        finaState.value.process = "APP INICIADA";
-        setTimeout(() => finaState.value.process = "SISTEMA LISTO", 2000);
+        finaState.value.process = t("proc_app_started", "APP INICIADA");
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
     } catch (e) {
         console.error("App launch error:", e);
-        finaState.value.process = "ERROR AL INICIAR APP";
+        finaState.value.process = t("proc_err_app_start", "ERROR AL INICIAR APP");
     }
 };
 
 const scanTvApps = async () => {
     const ip = activeTvIp.value;
     if (!ip) {
-        finaState.value.process = "SELECCIONE UNA TV";
+        finaState.value.process = t("proc_select_tv", "SELECCIONE UNA TV");
         return;
     }
     isScanningTv.value = true;
-    finaState.value.process = "ESCANEANDO APPS...";
+    finaState.value.process = t("proc_scanning_apps", "ESCANEANDO APPS...");
     const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
     const modelFolder = activeTv?.type || 'tcl_32s60a';
 
@@ -2498,12 +2497,12 @@ const scanTvApps = async () => {
         await invoke("execute_shell_command", { command: `${pyPath} "${scriptPath}" --ip ${ip}` });
         // Recargar settings para ver nuevas apps
         await fetchSettings();
-        finaState.value.process = "APPS ESCANEADAS";
+        finaState.value.process = t("proc_apps_scanned", "APPS ESCANEADAS");
         isScanningTv.value = false;
-        setTimeout(() => finaState.value.process = "SISTEMA LISTO", 2000);
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
     } catch (e) {
         console.error("Scan apps error:", e);
-        finaState.value.process = "ERROR ESCANEO APPS";
+        finaState.value.process = t("proc_err_scan_apps", "ERROR ESCANEO APPS");
         isScanningTv.value = false;
     }
 };
@@ -2518,7 +2517,7 @@ const toggleAcTurbo = () => sendAcCommand(`--turbo ${acState.value.turbo ? 'off'
 const toggleAcSwing = () => sendAcCommand(`--swing ${acState.value.swing ? 'off' : 'on'}`, "Swing toggle");
 
 const enrollVoice = () => {
-    finaState.value.process = "ENTRENANDO VOZ...";
+    finaState.value.process = t("proc_training_voice", "ENTRENANDO VOZ...");
     const interactive = `${projectRoot.value}/plugins/biometria/run_interactive.sh`;
     const py = pythonExecutable.value;
     const script = `${projectRoot.value}/plugins/biometria/train_voice.py`;
@@ -2526,7 +2525,7 @@ const enrollVoice = () => {
 };
 
 const enrollFace = () => {
-    finaState.value.process = "ENTRENANDO CARA...";
+    finaState.value.process = t("proc_training_face", "ENTRENANDO CARA...");
     const interactive = `${projectRoot.value}/plugins/biometria/run_interactive.sh`;
     const py = pythonExecutable.value;
     const script = `${projectRoot.value}/plugins/biometria/train_face.py`;
@@ -2534,7 +2533,7 @@ const enrollFace = () => {
 };
 
 const enrollFinger = () => {
-    finaState.value.process = "REGISTRANDO HUELLA...";
+    finaState.value.process = t("proc_reg_fingerprint", "REGISTRANDO HUELLA...");
     const interactive = `${projectRoot.value}/plugins/biometria/run_interactive.sh`;
     const py = "python3";
     const script = `${projectRoot.value}/plugins/biometria/enroll_finger.py`;
@@ -2617,7 +2616,7 @@ const registerMasterPassword = () => {
                     </div>
                     <div v-if="!isSidebarCollapsed" class="ml-2 flex flex-col">
                         <span
-                            class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none">Assistant</span>
+                            class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none">{{ t('ui_assistant', 'Assistant') }}</span>
                         <span
                             class="text-[8px] font-mono text-cyan-500/60 font-bold uppercase tracking-tighter leading-none">{{
                                 version.replace(' Edition', '') }}</span>
@@ -3606,8 +3605,8 @@ const registerMasterPassword = () => {
                                             <i class="fa-solid fa-brain text-4xl text-indigo-400"></i>
                                         </div>
                                         <span
-                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10">Dominio<br><span
-                                                class="text-indigo-400 text-lg">Inteligencia</span></span>
+                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10">{{ t('ui_domain', 'Dominio') }}<br><span
+                                                class="text-indigo-400 text-lg">{{ t('ui_dom_intel', 'Inteligencia') }}</span></span>
                                     </button>
 
                                     <!-- DOMINIO VISUAL (TV, Timbre, Iluminación) -->
@@ -3621,8 +3620,8 @@ const registerMasterPassword = () => {
                                             <i class="fa-solid fa-eye text-4xl text-purple-400"></i>
                                         </div>
                                         <span
-                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10">Dominio<br><span
-                                                class="text-purple-400 text-lg">Visual</span></span>
+                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10">{{ t('ui_domain', 'Dominio') }}<br><span
+                                                class="text-purple-400 text-lg">{{ t('ui_dom_visual', 'Visual') }}</span></span>
                                     </button>
 
                                     <!-- DOMINIO HABITAT (Aire, Ventanas, Riego, etc) -->
@@ -3636,8 +3635,8 @@ const registerMasterPassword = () => {
                                             <i class="fa-solid fa-leaf text-4xl text-emerald-400"></i>
                                         </div>
                                         <span
-                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10">Dominio<br><span
-                                                class="text-emerald-400 text-lg">Habitat</span></span>
+                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10">{{ t('ui_domain', 'Dominio') }}<br><span
+                                                class="text-emerald-400 text-lg">{{ t('ui_dom_habitat', 'Habitat') }}</span></span>
                                     </button>
 
                                     <!-- DOMINIO SEGURIDAD (Biometría, Cámaras, Puertas) -->
@@ -3651,8 +3650,8 @@ const registerMasterPassword = () => {
                                             <i class="fa-solid fa-shield-halved text-4xl text-red-400"></i>
                                         </div>
                                         <span
-                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10">Dominio<br><span
-                                                class="text-red-400 text-lg">Seguridad</span></span>
+                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10">{{ t('ui_domain', 'Dominio') }}<br><span
+                                                class="text-red-400 text-lg">{{ t('ui_dom_security', 'Seguridad') }}</span></span>
                                     </button>
                                 </div>
                             </div>
@@ -4205,7 +4204,7 @@ const registerMasterPassword = () => {
                                                             </div>
                                                             <button v-if="!dev.assignedType"
                                                                 @click="assigningDeviceIp = assigningDeviceIp === dev.ip ? null : dev.ip; customDeviceName = dev.vendor || ''; customDeviceRoom = 'Living'"
-                                                                class="px-4 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500 text-white text-[9px] font-black uppercase transition-all">Asignar</button>
+                                                                class="px-4 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500 text-white text-[9px] font-black uppercase transition-all">{{ t('ui_assign', 'Asignar') }}</button>
                                                             <div v-else class="flex items-center gap-3">
                                                                 <span
                                                                     class="px-3 py-1 rounded-lg bg-green-500/10 text-green-400 text-[10px] font-black uppercase border border-green-500/20 italic">{{
@@ -4461,9 +4460,7 @@ const registerMasterPassword = () => {
                                         <!-- BOTÓN GENERAL DE GUARDADO -->
                                         <div class="mt-6 pt-6 border-t border-white/5 flex justify-end">
                                             <button @click="saveSettings"
-                                                class="px-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-full font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-purple-900/40 active:scale-95 transition-all text-white">
-                                                GUARDAR AJUSTES TV
-                                            </button>
+                                                class="px-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-full font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-purple-900/40 active:scale-95 transition-all text-white"> {{ t('ui_save_tv_settings', 'GUARDAR AJUSTES TV') }} </button>
                                         </div>
                                     </div>
 
@@ -4472,9 +4469,7 @@ const registerMasterPassword = () => {
                                         class="animate-in fade-in slide-in-from-right-4 duration-500">
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter mb-10 flex items-center gap-4">
-                                            <span class="w-12 h-1 bg-purple-500 rounded-full"></span>
-                                            Visual: Timbre Tuya
-                                        </h3>
+                                            <span class="w-12 h-1 bg-purple-500 rounded-full"></span> {{ t('ui_timbre_title', 'Visual: Timbre Tuya') }} </h3>
                                         <div class="space-y-6">
                                             <div class="flex flex-col gap-2">
                                                 <label
@@ -4516,9 +4511,7 @@ const registerMasterPassword = () => {
                                         class="animate-in fade-in slide-in-from-right-4 duration-500">
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter mb-10 flex items-center gap-4">
-                                            <span class="w-12 h-1 bg-purple-500 rounded-full"></span>
-                                            Visual: Iluminación
-                                        </h3>
+                                            <span class="w-12 h-1 bg-purple-500 rounded-full"></span> {{ t('ui_lighting_title', 'Visual: Iluminación') }} </h3>
                                         <div class="grid grid-cols-3 gap-6">
                                             <div v-for="luz in ['Living Principal', 'Cocina', 'Dormitorio', 'Pasillo']"
                                                 :key="luz"
@@ -4537,18 +4530,16 @@ const registerMasterPassword = () => {
                                         class="animate-in fade-in slide-in-from-right-4 duration-500 flex flex-col h-full">
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter mb-6 flex items-center gap-4">
-                                            <span class="w-12 h-1 bg-red-500 rounded-full"></span>
-                                            Seguridad Avanzada Fina
-                                        </h3>
+                                            <span class="w-12 h-1 bg-red-500 rounded-full"></span> {{ t('ui_security_title', 'Seguridad Avanzada Fina') }} </h3>
 
                                         <!-- TABLA SUPERIOR (Bio, Camaras, Puertas) -->
                                         <div v-if="activeSettingsTab === 'biometria'" class="space-y-6">
                                             <div class="flex gap-4 mb-6">
-                                                <button v-for="bio in ['huella', 'facial', 'voz']" :key="bio"
+                                                <button v-for="bio in ['ui_bio_finger', 'ui_bio_facial', 'ui_bio_voice']" :key="bio"
                                                     @click="activeBioTab = bio"
                                                     :class="activeBioTab === bio ? 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'bg-white/5 text-slate-400 hover:text-white'"
                                                     class="px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest transition-all border border-transparent hover:border-white/10">
-                                                    {{ bio }}
+                                                    {{ t('ui_bio_' + bio, bio) }}
                                                 </button>
                                             </div>
 
@@ -4649,7 +4640,7 @@ const registerMasterPassword = () => {
                                                         class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-bold text-slate-400">Grid
                                                         2x4</button>
                                                     <button
-                                                        class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-bold text-slate-400">List</button>
+                                                        class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-bold text-slate-400">{{ t('ui_btn_list', 'Listado') }}</button>
                                                 </div>
                                             </div>
                                             <div class="grid grid-cols-4 gap-4 flex-1">
@@ -4684,7 +4675,7 @@ const registerMasterPassword = () => {
                                                         Garaje</h4>
                                                     <div class="flex gap-2">
                                                         <span
-                                                            class="px-4 py-1.5 rounded-full bg-red-500/20 text-red-500 text-[10px] font-black uppercase">Cerrado</span>
+                                                            class="px-4 py-1.5 rounded-full bg-red-500/20 text-red-500 text-[10px] font-black uppercase">{{ t('ui_closed', 'Cerrado') }}</span>
                                                         <span
                                                             class="px-4 py-1.5 rounded-full bg-slate-800 text-slate-500 text-[10px] font-black uppercase">Wifi</span>
                                                     </div>
@@ -4756,7 +4747,7 @@ const registerMasterPassword = () => {
                                                                     class="text-xs font-black text-emerald-400/40 ml-2">W</span>
                                                             </div>
                                                             <span
-                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">Potencia</span>
+                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">{{ t('ui_power', 'Potencia') }}</span>
                                                         </div>
                                                         <div class="w-px h-12 bg-white/10">
                                                         </div>
@@ -4770,7 +4761,7 @@ const registerMasterPassword = () => {
                                                                     class="text-xs font-black text-purple-400/40 ml-1">kWh</span>
                                                             </div>
                                                             <span
-                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">Acumulado</span>
+                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">{{ t('ui_accumulated', 'Acumulado') }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -4794,13 +4785,13 @@ const registerMasterPassword = () => {
                                                     <div
                                                         class="flex justify-between items-center border-b border-emerald-500/10 pb-2">
                                                         <span
-                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Temperatura</span>
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest">{{ t('ui_temperature', 'Temperatura') }}</span>
                                                         <span class="text-xs font-mono font-bold text-white">{{
                                                             acState.temp }}°C</span>
                                                     </div>
                                                     <div class="flex justify-between items-center">
                                                         <span
-                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Modo</span>
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest">{{ t('ui_mode', 'Modo') }}</span>
                                                         <span class="text-xs font-black text-white uppercase">{{
                                                             acState.mode }}</span>
                                                     </div>
@@ -4866,12 +4857,12 @@ const registerMasterPassword = () => {
                         <div class="p-10 space-y-8">
                             <div class="grid grid-cols-2 gap-6 w-full text-center">
                                 <div class="p-5 bg-white/5 rounded-3xl border border-white/5">
-                                    <span class="text-[9px] font-black text-slate-500 uppercase block mb-1">Autor</span>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase block mb-1">{{ t('ui_author', 'Autor') }}</span>
                                     <span class="text-sm font-bold text-slate-200">Dankopetro</span>
                                 </div>
                                 <div class="p-5 bg-white/5 rounded-3xl border border-white/5">
                                     <span
-                                        class="text-[9px] font-black text-slate-500 uppercase block mb-1">Creado</span>
+                                        class="text-[9px] font-black text-slate-500 uppercase block mb-1">{{ t('ui_created', 'Creado') }}</span>
                                     <span class="text-sm font-bold text-slate-200 uppercase">{{ buildDate }}</span>
                                 </div>
                             </div>
@@ -4882,7 +4873,7 @@ const registerMasterPassword = () => {
                                 también)"
                             </p>
                             <button @click="showCredits = false"
-                                class="w-full h-14 rounded-3xl bg-cyan-500 text-[#020617] font-black text-xs uppercase tracking-widest shadow-xl shadow-cyan-900/30">Cerrar</button>
+                                class="w-full h-14 rounded-3xl bg-cyan-500 text-[#020617] font-black text-xs uppercase tracking-widest shadow-xl shadow-cyan-900/30">{{ t('ui_close', 'Cerrar') }}</button>
                         </div>
                     </div>
                 </div>
@@ -5226,7 +5217,7 @@ const registerMasterPassword = () => {
 
                             <div class="space-y-2">
                                 <label
-                                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Destinatario</label>
+                                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{{ t('ui_recipient', 'Destinatario') }}</label>
                                 <div class="relative">
                                     <i
                                         class="fa-solid fa-address-book absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
@@ -5237,7 +5228,7 @@ const registerMasterPassword = () => {
 
                             <div v-if="commMode === 'sms'" class="space-y-2">
                                 <label
-                                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Mensaje</label>
+                                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{{ t('ui_message', 'Mensaje') }}</label>
                                 <textarea v-model="commBody" rows="4" placeholder="Escribe tu mensaje aquí..."
                                     class="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-4 text-sm font-medium text-slate-300 outline-none focus:border-cyan-500/50 transition-all placeholder-slate-700 resize-none"></textarea>
                             </div>
