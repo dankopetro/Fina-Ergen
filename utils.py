@@ -196,31 +196,86 @@ except Exception as e:
     logger.error(f"❌ Error cargando lang.json: {e}")
 
 def get_sys_lang():
-    # 1. Preferencia establecida en la UI?
+    """Detecta el idioma del sistema con múltiples métodos de respaldo.
+    Funciona tanto en terminal como cuando se lanza desde el escritorio (ej: .deb instalado).
+    """
+    # 1. Preferencia guardada explícitamente por el usuario en la UI
     lang = get_unified_config("FINA_LANGUAGE")
     if lang and lang in I18N_DATA:
         return lang
-        
-    # 2. Detección por variables de entorno (Prioritario en Linux)
-    for env_var in ['LANG', 'LC_ALL', 'LC_CTYPE']:
-        env_val = os.environ.get(env_var, '')
-        if env_val:
-            detected = env_val.split('_')[0].split('.')[0].lower()
-            if detected in I18N_DATA:
+
+    # 2. Variables de entorno del proceso actual (funciona en terminal)
+    for env_var in ['LANG', 'LC_ALL', 'LC_CTYPE', 'LANGUAGE']:
+        env_val = os.environ.get(env_var, '').strip()
+        if env_val and env_val not in ('C', 'POSIX', 'C.UTF-8'):
+            detected = env_val.split('_')[0].split('.')[0].split(':')[0].lower()
+            if detected and detected in I18N_DATA:
+                logger.info(f"🌍 Idioma detectado por variable {env_var}={env_val} → '{detected}'")
                 return detected
 
-    # 3. Detección por módulo locale (Fallback)
-    try:    
-        import locale
-        sys_locale, _ = locale.getdefaultlocale()
+    # 3. Leer /etc/default/locale (persistente en sistemas Debian/Ubuntu)
+    try:
+        with open('/etc/default/locale', 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith('LANG=') or line.startswith('LANGUAGE='):
+                    val = line.split('=', 1)[1].strip().strip('"').strip("'")
+                    detected = val.split('_')[0].split('.')[0].lower()
+                    if detected and detected in I18N_DATA:
+                        logger.info(f"🌍 Idioma detectado por /etc/default/locale → '{detected}'")
+                        return detected
+    except Exception:
+        pass
+
+    # 4. Leer ~/.config/locale.conf o ~/.pam_environment (específico del usuario)
+    try:
+        home = os.path.expanduser('~')
+        for path in [os.path.join(home, '.config', 'locale.conf'),
+                     os.path.join(home, '.pam_environment'),
+                     '/etc/locale.conf']:
+            if os.path.exists(path):
+                with open(path, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line.startswith('LANG=') or line.startswith('LANGUAGE='):
+                            val = line.split('=', 1)[1].strip().strip('"').strip("'")
+                            detected = val.split('_')[0].split('.')[0].lower()
+                            if detected and detected in I18N_DATA:
+                                logger.info(f"🌍 Idioma detectado por {path} → '{detected}'")
+                                return detected
+    except Exception:
+        pass
+
+    # 5. Ejecutar 'locale' como comando externo (último recurso en Linux/macOS)
+    try:
+        import subprocess as _sp
+        result = _sp.run(['locale'], capture_output=True, text=True, timeout=2)
+        for line in result.stdout.splitlines():
+            if line.startswith('LANG=') or line.startswith('LC_MESSAGES='):
+                val = line.split('=', 1)[1].strip().strip('"').strip("'")
+                if val and val not in ('C', 'POSIX'):
+                    detected = val.split('_')[0].split('.')[0].lower()
+                    if detected and detected in I18N_DATA:
+                        logger.info(f"🌍 Idioma detectado por comando 'locale' → '{detected}'")
+                        return detected
+    except Exception:
+        pass
+
+    # 6. Módulo locale de Python
+    try:
+        import locale as _locale
+        sys_locale, _ = _locale.getdefaultlocale()
         if sys_locale:
             detected = sys_locale.split('_')[0].lower()
-            if detected in I18N_DATA:
+            if detected and detected in I18N_DATA:
+                logger.info(f"🌍 Idioma detectado por locale.getdefaultlocale() → '{detected}'")
                 return detected
-    except: pass
-        
-    # 4. Fallback final: Inglés
-    return "en"
+    except Exception:
+        pass
+
+    # 7. Fallback final
+    logger.warning("⚠️ No se pudo detectar el idioma del sistema. Usando 'es' por defecto para Argentina/España.")
+    return "es"
 
 def i18n(key, fallback=""):
     lang = get_sys_lang()
