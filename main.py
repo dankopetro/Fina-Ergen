@@ -131,7 +131,8 @@ from utils import (
     tv_open_app_cmd, tv_exit_app_cmd, tv_set_channel_cmd, tv_mute_cmd, is_tv_on, 
     ensure_tv_is_on,    tv_set_input_cmd, get_doorbell_status_cmd, show_doorbell_image, 
     show_doorbell_stream, send_ui_command, check_system_dependencies, is_code_worthy,
-    CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config
+    CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config,
+    get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine
 )
 # --- DEFERRED IMPORTS (Lazy Loading to prevent startup crash) ---
 # Moveremos biometría y plugins dentro de main() para que la ventana se abra primero
@@ -175,7 +176,6 @@ def get_unified_config(key, default=None):
     """Prioriza settings.json (UI) sobre config.py (Código)"""
     # 1. Intentar desde settings.json
     try:
-        from utils import SETTINGS_PATH
         if os.path.exists(SETTINGS_PATH):
             with open(SETTINGS_PATH, 'r') as f:
                 data = json.load(f)
@@ -279,7 +279,7 @@ async def resolve_contact_proactive(query, contacts, voice_model, model_for_list
         if not choice or "cancela" in choice: return None, None
         
         # 1. Intentar por número
-        from utils import text_to_number_es
+        pass
         idx = text_to_number_es(choice)
         if idx and 1 <= idx <= len(final_candidates):
             res_name, res_num = final_candidates[idx-1][1], final_candidates[idx-1][2]
@@ -321,7 +321,6 @@ def get_all_voice_models():
     
     # 1. Buscar en Carpeta de Usuario (~/.config/Fina/voice_models)
     # 2. Buscar en Ruta personalizada de la Interfaz
-    from utils import get_unified_config, CONFIG_DIR
     user_custom_path = get_unified_config("VOICE_MODELS_PATH")
     
     search_dirs = [os.path.join(CONFIG_DIR, "voice_models"), os.path.join(PROJECT_ROOT, "voice_models")]
@@ -579,7 +578,7 @@ async def main():
                 if response:
                     intent_response, _ = detect_intent(response.lower())
                     if intent_response == "yes":
-                        from utils import get_proactive_briefing
+                        update_ui_state("idle", "SISTEMA LISTO. Diga Fina.")
                         update_ui_state("speaking", "Preparando noticias...")
                         # Usar la nueva función robusta
                         briefing = get_proactive_briefing(selected_voice_model)
@@ -866,7 +865,6 @@ async def main():
                     speak("Autenticación fallida.", selected_voice_model)
             elif intent == "suspend":
                 # Suspender (require auth)
-                from utils import suspend
                 suspend(selected_voice_model)
             elif intent == "play_music":
                 play_music(selected_voice_model)
@@ -938,7 +936,6 @@ async def main():
             
             # --- MOBILE MESSAGING ---
             elif intent == "send_message":
-                from utils import load_contacts
                 
                 # 1. Contacto
                 contacts = load_contacts()
@@ -994,7 +991,6 @@ async def main():
                     speak("Cancelado. No se capturó ningún mensaje.", selected_voice_model)
 
             elif intent == "make_call":
-                from utils import load_contacts
                 
                 contacts = load_contacts()
                 target_name, target_number = await resolve_contact_proactive(commandFinal, contacts, selected_voice_model, model)
@@ -1073,7 +1069,6 @@ async def main():
                 speak(result, selected_voice_model)
 
             elif intent == "news":
-                from utils import get_proactive_briefing
                 # Usar la nueva función robusta basada en RSS
                 news = get_proactive_briefing(selected_voice_model)
                 speak(news, selected_voice_model)
@@ -1128,7 +1123,6 @@ async def main():
                     nums = re.findall(r'(\d+)', txt)
                     if nums: return float(nums[0])
                     # 2. Palabras
-                    from utils import text_to_number_es
                     val = text_to_number_es(txt)
                     if val: return float(val)
                     return 0.0
@@ -1500,7 +1494,6 @@ def handle_exit(signum, frame):
     
     # Detener motor de voz
     try:
-        from utils import stop_voice_engine
         stop_voice_engine()
         logger.info("Motor de voz detenido")
     except Exception as e:
