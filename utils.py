@@ -533,28 +533,28 @@ def _voice_engine_worker():
     ]
     for loc in potential_locations:
         if os.path.exists(loc):
-                # Intentar dar permisos si faltan
-                if not os.access(loc, os.X_OK):
-                    try: 
-                        import stat
-                        os.chmod(loc, os.stat(loc).st_mode | stat.S_IEXEC)
-                    except: pass
-                
-                if os.access(loc, os.X_OK):
-                    piper_path = loc
-                    break
+            # Intentar dar permisos si faltan
+            if not os.access(loc, os.X_OK):
+                try: 
+                    import stat
+                    os.chmod(loc, os.stat(loc).st_mode | stat.S_IEXEC)
+                except: pass
             
-            # 2. Intentar con el sufijo de Tauri (sidecar)
-            sidecar = f"{loc}-x86_64-unknown-linux-gnu"
-            if os.path.exists(sidecar):
-                if not os.access(sidecar, os.X_OK):
-                    try:
-                        import stat
-                        os.chmod(sidecar, os.stat(sidecar).st_mode | stat.S_IEXEC)
-                    except: pass
-                if os.access(sidecar, os.X_OK):
-                    piper_path = sidecar
-                    break
+            if os.access(loc, os.X_OK):
+                piper_path = loc
+                break
+        
+        # 2. Intentar con el sufijo de Tauri (sidecar)
+        sidecar = f"{loc}-x86_64-unknown-linux-gnu"
+        if os.path.exists(sidecar):
+            if not os.access(sidecar, os.X_OK):
+                try:
+                    import stat
+                    os.chmod(sidecar, os.stat(sidecar).st_mode | stat.S_IEXEC)
+                except: pass
+            if os.access(sidecar, os.X_OK):
+                piper_path = sidecar
+                break
 
     if not piper_path:
         piper_path = shutil.which("piper")
