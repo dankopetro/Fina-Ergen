@@ -132,7 +132,7 @@ from utils import (
     ensure_tv_is_on,    tv_set_input_cmd, get_doorbell_status_cmd, show_doorbell_image, 
     show_doorbell_stream, send_ui_command, check_system_dependencies, is_code_worthy,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config,
-    get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine
+    get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine, i18n
 )
 # --- DEFERRED IMPORTS (Lazy Loading to prevent startup crash) ---
 # Moveremos biometría y plugins dentro de main() para que la ventana se abra primero
@@ -488,7 +488,7 @@ async def main():
             
     except Exception as e:
         logger.error(f"Error general en arranque: {e}")
-        update_ui_state("idle", "ERROR EN ARRANQUE")
+        update_ui_state("idle", i18n("ui_startup_error", "ERROR EN ARRANQUE"))
 
     proactive_briefing_given = False
     user_is_authenticated = False
@@ -517,7 +517,7 @@ async def main():
     except ImportError as e:
         msg = f"Faltan dependencias críticas: {e}."
         print(f"❌ {msg}")
-        update_ui_state("idle", "ALERTA: FALTAN LIBRERÍAS")
+        update_ui_state("idle", i18n("ui_missing_libs_alert", "ALERTA: FALTAN LIBRERÍAS"))
     # ----------------------------------------
 
     while True:
@@ -545,17 +545,17 @@ async def main():
                         update_ui_state("speaking", utils.i18n("auth_success", "Autenticación Exitosa"))
                         speak("Autenticación Exitosa", temp_voice_model)
                     else:
-                        speak("Autenticación fallida.", temp_voice_model)
+                        speak(i18n("msg_auth_failed", "Autenticación fallida."), temp_voice_model)
                         continue
                 
                 # Si ya está autenticado o acaba de autenticarse con éxito
-                update_ui_state("speaking", "Esperando Comando...")
+                update_ui_state("speaking", i18n("ui_waiting_command", "Esperando Comando..."))
                 speak("Esperando Comando...", temp_voice_model if 'temp_voice_model' in locals() else selected_voice_model)
                 break 
             else:
                 # Si se detectó ruido pero no fue la palabra clave con confianza
                 if len(command.split()) > 0:
-                   speak("Intente de nuevo.", selected_voice_model)
+                   speak(i18n("msg_try_again", "Intente de nuevo."), selected_voice_model)
                 continue
 
         # Always reset to Daniela after wake-up
@@ -571,20 +571,20 @@ async def main():
                 # Eliminada la actualización redundante previa.
                 # update_ui_state("speaking", "¿Querés las noticias?") <- ESTA ERA LA DUPLICADA
                 
-                speak("¿Querés que te cuente las noticias?", selected_voice_model)
+                speak(i18n("msg_news_query", "¿Querés que te cuente las noticias?"), selected_voice_model)
                 
                 update_ui_state("listening", utils.i18n("waiting_response", "Esperando respuesta..."))
                 response = listen(model, language=sys_lang)
                 if response:
                     intent_response, _ = detect_intent(response.lower())
                     if intent_response == "yes":
-                        update_ui_state("idle", "SISTEMA LISTO. Diga Fina.")
-                        update_ui_state("speaking", "Preparando noticias...")
+                        update_ui_state("idle", i18n("ui_system_ready_diga_fina", "SISTEMA LISTO. Diga Fina."))
+                        update_ui_state("speaking", i18n("ui_preparing_news", "Preparando noticias..."))
                         # Usar la nueva función robusta
                         briefing = get_proactive_briefing(selected_voice_model)
                         speak(briefing, selected_voice_model)
                     else:
-                        speak("Entendido, continuemos.", selected_voice_model)
+                        speak(i18n("msg_understood_continue", "Entendido, continuemos."), selected_voice_model)
             except Exception as e:
                 logger.warning(f"Could not deliver proactive briefing: {e}")
             proactive_briefing_given = True
@@ -601,7 +601,7 @@ async def main():
             if not listen_result or listen_result[0] is None:
                 # Si no hay comando (timeout), volvemos al estado idle (Azul Profundo)
                 # update_ui_state("speaking", "Me quedo atenta")
-                speak("Descanso el oido pero me quedo atenta por si me necesitás. Hasta luego.", selected_voice_model)
+                speak(i18n("msg_resting_listening", "Descanso el oido pero me quedo atenta por si me necesitás. Hasta luego."), selected_voice_model)
                 update_ui_state("idle", None)
                 break # Rompemos el bucle de conversación para volver al wake_word loop
             
@@ -635,7 +635,7 @@ async def main():
                 if is_admin:
                     speak(f"Hola Administrador. Te reconozco. ¿Qué necesitas?", selected_voice_model)
                 else:
-                    speak("Tu voz no coincide con la de Administrador. Acceso denegado.", selected_voice_model)
+                    speak(i18n("msg_voice_mismatch", "Tu voz no coincide con la de Administrador. Acceso denegado."), selected_voice_model)
                 continue
             # -------------------------------------------
 
@@ -657,15 +657,15 @@ async def main():
             if intent == "exit_fina":
                 # SEGURIDAD: Solo Administrador puede apagar el sistema completo.
                 if not is_admin:
-                    speak("Protocolo de seguridad activo. Valida tu identidad con huella para apagar el sistema.", selected_voice_model)
+                    speak(i18n("msg_security_protocol_shutdown", "Protocolo de seguridad activo. Valida tu identidad con huella para apagar el sistema."), selected_voice_model)
                     if not authenticate_user(voice_model=selected_voice_model, speak_func=speak):
-                        speak("Acceso denegado. No se puede apagar el sistema.", selected_voice_model)
+                        speak(i18n("msg_access_denied_shutdown", "Acceso denegado. No se puede apagar el sistema."), selected_voice_model)
                         continue
                 
                 # Acceso Concedido
                 selected_voice_model, _ = get_current_voice_info()
                 # update_ui_state("speaking", "Apagando Sistemas")
-                speak("Autorización confirmada. Apagando todos los sistemas.", selected_voice_model)
+                speak(i18n("msg_auth_confirmed_shutdown", "Autorización confirmada. Apagando todos los sistemas."), selected_voice_model)
                 update_ui_state("idle", "shutdown")
                 print("🛑 EJECUTANDO PROTOCOLO DE APAGADO TOTAL (AUTORIZADO)...")
                 
@@ -706,7 +706,7 @@ async def main():
 
                 # Si fallamos 3 veces seguidas (por ruido o incomprensión), nos vamos a dormir.
                 if consecutive_failures >= 3:
-                    speak("Estoy aquí por si me necesitas. Descanso.", selected_voice_model)
+                    speak(i18n("msg_i_am_here", "Estoy aquí por si me necesitas. Descanso."), selected_voice_model)
                     update_ui_state("idle", utils.i18n("idle_msg", "Diga 'Fina' para empezar"))
                     break # ROMPER BUCLE -> Volver a esperar "Fina"
 
@@ -749,7 +749,7 @@ async def main():
                      continue # Continuar escuchando
 
                 # Caso C: Frase media que no es IA ni comando -> "No te entendí"
-                speak("No te entendí. Intente de nuevo.", selected_voice_model)
+                speak(i18n("msg_not_understood_retry", "No te entendí. Intente de nuevo."), selected_voice_model)
                 continue
             
             # --- Fin Lógica Ruido ---
@@ -771,7 +771,7 @@ async def main():
                 
                 while attempts < max_attempts:
                     attempts += 1
-                    update_ui_state("authenticating", f"Verificando Voz ({attempts}/{max_attempts})")
+                    update_ui_state("authenticating", i18n("ui_checking_voice", "Verificando Voz ({attempts}/{max_attempts})").format(attempts=attempts, max_attempts=max_attempts))
                     
                     if attempts > 1:
                         speak(f"Intento {attempts}. Hable ahora.", selected_voice_model)
@@ -798,35 +798,35 @@ async def main():
                     # Si falló la auth o no hubo audio
                     if not authenticated:
                         if attempts < max_attempts:
-                            speak("Voz no reconocida. Reintentando.", selected_voice_model)
+                            speak(i18n("msg_voice_not_recon_retry", "Voz no reconocida. Reintentando."), selected_voice_model)
                         else:
-                            speak("Fallo crítico de reconocimiento de voz. Iniciando protocolos de emergencia.", selected_voice_model)
+                            speak(i18n("msg_voice_recon_fatal", "Fallo crítico de reconocimiento de voz. Iniciando protocolos de emergencia."), selected_voice_model)
 
                 # Si falla la voz tras 3 intentos, pasamos a Huella + Contraseña
                 if not authenticated:
-                    speak("Por favor, use su huella dactilar para continuar.", selected_voice_model)
-                    update_ui_state("authenticating", "Esperando Huella...")
+                    speak(i18n("msg_fingerprint_prompt", "Por favor, use su huella dactilar para continuar."), selected_voice_model)
+                    update_ui_state("authenticating", i18n("ui_waiting_fingerprint", "Esperando Huella..."))
                     
                     # authenticate_user maneja huella y contraseña (fallback interno)
                     # Pero el usuario pidió explícitamente "Huella MÁS contraseña" con reglas estrictas
                     if authenticate_user(voice_model=selected_voice_model, speak_func=speak):
                         authenticated = True
                     else:
-                        speak("Autenticación fallida totalmente. El sistema permanecerá activo.", selected_voice_model)
+                        speak(i18n("msg_auth_failed_total", "Autenticación fallida totalmente. El sistema permanecerá activo."), selected_voice_model)
                         update_ui_state("idle", utils.i18n("idle_msg", "Diga 'Fina' para empezar"))
                         continue
 
                 if authenticated:
-                    speak("Identidad confirmada plenamente. Hasta luego Administrador.", selected_voice_model)
+                    speak(i18n("msg_identity_confirmed_admin", "Identidad confirmada plenamente. Hasta luego Administrador."), selected_voice_model)
                     # No cerramos el programa con return para que pueda despertar con "Fina"
                     sleep_now(selected_voice_model)
                 else:
-                    speak("Acceso denegado. El sistema permanecerá activo por seguridad.", selected_voice_model)
+                    speak(i18n("msg_access_denied_security", "Acceso denegado. El sistema permanecerá activo por seguridad."), selected_voice_model)
                     update_ui_state("idle", utils.i18n("idle_msg", "Diga 'Fina' para empezar"))
                     continue
 
             elif intent == "train_voice":
-                speak("Iniciando modo de entrenamiento de voz. Preparate para hablar.", selected_voice_model)
+                speak(i18n("msg_voice_train_start", "Iniciando modo de entrenamiento de voz. Preparate para hablar."), selected_voice_model)
                 train_script = os.path.join(GLOBAL_ROOT, "train_voice.py")
                 subprocess.Popen(["python3", train_script], 
                                env=os.environ, start_new_session=True)
@@ -837,32 +837,32 @@ async def main():
                 continue
             elif intent == "shutdown":
                 if is_admin:
-                    speak("Apagando el sistema, Administrador.", selected_voice_model)
+                    speak(i18n("msg_shutdown_admin", "Apagando el sistema, Administrador."), selected_voice_model)
                     shutdown(selected_voice_model)
                 elif authenticate_user(voice_model=selected_voice_model, speak_func=speak):  # Autenticación con huella fallback
-                    speak("¿Realmente queres apagar el sistema?", selected_voice_model)
+                    speak(i18n("msg_shutdown_query", "¿Realmente queres apagar el sistema?"), selected_voice_model)
                     command = listen(model, language=sys_lang)
                     intent , confidence = detect_intent(command)
                     if intent == "yes":
                         shutdown(selected_voice_model)
                     else:
-                        speak("Entendido!", selected_voice_model)
+                        speak(i18n("msg_understood_excl", "Entendido!"), selected_voice_model)
                 else:
-                    speak("Autenticación fallida. Acceso denegado.", selected_voice_model)
+                    speak(i18n("msg_auth_failed_denied", "Autenticación fallida. Acceso denegado."), selected_voice_model)
             elif intent == "restart_pc":
                 if is_admin:
-                    speak("Reiniciando el sistema, Administrador.", selected_voice_model)
+                    speak(i18n("msg_reboot_admin", "Reiniciando el sistema, Administrador."), selected_voice_model)
                     reboot(selected_voice_model)
                 elif authenticate_user(voice_model=selected_voice_model, speak_func=speak):
-                    speak("¿Realmente querés reiniciar la computadora?", selected_voice_model)
+                    speak(i18n("msg_reboot_query", "¿Realmente querés reiniciar la computadora?"), selected_voice_model)
                     command = listen(model, language=sys_lang)
                     intent_confirm, _ = detect_intent(command)
                     if intent_confirm == "yes":
                         reboot(selected_voice_model)
                     else:
-                        speak("Entendido!", selected_voice_model)
+                        speak(i18n("msg_understood_excl", "Entendido!"), selected_voice_model)
                 else:
-                    speak("Autenticación fallida.", selected_voice_model)
+                    speak(i18n("msg_auth_failed", "Autenticación fallida."), selected_voice_model)
             elif intent == "suspend":
                 # Suspender (require auth)
                 suspend(selected_voice_model)
@@ -872,7 +872,7 @@ async def main():
                 stop_music(selected_voice_model)
             
             elif intent == "hangup_doorbell":
-                speak("Cortando comunicación con el timbre...", selected_voice_model)
+                speak(i18n("msg_doorbell_hangup", "Cortando comunicación con el timbre..."), selected_voice_model)
                 try:
                     subprocess.run(["python3", os.path.join(PROJECT_ROOT, "scripts", "hangup_doorbell.py")], check=False)
                 except Exception as e:
@@ -883,7 +883,7 @@ async def main():
                 try:
                     import msmart
                 except ImportError:
-                    speak("Para controlar el aire acondicionado, precisás instalar las dependencias de ese módulo desde la carpeta plugins clima.", selected_voice_model)
+                    speak(i18n("msg_ac_deps_error", "Para controlar el aire acondicionado, precisás instalar las dependencias de ese módulo desde la carpeta plugins clima."), selected_voice_model)
                     continue
                 
                 # Lógica simple de extracción de comandos para el aire
@@ -891,23 +891,23 @@ async def main():
                 py_path = sys.executable
                 
                 if "apaga" in commandFinal or "cerrar" in commandFinal:
-                    speak("Apagando el aire acondicionado...", selected_voice_model)
-                    subprocess.run([py_path, cmd_script, "--power", "off"], check=False)
+                    speak(i18n("msg_ac_turning_off", "Apagando el aire acondicionado..."), selected_voice_model)
+                    subprocess.run([py_path, cmd_script, "--power", "off", "--lang", sys_lang], check=False)
                 elif "prende" in commandFinal or "encender" in commandFinal:
-                    speak("Encendiendo el aire acondicionado...", selected_voice_model)
-                    subprocess.run([py_path, cmd_script, "--power", "on"], check=False)
+                    speak(i18n("msg_ac_turning_on", "Encendiendo el aire acondicionado..."), selected_voice_model)
+                    subprocess.run([py_path, cmd_script, "--power", "on", "--lang", sys_lang], check=False)
                 elif "turbo" in commandFinal:
-                    speak("Activando el modo turbo...", selected_voice_model)
-                    subprocess.run([py_path, cmd_script, "--turbo", "on"], check=False)
+                    speak(i18n("msg_ac_turbo_on", "Activando el modo turbo..."), selected_voice_model)
+                    subprocess.run([py_path, cmd_script, "--turbo", "on", "--lang", sys_lang], check=False)
                 else:
                     # Intentar buscar un número (temperatura)
                     temps = re.findall(r'\d+', commandFinal)
                     if temps:
                         t = temps[0]
-                        speak(f"Configurando el aire en {t} grados.", selected_voice_model)
-                        subprocess.run([py_path, cmd_script, "--temp", t], check=False)
+                        speak(i18n("msg_ac_temp_set").format(temp=t), selected_voice_model)
+                        subprocess.run([py_path, cmd_script, "--temp", t, "--lang", sys_lang], check=False)
                     else:
-                        speak("No entendí qué querés que haga con el aire.", selected_voice_model)
+                        speak(i18n("msg_ac_error", "No entendí qué querés que haga con el aire."), selected_voice_model)
             
             elif intent == "pause_music":
                 pause_music(selected_voice_model)
@@ -942,13 +942,13 @@ async def main():
                 target_name, target_number = await resolve_contact_proactive(commandFinal, contacts, selected_voice_model, model)
                 
                 if not target_number:
-                    speak("¿A quién le envío el mensaje?", selected_voice_model)
+                    speak(i18n("msg_sms_recipient_query", "¿A quién le envío el mensaje?"), selected_voice_model)
                     target_name_raw = listen(model, language=sys_lang)
                     if target_name_raw:
                         target_name, target_number = await resolve_contact_proactive(target_name_raw, contacts, selected_voice_model, model)
                         
                     if not target_number:
-                        speak("No encontré el contacto. Operación cancelada.", selected_voice_model)
+                        speak(i18n("msg_contact_not_found_cancel", "No encontré el contacto. Operación cancelada."), selected_voice_model)
                         continue
 
                 # 2. App
@@ -988,7 +988,7 @@ async def main():
                         "app": app_to_use
                     })
                 else:
-                    speak("Cancelado. No se capturó ningún mensaje.", selected_voice_model)
+                    speak(i18n("msg_cancel_no_msg", "Cancelado. No se capturó ningún mensaje."), selected_voice_model)
 
             elif intent == "make_call":
                 
@@ -996,13 +996,13 @@ async def main():
                 target_name, target_number = await resolve_contact_proactive(commandFinal, contacts, selected_voice_model, model)
                 
                 if not target_number:
-                     speak("¿A quién llamo?", selected_voice_model)
+                     speak(i18n("msg_call_recipient_query", "¿A quién llamo?"), selected_voice_model)
                      target_name_raw = listen(model, language=sys_lang)
                      if target_name_raw:
                         target_name, target_number = await resolve_contact_proactive(target_name_raw, contacts, selected_voice_model, model)
                 
                 if not target_number:
-                    speak("No encontré el contacto.", selected_voice_model)
+                    speak(i18n("msg_contact_not_found", "No encontré el contacto."), selected_voice_model)
                     continue
                 
                 if target_number:
@@ -1013,13 +1013,13 @@ async def main():
                     # usualmente shell tiene permisos. Si falla, usar DIAL.
                     subprocess.run(adb_cmd)
                 else:
-                    speak("No encontré el contacto.", selected_voice_model)
+                    speak(i18n("msg_contact_not_found", "No encontré el contacto."), selected_voice_model)
 
             elif intent == "read_email":
-                speak("Revisando tu bandeja de entrada...", selected_voice_model)
+                speak(i18n("msg_checking_inbox", "Revisando tu bandeja de entrada..."), selected_voice_model)
                 unread = count_recent_unread_emails(imap_server, EMAIL_USER, EMAIL_PASSWORD, 7)
                 speak(f"Tienes {unread} correos no leídos en los últimos 7 días", selected_voice_model)
-                speak("¿Quieres que los lea?", selected_voice_model)
+                speak(i18n("msg_read_emails_query", "¿Quieres que los lea?"), selected_voice_model)
                 reply = listen(model, language=sys_lang)
                 if detect_intent(reply.lower())[0] == "yes":
                     from_, subject, date_, unread_msg_nums = read_recent_unread_emails(imap_server, EMAIL_USER, EMAIL_PASSWORD, 7, 4)
@@ -1029,15 +1029,15 @@ async def main():
 
             elif intent == "send_email":
                 contacts = load_contacts()
-                speak("¿A quién querés enviar el correo?", selected_voice_model)
+                speak(i18n("msg_email_recipient_query", "¿A quién querés enviar el correo?"), selected_voice_model)
                 name = clean_input(listen(model, language=sys_lang))
                 email = contacts.get(name)
                 if email:
-                    speak("¿Asunto?", selected_voice_model)
+                    speak(i18n("msg_email_subject_query", "¿Asunto?"), selected_voice_model)
                     subject = listen(model, language=sys_lang)
-                    speak("¿Cuerpo del mensaje?", selected_voice_model)
+                    speak(i18n("msg_email_body_query", "¿Cuerpo del mensaje?"), selected_voice_model)
                     body = listen(model, language=sys_lang)
-                    speak("¿Querés que revise faltas de ortografía'?", selected_voice_model)
+                    speak(i18n("msg_check_grammar_query", "¿Querés que revise faltas de ortografía'?"), selected_voice_model)
                     if detect_intent(listen(model, language=sys_lang).lower())[0] == "yes":
                         body = await get_mistral_response(f"Fix grammar: {body}")
                     send_email(EMAIL_USER, EMAIL_PASSWORD, email, subject, body)
@@ -1047,7 +1047,7 @@ async def main():
 
             # Web search
             elif intent == "web_search":
-                speak("¿Qué tengo buscar?", selected_voice_model)
+                speak(i18n("msg_web_search_query", "¿Qué tengo buscar?"), selected_voice_model)
                 query = listen(model, language=sys_lang)
                 output, link = web_search(query)
                 speak(output, selected_voice_model)
@@ -1057,9 +1057,9 @@ async def main():
                 change_wallpaper(selected_voice_model)
 
             elif intent == "add_reminder":
-                speak("¿Qué debo recordarte?", selected_voice_model)
+                speak(i18n("msg_reminder_content_query", "¿Qué debo recordarte?"), selected_voice_model)
                 task = listen(model, language=sys_lang)
-                speak("¿Cuándo debo recordártelo? (ejemplo: 14:30)", selected_voice_model)
+                speak(i18n("msg_reminder_time_query", "¿Cuándo debo recordártelo? (ejemplo: 14:30)"), selected_voice_model)
                 time_str = listen(model, language=sys_lang)
                 result = add_reminder(task, time_str, selected_voice_model)
                 speak(result, selected_voice_model)
@@ -1078,7 +1078,7 @@ async def main():
                 speak(f"Batería restante {percentage} y {status}", selected_voice_model)
 
             elif intent == "wiki_summary":
-                speak("¿Qué debo buscar en Wikipedia?", selected_voice_model)
+                speak(i18n("msg_wiki_query", "¿Qué debo buscar en Wikipedia?"), selected_voice_model)
                 query = listen(model, language=sys_lang)
                 result = wiki_summary(query)
                 speak(result, selected_voice_model)
@@ -1106,9 +1106,9 @@ async def main():
                 speak(f"¿Qué quieres que haga en {found_loc}?", selected_voice_model)
 
             elif intent == "translate":
-                speak("¿Qué texto debo traducir?", selected_voice_model)
+                speak(i18n("msg_translate_query", "¿Qué texto debo traducir?"), selected_voice_model)
                 text = listen(model, language=sys_lang)
-                speak("¿A qué idioma?", selected_voice_model)
+                speak(i18n("msg_translate_lang", "¿A qué idioma?"), selected_voice_model)
                 lang = listen(model, language=sys_lang)
                 translated = translate_text(text, lang)
                 speak(translated, selected_voice_model)
@@ -1137,7 +1137,7 @@ async def main():
                         minutes = val
                 else:
                     # Preguntar si no se entendió
-                    speak("¿Cuántos minutos?", selected_voice_model)
+                    speak(i18n("msg_timer_minutes", "¿Cuántos minutos?"), selected_voice_model)
                     resp_text = listen(model, language=sys_lang)
                     if resp_text:
                         val_resp = extract_val(resp_text)
@@ -1159,13 +1159,13 @@ async def main():
                         
                     start_timer(minutes * 60, "¡Tiempo cumplido!", selected_voice_model)
                 else:
-                    speak("No entendí el tiempo para el temporizador.", selected_voice_model)
+                    speak(i18n("msg_timer_err", "No entendí el tiempo para el temporizador."), selected_voice_model)
 
             elif intent == "joke":
                 speak(tell_joke(), selected_voice_model)
 
             elif intent == "create_note":
-                speak("¿Qué debo escribir?", selected_voice_model)
+                speak(i18n("msg_note_content", "¿Qué debo escribir?"), selected_voice_model)
                 note = listen(model, language=sys_lang)
                 result = create_note(note)
                 speak(result, selected_voice_model)
@@ -1174,20 +1174,20 @@ async def main():
                 speak(get_current_datetime(), selected_voice_model)
 
             elif intent == "youtube_search":
-                speak("¿Qué busco en YouTube?", selected_voice_model)
+                speak(i18n("msg_youtube_query", "¿Qué busco en YouTube?"), selected_voice_model)
                 query = listen(model, language=sys_lang)
                 # Open YouTube search in Chrome browser
                 search_url = f"https://www.youtube.com/results?search_query={query.replace(' ', '+')}"
                 try:
                     subprocess.Popen(["google-chrome", search_url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                    speak(f"Abriendo búsqueda de YouTube en Chrome: {query}", selected_voice_model)
+                    speak(i18n("msg_youtube_opening_chrome").format(query=query), selected_voice_model)
                 except FileNotFoundError:
                     # Fallback to default browser
                     subprocess.run(f'firefox "{search_url}"', shell=True)
-                    speak(f"Abriendo búsqueda de YouTube: {query}", selected_voice_model)
+                    speak(i18n("msg_youtube_opening_firefox").format(query=query), selected_voice_model)
 
             elif intent == "find_file":
-                speak("¿Qué archivo estás buscando?", selected_voice_model)
+                speak(i18n("msg_find_file_query", "¿Qué archivo estás buscando?"), selected_voice_model)
                 filename = listen(model, language=sys_lang)
                 path = find_file(filename)
                 speak(path, selected_voice_model)
@@ -1197,7 +1197,7 @@ async def main():
                 speak(f"El portapapeles contiene: {content}", selected_voice_model)
 
             elif intent == "convert_currency":
-                speak("¿Cuánto y qué moneda?", selected_voice_model)
+                speak(i18n("msg_currency_query", "¿Cuánto y qué moneda?"), selected_voice_model)
                 info = listen(model, language=sys_lang)
                 parts = info.split()
                 if len(parts) == 3:
@@ -1205,10 +1205,10 @@ async def main():
                     result = await convert_currency(amount, from_curr.upper(), to_curr.upper())
                     speak(result, selected_voice_model)
                 else:
-                    speak("Por favor di la cantidad, moneda origen y destino.", selected_voice_model)
+                    speak(i18n("msg_currency_err", "Por favor di la cantidad, moneda origen y destino."), selected_voice_model)
 
             elif intent == "generate_image":
-                speak("¿Qué imagen debo generar?", selected_voice_model)
+                speak(i18n("msg_image_gen_query", "¿Qué imagen debo generar?"), selected_voice_model)
                 prompt = listen(model, language=sys_lang)
                 image_url = await generate_image(prompt)
                 speak(f"Imagen generada: {image_url}", selected_voice_model)
@@ -1218,7 +1218,7 @@ async def main():
                 speak(result, selected_voice_model)
 
             elif intent == "read_pdf":
-                speak("Introduce la ruta del archivo PDF", selected_voice_model)
+                speak(i18n("msg_pdf_path_query", "Introduce la ruta del archivo PDF"), selected_voice_model)
                 path = listen(model, language=sys_lang)
                 text = read_pdf(path)
                 speak(text[:500], selected_voice_model)  # Read a preview
@@ -1234,7 +1234,7 @@ async def main():
                 speak(get_uptime(), selected_voice_model)
 
             elif intent == "port_scan":
-                speak("¿Qué IP o host escaneo?", selected_voice_model)
+                speak(i18n("msg_scan_target_query", "¿Qué IP o host escaneo?"), selected_voice_model)
                 host = listen(model, language=sys_lang)
                 result = scan_ports(host)
                 speak(result, selected_voice_model)
@@ -1248,7 +1248,7 @@ async def main():
                 speak(result, selected_voice_model)
 
             elif intent == "save_voice_note":
-                speak("Di tu nota.", selected_voice_model)
+                speak(i18n("msg_voice_note_query", "Di tu nota."), selected_voice_model)
                 text = listen(model, language=sys_lang)
                 result = save_voice_note(text)
                 speak(result, selected_voice_model)
@@ -1257,13 +1257,13 @@ async def main():
                 speak(get_daily_affirmation(), selected_voice_model)
 
             elif intent == "battery_saver":
-                speak("¿Activo o desactivo el ahorro de batería?", selected_voice_model)
+                speak(i18n("msg_battery_saver_query", "¿Activo o desactivo el ahorro de batería?"), selected_voice_model)
                 mode = listen(model, language=sys_lang).lower()
                 result = toggle_battery_saver(mode)
                 speak(result, selected_voice_model)
 
             elif intent == "play_ambient":
-                speak("¿Qué sonido ambiental? (lluvia, bosque, océano)", selected_voice_model)
+                speak(i18n("msg_ambient_sound_query", "¿Qué sonido ambiental? (lluvia, bosque, océano)"), selected_voice_model)
                 type_ = listen(model, language=sys_lang)
                 result = play_ambient_sound(type_)
                 speak(result, selected_voice_model)
@@ -1273,31 +1273,31 @@ async def main():
                 speak(result, selected_voice_model)
 
             elif intent == "take_photo":
-                speak("Listo?", selected_voice_model)
+                speak(i18n("msg_ready_photo", "Listo?"), selected_voice_model)
                 user_status = listen(model="tiny", language=sys_lang)
                 intent , confidence = detect_intent(user_status)
                 if intent == "yes":
-                    speak("cheese!", selected_voice_model)
+                    speak(i18n("msg_cheese", "cheese!"), selected_voice_model)
                     result, path = take_webcam_photo()
                     speak(result, selected_voice_model)
-                    speak("¿Querés que abra tu foto?", selected_voice_model)
+                    speak(i18n("msg_open_photo_query", "¿Querés que abra tu foto?"), selected_voice_model)
                     user_choice = listen(model="tiny", language=sys_lang)
                     intent , confidence = detect_intent(user_choice)
                     if intent == "yes":
                         command = f'firefox {path}'
                         subprocess.run(command, shell = True, check = True)
-                        speak("por favor revisa firefox", selected_voice_model)
+                        speak(i18n("msg_check_firefox", "por favor revisa firefox"), selected_voice_model)
                     else:
-                        speak("okay", selected_voice_model)
+                        speak(i18n("msg_ok", "okay"), selected_voice_model)
                 else:
-                    speak("okay", selected_voice_model)
+                    speak(i18n("msg_ok", "okay"), selected_voice_model)
 
             elif intent == "backup_files":
                 result = backup_files()
                 speak(result, selected_voice_model)
 
             elif intent == "download_instagram":
-                speak("Pegue la URL del reel de Instagram.", selected_voice_model)
+                speak(i18n("msg_instagram_reel_query", "Pegue la URL del reel de Instagram."), selected_voice_model)
                 url = listen(model, language=sys_lang)
                 result = download_instagram_reel(url)
                 speak(result, selected_voice_model)
@@ -1315,45 +1315,45 @@ async def main():
                 speak(decrease_brightness(), selected_voice_model)
 
             elif intent == "tv_increase_brightness":
-                speak("Lo siento, aún no puedo controlar el brillo del televisor.", selected_voice_model)
+                speak(i18n("msg_tv_brightness_err", "Lo siento, aún no puedo controlar el brillo del televisor."), selected_voice_model)
             
             elif intent == "tv_decrease_brightness":
-                speak("Lo siento, aún no puedo controlar el brillo del televisor.", selected_voice_model)
+                speak(i18n("msg_tv_brightness_err", "Lo siento, aún no puedo controlar el brillo del televisor."), selected_voice_model)
             
             elif intent == "lights_increase_brightness":
-                speak("No tengo luces inteligentes configuradas para aumentar el brillo.", selected_voice_model)
+                speak(i18n("msg_lights_brightness_inc_err", "No tengo luces inteligentes configuradas para aumentar el brillo."), selected_voice_model)
             
             elif intent == "lights_decrease_brightness":
-                speak("No tengo luces inteligentes configuradas para disminuir el brillo.", selected_voice_model)
+                speak(i18n("msg_lights_brightness_dec_err", "No tengo luces inteligentes configuradas para disminuir el brillo."), selected_voice_model)
             
             elif intent == "open_spotify":
                 try:
                     subprocess.Popen(["harmonymusic"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                    speak("Abriendo Harmony Music", selected_voice_model)
+                    speak(i18n("msg_harmonymusic_opening", "Abriendo Harmony Music"), selected_voice_model)
                 except FileNotFoundError:
-                    speak("Harmony Music no está instalado", selected_voice_model)
+                    speak(i18n("msg_harmonymusic_not_found", "Harmony Music no está instalado"), selected_voice_model)
                 except Exception as e:
                     logger.error(f"Error launching Harmony Music: {e}")
-                    speak("No pude abrir Harmony Music", selected_voice_model)
+                    speak(i18n("msg_harmonymusic_error", "No pude abrir Harmony Music"), selected_voice_model)
             
             elif intent == "open_audio_editor":
                 try:
                     subprocess.Popen(["audacity"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                    speak("Abriendo Audacity", selected_voice_model)
+                    speak(i18n("msg_audacity_opening", "Abriendo Audacity"), selected_voice_model)
                 except FileNotFoundError:
-                    speak("Audacity no está instalado", selected_voice_model)
+                    speak(i18n("msg_audacity_not_found", "Audacity no está instalado"), selected_voice_model)
                 except Exception as e:
                     logger.error(f"Error launching Audacity: {e}")
-                    speak("No pude abrir Audacity", selected_voice_model)
+                    speak(i18n("msg_audacity_error", "No pude abrir Audacity"), selected_voice_model)
             
             elif intent == "open_app":
-                speak("¿Qué aplicación quieres abrir?", selected_voice_model)
+                speak(i18n("msg_app_open_query", "¿Qué aplicación quieres abrir?"), selected_voice_model)
                 app_name = listen(model, language=sys_lang)
                 result = open_app(app_name)
                 speak(result, selected_voice_model)
             
             elif intent == "close_app":
-                speak("¿Qué aplicación quieres cerrar?", selected_voice_model)
+                speak(i18n("msg_app_close_query", "¿Qué aplicación quieres cerrar?"), selected_voice_model)
                 app_name = listen(model, language=sys_lang)
                 result = close_app(app_name)
                 speak(result, selected_voice_model)
@@ -1448,7 +1448,7 @@ async def main():
                     if channel_name:
                          tv_set_channel_cmd(channel_name, selected_voice_model)
                     else:
-                        speak("¿Qué canal pongo?", selected_voice_model)
+                        speak(i18n("msg_tv_channel_query", "¿Qué canal pongo?"), selected_voice_model)
                         num_response = listen(model, language=sys_lang)
                         if num_response:
                              # Intentar buscar número o usar texto completo
@@ -1460,7 +1460,7 @@ async def main():
                                  tv_set_channel_cmd(num_response, selected_voice_model)
             
             elif intent == "tv_open_app":
-                speak("¿Qué aplicación en la tele?", selected_voice_model)
+                speak(i18n("msg_tv_app_query", "¿Qué aplicación en la tele?"), selected_voice_model)
                 # Parse app from previous command if possible, or ask
                 # The intent detection often misses the slots, so it is safer to ask or try to parse 'command'
                 # If command was 'abre youtube en la tele', we can try to extract 'youtube'

@@ -75,7 +75,35 @@ async def control_aire():
     parser.add_argument("--status", action="store_true")
     parser.add_argument("--silent", action="store_true")
     parser.add_argument("--ip", type=str, help="IP del equipo AC")
+    parser.add_argument("--lang", type=str, default="es")
     args = parser.parse_args()
+
+    LANG = args.lang
+
+    def i18n_ac(key, default):
+        # Mapeo simple para evitar dependencias externas pesadas en este script
+        translations = {
+            "err_offline": {"es": "Error: El dispositivo parece estar offline.", "en": "Error: Device seems to be offline."},
+            "err_no_connect": {"es": "No pude conectar con el aire acondicionado.", "en": "Could not connect to the air conditioner."},
+            "status_on": {"es": "encendido", "en": "on"},
+            "status_off": {"es": "apagado", "en": "off"},
+            "mode_unknown": {"es": "Desconocido", "en": "Unknown"},
+            "msg_status": {
+                "es": "El aire está {estado} en modo {modo} a {temp}°C. Consumo: {watts}W. Acumulado: {total}kWh. Int: {in_t}°C | Ext: {out_t}°C.",
+                "en": "The AC is {estado} in {modo} mode at {temp}°C. Power: {watts}W. Total: {total}kWh. In: {in_t}°C | Out: {out_t}°C."
+            },
+            "msg_hum": {"es": " Humedad: {h}%", "en": " Humidity: {h}%"},
+            "msg_ac_power": {"es": "Aire acondicionado {estado}.", "en": "Air conditioner {estado}."},
+            "msg_ac_temp": {"es": "Aire a {t} grados.", "en": "AC set to {t} degrees."},
+            "msg_ac_range": {"es": "Temperatura fuera de rango (17-30).", "en": "Temperature out of range (17-30)."},
+            "msg_ac_mode": {"es": "Modo {m} activado.", "en": "Mode {m} activated."},
+            "msg_ac_fan": {"es": "Ventilador en {f}.", "en": "Fan set to {f}."},
+            "msg_ac_swing": {"es": "Swing {s}.", "en": "Swing {s}."},
+            "msg_ac_turbo": {"es": "Turbo {s}.", "en": "Turbo {s}."},
+            "val_enabled": {"es": "activado", "en": "enabled"},
+            "val_disabled": {"es": "desactivado", "en": "disabled"},
+        }
+        return translations.get(key, {}).get(LANG, default)
 
     try:
         # Prioridad: 1. Argumento --ip, 2. settings.json, 3. Hardcoded Default
@@ -94,14 +122,14 @@ async def control_aire():
                 await asyncio.sleep(1) # Esperar 1s entre reintentos
             
             if not device.online:
-                print("Error: El dispositivo parece estar offline.")
+                print(i18n_ac("err_offline", "Error: El dispositivo parece estar offline."))
                 if not args.silent:
-                    send_event("fina-speak", "No pude conectar con el aire acondicionado.")
+                    send_event("fina-speak", i18n_ac("err_no_connect", "No pude conectar con el aire acondicionado."))
                 return
 
-            estado = "encendido" if device.power_state else "apagado"
+            estado = i18n_ac("status_on" if device.power_state else "status_off", "encendido" if device.power_state else "apagado")
             mode_names = {1: "Auto", 2: "Cool", 3: "Dry", 4: "Heat", 5: "Fan"}
-            modo_actual = mode_names.get(device.operational_mode, "Desconocido")
+            modo_actual = mode_names.get(device.operational_mode, i18n_ac("mode_unknown", "Desconocido"))
             
             # --- OBTENER ENERGÍA (HACK) ---
             watts = 0
@@ -143,9 +171,13 @@ async def control_aire():
                 if not args.silent: print(f"Error obteniendo energía: {energy_err}")
             # ------------------------------
 
-            msg = f"El aire está {estado} en modo {modo_actual} a {device.target_temperature}°C. Consumo: {watts}W. Acumulado: {total_kwh}kWh. Int: {device.indoor_temperature}°C | Ext: {device.outdoor_temperature or '--'}°C."
+            msg = i18n_ac("msg_status", "").format(
+                estado=estado, modo=modo_actual, temp=int(device.target_temperature),
+                watts=watts, total=total_kwh, in_t=int(device.indoor_temperature),
+                out_t=int(device.outdoor_temperature or 0)
+            )
             if device.indoor_humidity:
-                msg += f" Humedad: {device.indoor_humidity}%"
+                msg += i18n_ac("msg_hum", " Humedad: {h}%").format(h=device.indoor_humidity)
             
             # Incluir datos de energía en el JSON para la UI
             payload_status = {
@@ -170,39 +202,39 @@ async def control_aire():
         if args.power:
             device.power_state = (args.power == "on")
             needs_apply = True
-            msg = f"Aire acondicionado {'encendido' if device.power_state else 'apagado'}."
+            msg = i18n_ac("msg_ac_power", "").format(estado=i18n_ac("status_on" if device.power_state else "status_off", "encendido" if device.power_state else "apagado"))
 
         if args.temp:
             if 17 <= args.temp <= 30:
                 device.target_temperature = args.temp
                 device.power_state = True 
                 needs_apply = True
-                msg = f"Aire a {args.temp} grados."
+                msg = i18n_ac("msg_ac_temp", "Aire a {t} grados.").format(t=args.temp)
             else:
-                print("Temperatura fuera de rango (17-30).")
+                print(i18n_ac("msg_ac_range", "Temperatura fuera de rango (17-30)."))
 
         if args.mode:
             mode_map = {"auto": 1, "cool": 2, "dry": 3, "heat": 4, "fan": 5}
             device.operational_mode = mode_map.get(args.mode, 2)
             device.power_state = True
             needs_apply = True
-            msg = f"Modo {args.mode} activado."
+            msg = i18n_ac("msg_ac_mode", "Modo {m} activado.").format(m=args.mode)
 
         if args.fan:
             speeds = {"auto": 102, "low": 40, "medium": 60, "high": 80, "full": 100}
             device.fan_speed = speeds.get(args.fan, 102)
             needs_apply = True
-            msg = f"Ventilador en {args.fan}."
+            msg = i18n_ac("msg_ac_fan", "Ventilador en {f}.").format(f=args.fan)
 
         if args.swing:
             device.swing_mode = 0x0C if args.swing == "on" else 0x00
             needs_apply = True
-            msg = f"Swing {'activado' if args.swing == 'on' else 'desactivado'}."
+            msg = i18n_ac("msg_ac_swing", "Swing {s}.").format(s=i18n_ac("val_enabled" if args.swing == "on" else "val_disabled", "activado" if args.swing == "on" else "desactivado"))
 
         if args.turbo:
             device.turbo = (args.turbo == "on")
             needs_apply = True
-            msg = f"Turbo {'activado' if args.turbo == 'on' else 'desactivado'}."
+            msg = i18n_ac("msg_ac_turbo", "Turbo {s}.").format(s=i18n_ac("val_enabled" if args.turbo == "on" else "val_disabled", "activado" if args.turbo == "on" else "desactivado"))
 
         if needs_apply:
             device.beep = True

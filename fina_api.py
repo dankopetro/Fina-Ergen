@@ -255,10 +255,11 @@ class StateUpdate(BaseModel):
     model_config = {"extra": "allow"}
 
 # --- Global State ---
+import utils
 current_fina_state = {
     "status": "idle", 
     "intensity": 0.0, 
-    "process": "SISTEMA LISTO",
+    "process": utils.i18n("ui_system_ready", "SISTEMA LISTO"),
     "temp": "--°C",
     "pending_command": None  # Nuevo: para comandos que la UI debe ejecutar
 }
@@ -429,7 +430,7 @@ async def get_system_info():
         "python_path": sys.executable,
         "project_root": PROJECT_ROOT,
         "config_dir": CONFIG_DIR,
-        "version": "3.5.6 (04/03/2026 12:15)"
+        "version": "3.5.6 (04/03/2026 12:35)"
     }
 
 # --- Static ---

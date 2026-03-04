@@ -26,7 +26,7 @@ def _initialize_model():
     import torch
     from sentence_transformers import SentenceTransformer, util
     
-    lang = utils.get_unified_config("FINA_LANGUAGE", "es")
+    lang = utils.get_sys_lang()
     logger.info(f"⏳ Initializing intent classifier ({lang}) model...")
     
     # Load intents based on language

@@ -973,16 +973,17 @@ async def get_weather(city=None):
     import json
     
     api_key, city_id = _get_w_conf()
+    lang = get_sys_lang()
     
-    if not api_key: return "No tienes configurada la API Key del clima."
+    if not api_key: return i18n("msg_weather_no_api", "No tienes configurada la API Key del clima.")
     
     # Construir URL usando ID si city es None
     if city:
-        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric&lang=es"
+        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric&lang={lang}"
     elif city_id:
-        url = f"http://api.openweathermap.org/data/2.5/weather?id={city_id}&appid={api_key}&units=metric&lang=es"
+        url = f"http://api.openweathermap.org/data/2.5/weather?id={city_id}&appid={api_key}&units=metric&lang={lang}"
     else:
-        return "No hay ciudad configurada para el clima."
+        return i18n("msg_weather_no_city", "No hay ciudad configurada para el clima.")
 
     try:
         async with aiohttp.ClientSession() as s:
@@ -991,7 +992,9 @@ async def get_weather(city=None):
                 d = await r.json()
                 temp = d['main']['temp']
                 desc = d['weather'][0]['description']
-                name = d.get('name', 'tu ciudad')
+                name = d.get('name', i18n('val_your_city', 'tu ciudad'))
+                if lang == 'en':
+                    return f"In {name} the temperature is {int(temp)} degrees, with {desc}."
                 return f"En {name} la temperatura es de {int(temp)} grados, con {desc}."
     except Exception as e: 
         print(f"Weather error: {e}")
@@ -1001,9 +1004,10 @@ async def get_weather_tomorrow(city=None):
     # Pronóstico real para mañana
     import aiohttp
     api_key, city_id = _get_w_conf()
-    if not api_key or not city_id: return "Falta configuración de clima."
+    lang = get_sys_lang()
+    if not api_key or not city_id: return i18n("msg_weather_no_conf", "Falta configuración de clima.")
     
-    url = f"https://api.openweathermap.org/data/2.5/forecast?id={city_id}&appid={api_key}&units=metric&lang=es"
+    url = f"https://api.openweathermap.org/data/2.5/forecast?id={city_id}&appid={api_key}&units=metric&lang={lang}"
     try:
         async with aiohttp.ClientSession() as s:
             async with s.get(url, timeout=5) as r:
@@ -1014,14 +1018,16 @@ async def get_weather_tomorrow(city=None):
                     tom = d["list"][8]
                     temp = tom["main"]["temp"]
                     desc = tom["weather"][0]["description"]
+                    if lang == 'en':
+                        return f"Tomorrow expects {desc}, with a temperature of about {int(temp)} degrees."
                     return f"Mañana se espera {desc}, con una temperatura de unos {int(temp)} grados."
-                return "Datos de pronóstico insuficientes."
+                return i18n("msg_forecast_no_data", "Datos de pronóstico insuficientes.")
     except Exception as e:
         print(f"Forecast error: {e}")
         return "Hubo un error al obtener el pronóstico."
 
 async def when_will_rain(city=None): 
-    return "No tengo datos de lluvia por ahora."
+    return i18n("msg_rain_no_data", "No tengo datos de lluvia por ahora.")
 
 async def get_top_news(api_key): 
     # Fallback to proactive briefing
@@ -1033,17 +1039,17 @@ async def get_weather_forecast(c):
 
 # --- SYSTEM & CONTROL ---
 def shutdown(model): 
-    speak("Apagando el sistema.", model)
+    speak(i18n("msg_shutdown", "Apagando el sistema."), model)
     time.sleep(1)
     subprocess.run("poweroff", shell=True)
 
 def reboot(model):
-    speak("Reiniciando el sistema.", model)
+    speak(i18n("msg_reboot", "Reiniciando el sistema."), model)
     time.sleep(1)
     subprocess.run("reboot", shell=True)
 
 def suspend(model):
-    speak("Suspendiendo el sistema.", model)
+    speak(i18n("msg_suspend", "Suspendiendo el sistema."), model)
     time.sleep(1)
     subprocess.run("systemctl suspend", shell=True)
 

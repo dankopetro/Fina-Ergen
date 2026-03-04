@@ -7,15 +7,20 @@ from datetime import datetime, timedelta
 # Script para obtener pronóstico del clima (5 días / 3 horas)
 socket.setdefaulttimeout(10)
 
-if len(sys.argv) > 2:
+if len(sys.argv) > 3:
     API_KEY = sys.argv[1]
     CITY_ID = sys.argv[2]
+    LANG = sys.argv[3]
+elif len(sys.argv) > 2:
+    API_KEY = sys.argv[1]
+    CITY_ID = sys.argv[2]
+    LANG = "es"
 else:
-    print(json.dumps({"cod": 400, "message": "Missing API Key or City ID"}))
+    print(json.dumps({"cod": 400, "message": "Missing arguments"}))
     sys.exit(1)
 
 # Usamos endpoint forecast
-URL = f"http://api.openweathermap.org/data/2.5/forecast?id={CITY_ID}&appid={API_KEY}&units=metric&lang=es"
+URL = f"http://api.openweathermap.org/data/2.5/forecast?id={CITY_ID}&appid={API_KEY}&units=metric&lang={LANG}"
 
 try:
     req = urllib.request.Request(URL)
@@ -54,7 +59,10 @@ try:
         # Formatear salida para UI
         # Estructura: [ { day: 'LUN', min: 20, max: 30, code: 800 }, ... ]
         final_forecast = []
-        days_map = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB']
+        if LANG == 'en':
+            days_map = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+        else: # Default es
+            days_map = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB']
         
         count = 0
         for date_k, vals in forecast_by_day.items():

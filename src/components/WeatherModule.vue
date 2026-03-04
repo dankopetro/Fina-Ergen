@@ -16,10 +16,10 @@
                 <h2
                     class="text-2xl font-black text-white italic uppercase tracking-tighter drop-shadow-lg flex items-center gap-2">
                     <i class="fa-solid fa-location-dot text-cyan-500 text-sm animate-bounce"></i>
-                    {{ cityName || 'Ubicación' }}
+                    {{ cityName || t('ui_location', 'Ubicación') }}
                 </h2>
                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] ml-1 mt-1">{{ currentDate
-                }}</span>
+                    }}</span>
             </div>
             <div class="px-3 py-1 bg-white/5 rounded-full border border-white/10 flex items-center gap-2">
                 <i class="fa-solid fa-cloud text-cyan-300/70 text-[10px]"></i>
@@ -65,7 +65,8 @@
                 <div class="flex flex-col items-center">
                     <span class="text-lg font-black text-white leading-none">{{ humidity }}<span
                             class="text-[10px] align-top text-slate-400">%</span></span>
-                    <span class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Humedad</span>
+                    <span class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">{{ t('ui_humidity',
+                        'Humedad') }}</span>
                 </div>
             </div>
 
@@ -78,7 +79,8 @@
                 <div class="flex flex-col items-center">
                     <span class="text-lg font-black text-white leading-none">{{ windSpeed }}<span
                             class="text-[10px] align-top text-slate-400">km/h</span></span>
-                    <span class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Viento</span>
+                    <span class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">{{ t('ui_wind',
+                        'Viento') }}</span>
                 </div>
             </div>
 
@@ -90,7 +92,8 @@
                 </div>
                 <div class="flex flex-col items-center">
                     <span class="text-lg font-black text-white leading-none">{{ Math.round(feelsLike) }}°</span>
-                    <span class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Sensación</span>
+                    <span class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">{{
+                        t('ui_feels_like', 'Sensación') }}</span>
                 </div>
             </div>
         </div>
@@ -102,7 +105,7 @@
                     class="flex flex-col items-center p-2 rounded-2xl hover:bg-white/5 transition-colors group/day">
 
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{{ day.day
-                    }}</span>
+                        }}</span>
 
                     <i :class="day.iconClass"
                         class="text-xl mb-2 text-slate-200 group-hover/day:text-cyan-400 transition-colors"></i>
@@ -117,8 +120,8 @@
             <!-- Loading State or Empty -->
             <div v-else class="flex flex-col items-center justify-center h-24 gap-2 opacity-50">
                 <i class="fa-solid fa-satellite-dish text-cyan-500 animate-pulse"></i>
-                <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Cargando
-                    Pronóstico...</span>
+                <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">{{ t('ui_loading_forecast',
+                    'Cargando Pronóstico...') }}</span>
             </div>
         </div>
     </div>
@@ -132,8 +135,8 @@ const props = defineProps({
     humidity: { type: Number, default: 0 },
     windSpeed: { type: Number, default: 0 },
     feelsLike: { type: Number, default: 0 },
-    description: { type: String, default: 'Despejado' },
-    cityName: { type: String, default: 'Buenos Aires' },
+    description: { type: String, default: () => t('ui_weather_clear', 'Despejado') },
+    cityName: { type: String, default: () => t('ui_buenos_aires', 'Buenos Aires') },
     weatherCode: { type: Number, default: 800 },
     isDay: { type: Number, default: 1 },
     currentDate: { type: String, default: '' },
