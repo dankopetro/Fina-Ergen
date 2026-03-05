@@ -1,6 +1,8 @@
 #!/bin/bash
-# Script para iniciar el sistema Fina con Weston oculto
-echo "🚀 Iniciando Sistema Fina (Modo Invisible)..."
+# 0. Detección Dinámica de Directorio
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_ROOT" || exit 1
 
 # 1. Limpieza (Pero NO matamos al monitor)
 echo "🧹 Limpiando sesiones previas..."
@@ -20,7 +22,7 @@ echo "🖥️  Lanzando Weston..."
 unset WAYLAND_DISPLAY
 export DISPLAY=:0
 # Iniciar Weston con config para evitar bloqueo usando ruta absoluta
-weston --config="./weston.ini" --width=450 --height=820 &
+weston --config="$PROJECT_ROOT/weston.ini" --width=450 --height=820 &
 WESTON_PID=$!
 
 echo "⏳ Esperando a que Weston aparezca..."

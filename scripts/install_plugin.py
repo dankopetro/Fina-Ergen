@@ -23,8 +23,14 @@ def main():
     
     print(f"Instalando plugin {subpath} desde categoría {category}...")
     
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(script_dir)
+    # --- DINAMIC PATH FOR PORTABILITY ---
+    def get_config_dir():
+        xdg_config = os.environ.get("XDG_CONFIG_HOME")
+        if xdg_config:
+            return os.path.join(xdg_config, "Fina")
+        return os.path.join(os.path.expanduser("~"), ".config", "Fina")
+
+    config_dir = get_config_dir()
     
     # Mapeo de categoría Github -> Carpeta local
     dir_map = {
@@ -38,7 +44,7 @@ def main():
     if not local_cat:
         error_exit(f"Categoría desconocida: {category}")
         
-    # Destino real: Fina-Ergen/plugins/local_cat/modelo
+    # Destino real: ~/.config/Fina/plugins/local_cat/modelo
     parts = subpath.split('/')
     if len(parts) < 2:
         error_exit("Ruta de subpath inválida. Formato esperado: Marca/Modelo")
@@ -46,8 +52,8 @@ def main():
     brand = parts[0]
     model = parts[1]
     
-    # En la estructura Fina, ignoramos la marca y usamos el modelo directo: tv/tcl32s60a o decos/sei800tc1
-    dest_dir = os.path.join(project_root, "plugins", local_cat, model)
+    # En la estructura Fina, ignoramos la marca y usamos el modelo directo
+    dest_dir = os.path.join(config_dir, "plugins", local_cat, model)
     os.makedirs(dest_dir, exist_ok=True)
     
     api_url = f"https://api.github.com/repos/{repo}/contents/{category}/{subpath}"

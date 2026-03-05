@@ -4,7 +4,17 @@ import requests
 import sys
 
 def get_config_token():
-    config_path = "/home/claudio/Descargas/Fina-Ergen/config.py"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    config_path = os.path.join(project_root, "config.py")
+    if not os.path.exists(config_path):
+        # Intentar en .config/Fina como fallback
+        xdg_config = os.environ.get("XDG_CONFIG_HOME")
+        if xdg_config:
+            config_path = os.path.join(xdg_config, "Fina", "config.py")
+        else:
+            config_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "config.py")
+            
     if not os.path.exists(config_path):
         return None
     with open(config_path, "r") as f:
@@ -28,7 +38,9 @@ def get_repo_info():
     return "dankopetro", "Fina-Ergen"
 
 def get_release_notes(version):
-    notes_path = "/home/claudio/Descargas/Fina-Ergen/TEXTOS_PARA_GITHUB_RELEASES.txt"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    notes_path = os.path.join(project_root, "TEXTOS_PARA_GITHUB_RELEASES.txt")
     if not os.path.exists(notes_path):
         return f"Release {version}"
     

@@ -135,12 +135,13 @@ const props = defineProps({
     humidity: { type: Number, default: 0 },
     windSpeed: { type: Number, default: 0 },
     feelsLike: { type: Number, default: 0 },
-    description: { type: String, default: () => t('ui_weather_clear', 'Despejado') },
-    cityName: { type: String, default: () => t('ui_buenos_aires', 'Buenos Aires') },
+    description: { type: String, default: 'Despejado' },
+    cityName: { type: String, default: 'Buenos Aires' },
     weatherCode: { type: Number, default: 800 },
     isDay: { type: Number, default: 1 },
     currentDate: { type: String, default: '' },
-    forecast: { type: Array, default: () => [] }
+    forecast: { type: Array, default: () => [] },
+    t: { type: Function, required: true }
 });
 
 const getIconClass = (code, day = true) => {
