@@ -58,34 +58,39 @@ class PluginManager:
     
     def discover_plugins(self) -> List[str]:
         """
-        Descubre plugins en ambas carpetas. 
-        Si hay colisión de nombres, el de Usuario tiene prioridad.
+        Descubre plugins en ambas carpetas de forma recursiva (hasta 3 niveles). 
+        Si hay colisión de nombres (basado en el nombre de la carpeta), 
+        el de Usuario tiene prioridad.
         """
-        plugins_map = {} # name -> path
+        self._plugins_paths = {} # name -> Path
         
-        # Escanear Sistema
-        if self.system_plugins_dir.exists():
-            for item in self.system_plugins_dir.iterdir():
-                if item.is_dir() and ((item / "plugin.yaml").exists() or (item / "plugin.json").exists()):
-                    plugins_map[item.name] = item
+        def scan_dir(base_path):
+            if not base_path.exists():
+                return
+            
+            # Buscamos todos los plugin.yaml o plugin.json recursivamente
+            # Limitamos a rglob para encontrar los archivos de configuración
+            for config_file in list(base_path.rglob("plugin.yaml")) + list(base_path.rglob("plugin.json")):
+                plugin_dir = config_file.parent
+                plugin_name = plugin_dir.name
+                
+                # Guardamos la ruta. Al escanear sistema primero y usuario después,
+                # usuario naturalmente sobrescribirá a sistema si tienen el mismo nombre de carpeta.
+                self._plugins_paths[plugin_name] = plugin_dir
+
+        # Escanear primero Sistema, luego Usuario
+        scan_dir(self.system_plugins_dir)
+        scan_dir(self.user_plugins_dir)
         
-        # Escanear Usuario (Sobrescribe si hay duplicado)
-        if self.user_plugins_dir.exists():
-            for item in self.user_plugins_dir.iterdir():
-                if item.is_dir() and ((item / "plugin.yaml").exists() or (item / "plugin.json").exists()):
-                    plugins_map[item.name] = item
-        
-        return list(plugins_map.keys())
+        return list(self._plugins_paths.keys())
     
     def _get_plugin_path(self, plugin_name: str) -> Optional[Path]:
-        """Busca la ruta real de un plugin priorizando Usuario"""
-        user_path = self.user_plugins_dir / plugin_name
-        if user_path.exists(): return user_path
-        
-        sys_path = self.system_plugins_dir / plugin_name
-        if sys_path.exists(): return sys_path
-        
-        return None
+        """Busca la ruta real de un plugin usando el mapa de descubrimiento"""
+        # Si no hemos descubierto aún, lo hacemos
+        if not hasattr(self, '_plugins_paths') or not self._plugins_paths:
+            self.discover_plugins()
+            
+        return self._plugins_paths.get(plugin_name)
 
     def load_plugin_metadata(self, plugin_name: str) -> Optional[dict]:
         """
