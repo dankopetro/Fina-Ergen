@@ -10,6 +10,20 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
+## [v3.5.8-8] - 2026-03-06 (Limpieza de Plugins y Sintaxis)
+Esta versión corrige la detección de plugins de red, mejora la estabilidad de la mensajería y limpia errores de sintaxis en la interfaz principal.
+
+### Arreglado
+* **Detección de Plugins**: Los plugins ahora se detectan de forma recursiva (hasta 3 niveles de profundidad), lo que permite organizar carpetas por categorías.
+* **Sintaxis de Interfaz**: Se consolidaron las llamadas de traducción multilínea en `App.vue` para evitar errores de compilación.
+* **Control de TV**: Se mejoró la resolución de rutas de scripts en el plugin de TV para mayor compatibilidad con diferentes marcas (TCL, Deco Telecentro).
+* **Timbre M8**: El monitor de timbre ahora inicia correctamente los servicios de Weston y Waydroid al detectar actividad.
+
+### Añadido
+* **Botón de Mensajería**: Acceso directo al Centro de Mensajería Unificado incluso sin celular vinculado.
+* **Estilos**: Temperatura del Aire Acondicionado ahora se muestra en negrita (`font-black`) para mejor legibilidad.
+* **Herramientas**: Script local de mantenimiento de sintaxis para desarrolladores.
+
 ## [v3.5.5] - 2026-03-03 (Edición de Internacionalización Completa)
 Esta versión concluye la reestructuración completa de los archivos de localización, permitiendo que la interfaz cambie dinámicamente de idioma (Inglés/Español) sin valores estáticos en código.
 
