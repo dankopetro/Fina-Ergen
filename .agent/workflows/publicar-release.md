@@ -26,7 +26,23 @@ _Creado con amor por el equipo de Fina Ergen. ¡Gracias por instalar!_ 🤖✨
 ```
 
 ### 🛠️ PROCEDIMIENTO TÉCNICO
-1.  Crear un archivo temporal (ej: `/tmp/notes.md`) con el contenido formateado.
-2.  Hacer el commit de los cambios y el tag correspondiente: `git tag -a v... -m "..."`.
-3.  Subir cambios: `git push origin master --tags`.
-4.  Lanzar el release: `gh release create [TAB] --title "[TITULO]" --notes-file /tmp/notes.md`.
+
+#### 0. Sincronización de Versión (MANDATORIO)
+Antes de crear el Tag o el Release, verifica que los siguientes archivos tengan exactamente el mismo número de versión (ej: `3.5.8-9`) y fecha/hora actualizada:
+1.  **`src/App.vue`**: Constantes `version` (con fecha y hora) y `buildDate`.
+2.  **`package.json`**: Campo `"version"`.
+3.  **`src-tauri/tauri.conf.json`**: Campo `"version"`.
+4.  **`CHANGELOG.md`**: Nueva entrada con la versión y descripción del Hotfix/Mejora.
+5.  **`src-tauri/binaries/brain-x86_64...`**: Comentario de versión en la cabecera.
+
+#### 1. Preparación y Validación
+1.  Ejecutar `.local_lab/tools/fix_vue_syntax.py` sobre `src/App.vue`.
+2.  Crear un archivo temporal (ej: `/tmp/notes.md`) con el contenido formateado y con iconos.
+3.  Hacer el commit de los cambios finales.
+
+#### 2. Etiquetado y Push
+1.  Crear el tag correspondiente: `git tag v3.x.x-x`.
+2.  Subir cambios y tags: `git push origin master && git push origin v3.x.x-x`.
+
+#### 3. Publicación
+1.  Lanzar el release: `gh release create v... --title "Fina Ergen v..." --notes-file /tmp/notes.md`.

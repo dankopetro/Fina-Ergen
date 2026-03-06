@@ -19,7 +19,8 @@ Este documento es de lectura OBLIGATORIA antes de cada modificación de código.
 
 ### 📋 CHECKLIST PRE-COMMIT
 - [ ] ¿He verificado que no hay rutas absolutas a mi carpeta personal?
-- [ ] ¿He probado que el script de lanzamiento funciona si la carpeta se mueve de lugar?
+- [ ] ¿He sincronizado el número de versión en App.vue, package.json, tauri.conf.json, brain binary y CHANGELOG?
+- [ ] ¿He verificado que el script de lanzamiento funciona si la carpeta se mueve de lugar?
 - [ ] ¿He actualizado los requerimientos si añadí una librería nueva?
 - [ ] ¿El acceso directo (.desktop) generado es relativo al HOME del usuario actual?
 
