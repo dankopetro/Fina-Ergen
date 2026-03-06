@@ -179,7 +179,7 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.8-9 (06/03/2026 18:35)";
+const version = "Fina Ergen v 3.5.8-10 (06/03/2026 19:40)";
 const buildDate = "Vie 06 Mar 2026 18:35";
 
 const showOptInModal = ref(false);
@@ -2833,9 +2833,9 @@ const selectFolder = async (settingKey) => {
                                         <span v-if="acState.watts !== undefined"
                                             class="text-left text-[12.5px] font-black text-yellow-400 ml-1 uppercase mt-1 text-[8px] ml-0.5">{{ acState.watts }}<span>W</span></span>
 
-                                        <span v-if="acState.total_kwh"
+                                        <span v-if="acState.total_kwh !== undefined && acState.total_kwh !== null"
                                             class="text-right text-[12.5px] font-black text-purple-500 uppercase mt-1">{{ t('ui_tot', 'TOT') }}:</span>
-                                        <span v-if="acState.total_kwh"
+                                        <span v-if="acState.total_kwh !== undefined && acState.total_kwh !== null"
                                             class="text-left text-[12.5px] font-black text-purple-400 ml-1 uppercase mt-1 text-[8px] ml-0.5">{{ acState.total_kwh }}<span>kWh</span></span>
                                     </div>
                                 </div>
@@ -4631,7 +4631,7 @@ const selectFolder = async (settingKey) => {
                                                         </div>
                                                         <div class="w-px h-12 bg-white/10">
                                                         </div>
-                                                        <div v-if="acState.total_kwh"
+                                                        <div v-if="acState.total_kwh !== undefined && acState.total_kwh !== null"
                                                             class="flex flex-col items-center">
                                                             <div class="flex items-baseline">
                                                                 <span

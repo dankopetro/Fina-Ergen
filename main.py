@@ -441,17 +441,49 @@ async def main():
         except:
             print("⚠️ Vosk no cargado. Funcionamiento limitado.")
             
+        # --- LAZY LOADING DE MÓDULOS PESADOS (AHORA TEMPRANO PARA VELOCIDAD) ---
+        print("🔌 Inicializando plugins y biometría...", flush=True)
+        update_ui_state("idle", i18n("init_systems", "Iniciando sistemas..."))
+        
+        plugin_integration = None
+        voice_auth = None
+        authenticate_user = None
+
+        try:
+            # Importar modulos de autenticación y plugins
+            from auth.fingerprint_auth import authenticate_user
+            from auth.voice_auth import VoiceAuthenticator
+            from fina_plugin_integration import setup_plugins
+            
+            # Inicializar plugins antes del saludo para que la data esté lista (Temp, etc)
+            plugin_integration = setup_plugins(speak_callback=lambda text, sink=None: speak(text, DEFAULT_VOICE, sink=sink))
+            
+            # Inicializar biometría
+            try:
+                voice_auth = VoiceAuthenticator()
+                print("✅ Biometría cargada.")
+            except Exception as e:
+                print(f"⚠️ Biometría falló (saltando): {e}")
+                
+        except ImportError as e:
+            msg = f"Faltan dependencias críticas: {e}."
+            print(f"❌ {msg}")
+
         # --- VERIFICACIÓN DE MODELOS PARA NOVATOS ---
         vosk_model_name, _ = utils.VOSK_MODELS.get(sys_lang, utils.VOSK_MODELS["en"])
         vosk_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "model", vosk_model_name)
         models_missing = (not DEFAULT_VOICE or not os.path.exists(DEFAULT_VOICE)) or (not os.path.exists(vosk_path))
         
-        if models_missing:
+        # EL ALERT SOLO DEBE APARECER SI FALTAN MODELOS Y NO SE HAN CONFIGURADO LOS SETTINGS
+        # O SI NUNCA SE ABRIÓ EL MANUAL. Evitamos que parpadee en cada arranque normal.
+        manual_lock = os.path.join(CONFIG_DIR, ".manual_opened")
+        show_alert = models_missing and (not CONFIG_FOUND or not os.path.exists(manual_lock))
+
+        if show_alert:
             msg_novato = utils.i18n("novice_alert", "¡HOLA! NECESITO MIS MODELOS (VER MANUAL)")
             update_ui_state("idle", msg_novato)
             print(f"💡 Sugerencia para novatos: Mostrando mensaje de configuración inicial.")
             # Intentar abrir el manual automáticamente solo una vez
-            manual_lock = os.path.join(CONFIG_DIR, ".manual_opened")
             if not os.path.exists(manual_lock):
                 import webbrowser
                 lang = sys_lang
@@ -476,7 +508,7 @@ async def main():
         
         # --- SALUDO INICIAL ---
         # Solo limpiar si NO estamos en modo novato
-        if not models_missing:
+        if not show_alert:
             update_ui_state("idle", None)
             
         if CONFIG_FOUND:
@@ -493,32 +525,6 @@ async def main():
 
     proactive_briefing_given = False
     user_is_authenticated = False
-    
-    # --- LAZY LOADING DE MÓDULOS PESADOS ---
-    print("🔌 Inicializando plugins y biometría...")
-    plugin_integration = None
-    voice_auth = None
-    authenticate_user = None
-
-    try:
-        from auth.fingerprint_auth import authenticate_user
-        from auth.voice_auth import VoiceAuthenticator
-        from fina_plugin_integration import setup_plugins
-        
-        # Inicializar plugins
-        plugin_integration = setup_plugins(speak_callback=lambda text, sink=None: speak(text, DEFAULT_VOICE, sink=sink))
-        
-        # Inicializar biometría
-        try:
-            voice_auth = VoiceAuthenticator()
-            print("✅ Biometría cargada.")
-        except Exception as e:
-            print(f"⚠️ Biometría falló (saltando): {e}")
-            
-    except ImportError as e:
-        msg = f"Faltan dependencias críticas: {e}."
-        print(f"❌ {msg}")
-        update_ui_state("idle", i18n("ui_missing_libs_alert", "ALERTA: FALTAN LIBRERÍAS"))
     # ----------------------------------------
 
     while True:

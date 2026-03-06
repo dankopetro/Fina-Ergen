@@ -1,6 +1,7 @@
 import logging
 import json
 import os
+import gc
 import utils
 
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
@@ -52,17 +53,21 @@ def _initialize_model():
             intent_phrases.append(phrase.lower().strip())
             intent_labels.append(intent)
 
-    # Precompute embeddings (Silencioso)
+    # Precompute embeddings
     phrase_embeddings = embedder.encode(intent_phrases, convert_to_tensor=True, show_progress_bar=False)
-    logger.info(f"✅ Intent classifier initialized ({len(intent_phrases)} phrases)")
+    
+    # Liberar memoria de strings temporales
+    del intent_phrases
+    gc.collect()
+    
+    logger.info(f"✅ Intent classifier initialized ({len(intent_labels)} phrases)")
 
 def detect_intent(text, confidence_threshold=0.55):
     """Returns (intent, confidence) using semantic similarity"""
     _initialize_model()
     
     text = text.lower().strip()
-    lang = utils.get_sys_lang()
-
+    
     # Regla específica: "noticias" vs noticias de internet
     news_words = ["noticia", "news", "nouvelles", "nachrichten", "ニュース", "新闻"]
     if any(w in text for w in news_words):
@@ -90,12 +95,15 @@ def detect_intent(text, confidence_threshold=0.55):
     if any(p in text for p in timer_words):
         return "start_timer", 1.0
 
-    import torch
-    from sentence_transformers import SentenceTransformer, util
+    from sentence_transformers import util
     query_embedding = embedder.encode(text, convert_to_tensor=True, show_progress_bar=False)
     cosine_scores = util.pytorch_cos_sim(query_embedding, phrase_embeddings)[0]
 
     top_score, top_idx = float(cosine_scores.max()), int(cosine_scores.argmax())
+    
+    # Limpieza rápida
+    del query_embedding
+    
     if top_score >= confidence_threshold:
         return intent_labels[top_idx], top_score
     else:
