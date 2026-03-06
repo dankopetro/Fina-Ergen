@@ -10,6 +10,14 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
+## [v3.5.8-9] - 2026-03-06 (Hotfix: TV Scripts y Monitor M8)
+Correcciones críticas para la ejecución de scripts en plugins y la infraestructura Android del timbre.
+
+### Arreglado
+* **Monitor M8**: Se corrigió la ruta de búsqueda del script `start_hidden_system.sh` para que funcione correctamente desde la carpeta de plugins del usuario.
+* **Plugins de TV/Deco**: Se arregló la verificación de scripts para el modelo Deco (sei800tc1), permitiendo que detecte los scripts con prefijo `deco_`.
+* **Estabilidad**: Se unificaron las salidas de error (stderr) con la salida estándar (stdout) en el `PluginManager` para evitar bloqueos por tuberías llenas.
+
 ## [v3.5.8-8] - 2026-03-06 (Limpieza de Plugins y Sintaxis)
 Esta versión corrige la detección de plugins de red, mejora la estabilidad de la mensajería y limpia errores de sintaxis en la interfaz principal.
 

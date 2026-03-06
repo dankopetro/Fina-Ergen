@@ -288,7 +288,7 @@ class PluginManager:
             process = subprocess.Popen(
                 [sys.executable, '-u', str(monitor_path)],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1
             )
