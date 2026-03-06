@@ -2619,39 +2619,34 @@ const selectFolder = async (settingKey) => {
                     :class="activeTab === 'dashboard' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-500/5' : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'">
                     <i class="fa-solid fa-gauge-high text-lg w-10"></i>
                     <span v-if="!isSidebarCollapsed"
-                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_dashboard', 'Panel')
-                        }}</span>
+                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_dashboard', 'Panel') }}</span>
                 </button>
                 <button @click="setTab('clima')"
                     class="group flex items-center h-14 rounded-2xl transition-all w-full px-4"
                     :class="activeTab === 'clima' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-500/5' : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'">
                     <i class="fa-solid fa-house-laptop text-lg w-10"></i>
                     <span v-if="!isSidebarCollapsed"
-                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_iot', 'Casa')
-                        }}</span>
+                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_iot', 'Casa') }}</span>
                 </button>
                 <button @click="setTab('seguridad')"
                     class="group flex items-center h-14 rounded-2xl transition-all w-full px-4"
                     :class="activeTab === 'seguridad' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-500/5' : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'">
                     <i class="fa-solid fa-shield-virus text-lg w-10"></i>
                     <span v-if="!isSidebarCollapsed"
-                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_biometrics',
-                        'Seguridad') }}</span>
+                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_biometrics', 'Seguridad') }}</span>
                 </button>
                 <button @click="setTab('agenda')"
                     class="group flex items-center h-14 rounded-2xl transition-all w-full px-4"
                     :class="activeTab === 'agenda' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-500/5' : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'">
                     <i class="fa-solid fa-calendar-check text-lg w-10"></i>
                     <span v-if="!isSidebarCollapsed"
-                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_agenda', 'Agenda')
-                        }}</span>
+                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_agenda', 'Agenda') }}</span>
                 </button>
                 <button @click="setTab('ajustes')"
                     class="group flex items-center h-14 rounded-2xl transition-all w-full px-4 text-slate-600 hover:bg-white/5 hover:text-slate-400">
                     <i class="fa-solid fa-sliders text-lg w-10"></i>
                     <span v-if="!isSidebarCollapsed"
-                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_settings', 'Ajustes')
-                        }}</span>
+                        class="text-sm font-black tracking-widest uppercase leading-none">{{ t('ui_settings', 'Ajustes') }}</span>
                 </button>
             </nav>
 
@@ -2665,11 +2660,9 @@ const selectFolder = async (settingKey) => {
                             class="absolute bottom-1 right-1 w-2.5 h-2.5 bg-green-500 border-2 border-[#0a0f1e] rounded-full shadow-[0_0_5px_rgba(34,197,94,0.8)]"></span>
                     </div>
                     <div v-if="!isSidebarCollapsed" class="ml-2 flex flex-col">
-                        <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none">{{
-                            t('ui_assistant', 'Assistant') }}</span>
+                        <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none">{{ t('ui_assistant', 'Assistant') }}</span>
                         <span
-                            class="text-[8px] font-mono text-cyan-500/60 font-bold uppercase tracking-tighter leading-none">{{
-                                version.replace(' Edition', '') }}</span>
+                            class="text-[8px] font-mono text-cyan-500/60 font-bold uppercase tracking-tighter leading-none">{{ version.replace(' Edition', '') }}</span>
                     </div>
                 </div>
             </div>
@@ -2731,8 +2724,7 @@ const selectFolder = async (settingKey) => {
                             class="px-4 py-2 bg-slate-900/80 backdrop-blur-xl border border-cyan-500/30 rounded-2xl rounded-tr-none shadow-xl animate-in fade-in slide-in-from-right-4">
                             <p class="text-[11px] text-cyan-100 font-medium whitespace-pre-line">
                                 {{ msg.text }}</p>
-                            <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{ msg.time
-                                }}</span>
+                            <span class="text-[8px] text-cyan-500/50 font-black mt-1 block uppercase">{{ msg.time }}</span>
                         </div>
                     </transition-group>
                 </div>
@@ -2782,10 +2774,8 @@ const selectFolder = async (settingKey) => {
                             </div>
                         </div>
                         <p v-if="finaState.authError"
-                            class="text-xs font-black text-red-500 uppercase tracking-widest animate-pulse">{{
-                                t('auth_fail', 'Contraseña Incorrecta') }}</p>
-                        <p class="text-[10px] font-bold text-cyan-700 uppercase tracking-[0.3em]">{{ t('ui_validate',
-                            'Presiona Enter para Validar') }}</p>
+                            class="text-xs font-black text-red-500 uppercase tracking-widest animate-pulse">{{ t('auth_fail', 'Contraseña Incorrecta') }}</p>
+                        <p class="text-[10px] font-bold text-cyan-700 uppercase tracking-[0.3em]">{{ t('ui_validate', 'Presiona Enter para Validar') }}</p>
                     </div>
                 </div>
 
@@ -2819,46 +2809,34 @@ const selectFolder = async (settingKey) => {
                                     class="fa-solid fa-fan text-orange-400 text-xl w-12 h-12 flex items-center justify-center bg-orange-500/10 rounded-2xl shadow-lg"></i>
                                 <div class="flex-1 flex flex-col px-4">
                                     <span
-                                        class="text-xl font-black text-white tracking-tighter uppercase leading-none">{{
-                                        t('ui_ac', 'Aire Acond') }}</span>
-                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">{{
-                                        t('ui_main_room', 'SALA PRINCIPAL') }}</span>
+                                        class="text-xl font-black text-white tracking-tighter uppercase leading-none">{{ t('ui_ac', 'Aire Acond') }}</span>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">{{ t('ui_main_room', 'SALA PRINCIPAL') }}</span>
                                 </div>
                                 <div class="flex flex-col items-end gap-1">
                                     <span class="text-3xl font-black text-white leading-none">{{ acState.temp }}°</span>
                                     <div class="grid grid-cols-[45px_35px] gap-x-1 mt-2 items-center leading-none">
-                                        <span class="text-right text-[15px] font-black text-cyan-500 uppercase">{{
-                                            t('ui_ext', 'EXT') }}:</span>
-                                        <span class="text-left text-[15px] font-black text-cyan-400 ml-1 uppercase">{{
-                                            acState.outdoor }}°</span>
+                                        <span class="text-right text-[15px] font-black text-cyan-500 uppercase">{{ t('ui_ext', 'EXT') }}:</span>
+                                        <span class="text-left text-[15px] font-black text-cyan-400 ml-1 uppercase">{{ acState.outdoor }}°</span>
 
                                         <span
-                                            class="text-right text-[15px] font-black text-orange-500 uppercase mt-1">{{
-                                            t('ui_int', 'INT') }}:</span>
+                                            class="text-right text-[15px] font-black text-orange-500 uppercase mt-1">{{ t('ui_int', 'INT') }}:</span>
                                         <span
-                                            class="text-left text-[15px] font-black text-orange-400 ml-1 uppercase mt-1">{{
-                                            acState.indoor }}°</span>
+                                            class="text-left text-[15px] font-black text-orange-400 ml-1 uppercase mt-1">{{ acState.indoor }}°</span>
 
                                         <span
-                                            class="text-right text-[11.5px] font-bold text-green-500 uppercase mt-1">{{
-                                            t('ui_hum', 'HUM') }}:</span>
+                                            class="text-right text-[11.5px] font-bold text-green-500 uppercase mt-1">{{ t('ui_hum', 'HUM') }}:</span>
                                         <span
-                                            class="text-left text-[11.5px] font-bold text-green-400 ml-1 uppercase mt-1">{{
-                                            weatherHumidity }}%</span>
+                                            class="text-left text-[11.5px] font-bold text-green-400 ml-1 uppercase mt-1">{{ weatherHumidity }}%</span>
 
                                         <span v-if="acState.watts !== undefined"
-                                            class="text-right text-[12.5px] font-black text-yellow-500 uppercase mt-1">{{
-                                            t('ui_pwr', 'PWR') }}:</span>
+                                            class="text-right text-[12.5px] font-black text-yellow-500 uppercase mt-1">{{ t('ui_pwr', 'PWR') }}:</span>
                                         <span v-if="acState.watts !== undefined"
-                                            class="text-left text-[12.5px] font-black text-yellow-400 ml-1 uppercase mt-1 text-[8px] ml-0.5">{{
-                                            acState.watts }}<span>W</span></span>
+                                            class="text-left text-[12.5px] font-black text-yellow-400 ml-1 uppercase mt-1 text-[8px] ml-0.5">{{ acState.watts }}<span>W</span></span>
 
                                         <span v-if="acState.total_kwh"
-                                            class="text-right text-[12.5px] font-black text-purple-500 uppercase mt-1">{{
-                                            t('ui_tot', 'TOT') }}:</span>
+                                            class="text-right text-[12.5px] font-black text-purple-500 uppercase mt-1">{{ t('ui_tot', 'TOT') }}:</span>
                                         <span v-if="acState.total_kwh"
-                                            class="text-left text-[12.5px] font-black text-purple-400 ml-1 uppercase mt-1 text-[8px] ml-0.5">{{
-                                            acState.total_kwh }}<span>kWh</span></span>
+                                            class="text-left text-[12.5px] font-black text-purple-400 ml-1 uppercase mt-1 text-[8px] ml-0.5">{{ acState.total_kwh }}<span>kWh</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -2869,17 +2847,14 @@ const selectFolder = async (settingKey) => {
                                     class="fa-solid fa-door-open text-cyan-400 text-xl w-12 h-12 flex items-center justify-center bg-cyan-500/10 rounded-2xl shadow-lg"></i>
                                 <div class="flex-1 flex flex-col px-4">
                                     <span
-                                        class="text-xl font-black text-white tracking-tighter uppercase leading-none">{{
-                                        t('ui_doorbell', 'Timbre Cam') }}</span>
-                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">{{
-                                        t('ui_outdoor_gate', 'PUERTA EXTERIOR') }}</span>
+                                        class="text-xl font-black text-white tracking-tighter uppercase leading-none">{{ t('ui_doorbell', 'Timbre Cam') }}</span>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">{{ t('ui_outdoor_gate', 'PUERTA EXTERIOR') }}</span>
                                 </div>
                                 <div
                                     class="bg-slate-800/80 px-4 py-2 rounded-xl border border-white/5 shrink-0 flex items-center gap-2">
                                     <i class="fa-solid fa-battery-three-quarters"
                                         :class="parseInt(doorbellBattery) > 20 ? 'text-green-500' : 'text-red-500'"></i>
-                                    <span class="text-[10px] font-black text-slate-300 uppercase leading-none">{{
-                                        doorbellBattery }}% {{ t('ui_battery', 'BATERÍA') }}</span>
+                                    <span class="text-[10px] font-black text-slate-300 uppercase leading-none">{{ doorbellBattery }}% {{ t('ui_battery', 'BATERÍA') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -2889,14 +2864,12 @@ const selectFolder = async (settingKey) => {
                                 <div @click="activeCasaView = 'aire'; syncAllDevices(true)"
                                     class="p-6 bg-slate-900/50 backdrop-blur-md border border-white/5 rounded-[30px] hover:border-orange-500/40 transition-all cursor-pointer flex flex-col items-center gap-3">
                                     <i class="fa-solid fa-fan text-2xl text-orange-400"></i>
-                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-200">{{
-                                        t('ui_ac_short', 'Aire') }}</span>
+                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-200">{{ t('ui_ac_short', 'Aire') }}</span>
                                 </div>
                                 <div @click="activeCasaView = 'tv'; activeTvAppsView = false; activeTvSearch = ''; loadTvChannels()"
                                     class="p-6 bg-slate-900/50 backdrop-blur-md border border-white/5 rounded-[30px] hover:border-green-500/40 transition-all cursor-pointer flex flex-col items-center gap-3">
                                     <i class="fa-solid fa-tv text-2xl text-green-400"></i>
-                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-200">{{
-                                        t('ui_tv', 'TV') }}</span>
+                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-200">{{ t('ui_tv', 'TV') }}</span>
                                 </div>
                             </div>
 
@@ -2941,8 +2914,7 @@ const selectFolder = async (settingKey) => {
                                             </button>
                                             <button @click="activeTvAppsView = !activeTvAppsView"
                                                 class="px-4 py-2 bg-purple-500/10 border border-purple-500/30 rounded-xl text-[10px] font-black text-purple-400 uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all">
-                                                {{ activeTvAppsView ? t('ui_channels', 'CANALES') : t('ui_apps', 'APPS')
-                                                }}
+                                                {{ activeTvAppsView ? t('ui_channels', 'CANALES') : t('ui_apps', 'APPS') }}
                                             </button>
                                         </template>
                                         <button v-else @click="cancelTvScan"
@@ -2960,11 +2932,9 @@ const selectFolder = async (settingKey) => {
                                                 class="p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-green-500/40 hover:bg-green-500/5 transition-all cursor-pointer flex items-center justify-between group">
                                                 <div class="flex flex-col">
                                                     <span
-                                                        class="text-sm font-black text-white uppercase group-hover:text-green-400 transition-colors">{{
-                                                        name }}</span>
+                                                        class="text-sm font-black text-white uppercase group-hover:text-green-400 transition-colors">{{ name }}</span>
                                                     <span
-                                                        class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{{
-                                                        t('ui_channel', 'CANAL') }}
+                                                        class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{{ t('ui_channel', 'CANAL') }}
                                                         {{ num }}</span>
                                                 </div>
                                                 <div
@@ -3028,8 +2998,7 @@ const selectFolder = async (settingKey) => {
                                                     </div>
                                                 </div>
                                                 <span
-                                                    class="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-3 mr-1">{{
-                                                    t('ui_online', 'Online') }}</span>
+                                                    class="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-3 mr-1">{{ t('ui_online', 'Online') }}</span>
                                             </div>
                                         </div>
 
@@ -3061,17 +3030,14 @@ const selectFolder = async (settingKey) => {
                                                 </div>
 
                                                 <span
-                                                    class="relative z-10 text-[11px] font-black text-white/70 uppercase tracking-[0.2em] group-hover:text-white transition-colors">{{
-                                                    name }}</span>
+                                                    class="relative z-10 text-[11px] font-black text-white/70 uppercase tracking-[0.2em] group-hover:text-white transition-colors">{{ name }}</span>
                                             </div>
 
                                             <!-- EMPTY STATE -->
                                             <div v-if="Object.keys(filteredTvApps).length === 0"
                                                 class="w-full flex flex-col items-center justify-center text-slate-600 py-20">
                                                 <i class="fa-solid fa-ghost text-4xl mb-4 opacity-20"></i>
-                                                <span class="text-[10px] font-black uppercase tracking-[0.3em]">{{
-                                                    t('ui_no_apps', 'No hay apps
-                                                    disponibles') }}</span>
+                                                <span class="text-[10px] font-black uppercase tracking-[0.3em]">{{ t('ui_no_apps', 'No hay apps disponibles') }}</span>
 
                                             </div>
                                         </div>
@@ -3100,9 +3066,7 @@ const selectFolder = async (settingKey) => {
                                             <i class="fa-solid fa-tv-slash text-5xl opacity-30"></i>
                                         </div>
                                         <span
-                                            class="text-[11px] font-black uppercase tracking-[0.4em] text-red-500/50">{{
-                                                t('ui_tv_disconnected', 'TV
-                                            Desconectada') }}</span>
+                                            class="text-[11px] font-black uppercase tracking-[0.4em] text-red-500/50">{{ t('ui_tv_disconnected', 'TV Desconectada') }}</span>
 
                                     </div>
                                 </div>
@@ -3110,23 +3074,17 @@ const selectFolder = async (settingKey) => {
                                 <div class="mt-6 flex flex-col gap-3">
                                     <div class="grid grid-cols-6 gap-3">
                                         <button @click="tvPower"
-                                            class="h-12 rounded-xl bg-red-500/20 border border-red-500/30 text-red-500 font-black text-[10px] uppercase">{{
-                                            t('ui_power', 'Power') }}</button>
+                                            class="h-12 rounded-xl bg-red-500/20 border border-red-500/30 text-red-500 font-black text-[10px] uppercase">{{ t('ui_power', 'Power') }}</button>
                                         <button @click="tvInput"
-                                            class="h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-black text-[10px] uppercase">{{
-                                            t('ui_input', 'TV/Aire') }}</button>
+                                            class="h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-black text-[10px] uppercase">{{ t('ui_input', 'TV/Aire') }}</button>
                                         <button @click="tvDeco"
-                                            class="h-12 rounded-xl bg-blue-500/20 border border-blue-500/30 text-blue-400 font-black text-[10px] uppercase">{{
-                                            t('ui_hdmi', 'HDMI') }}</button>
+                                            class="h-12 rounded-xl bg-blue-500/20 border border-blue-500/30 text-blue-400 font-black text-[10px] uppercase">{{ t('ui_hdmi', 'HDMI') }}</button>
                                         <button @mousedown="startVolDown" @mouseup="stopVol" @mouseleave="stopVol"
-                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-white font-black text-[10px] uppercase">{{
-                                            t('ui_vol_down', 'Vol -') }}</button>
+                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-white font-black text-[10px] uppercase">{{ t('ui_vol_down', 'Vol -') }}</button>
                                         <button @mousedown="startVolUp" @mouseup="stopVol" @mouseleave="stopVol"
-                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-white font-black text-[10px] uppercase">{{
-                                            t('ui_vol_up', 'Vol +') }}</button>
+                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-white font-black text-[10px] uppercase">{{ t('ui_vol_up', 'Vol +') }}</button>
                                         <button @click="tvMute"
-                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-slate-400 font-black text-[10px] uppercase hover:text-white">{{
-                                            t('ui_mute', 'Mute') }}</button>
+                                            class="h-12 rounded-xl bg-white/5 border border-white/5 text-slate-400 font-black text-[10px] uppercase hover:text-white">{{ t('ui_mute', 'Mute') }}</button>
                                     </div>
                                     <div class="grid grid-cols-4 gap-3">
                                         <button @click="setTvVolume(10)"
@@ -3178,44 +3136,34 @@ const selectFolder = async (settingKey) => {
                                             TEMP</button>
                                         <button @click="toggleAcTurbo"
                                             class="h-12 rounded-xl border text-[9px] font-black uppercase transition-all"
-                                            :class="acState.turbo ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-white/5 border-white/5 text-slate-600'">{{
-                                            t('ui_turbo', 'TURBO') }}</button>
+                                            :class="acState.turbo ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-white/5 border-white/5 text-slate-600'">{{ t('ui_turbo', 'TURBO') }}</button>
                                         <button @click="toggleAcSwing"
                                             class="h-12 rounded-xl border text-[9px] font-black uppercase transition-all"
-                                            :class="acState.swing ? 'bg-purple-500/20 border-purple-500 text-purple-400' : 'bg-white/5 border-white/5 text-slate-600'">{{
-                                            t('ui_swing', 'SWING') }}</button>
+                                            :class="acState.swing ? 'bg-purple-500/20 border-purple-500 text-purple-400' : 'bg-white/5 border-white/5 text-slate-600'">{{ t('ui_swing', 'SWING') }}</button>
                                         <button @click="acState.eco = !acState.eco"
                                             class="h-12 rounded-xl border text-[9px] font-black uppercase transition-all"
-                                            :class="acState.eco ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-white/5 border-white/5 text-slate-600'">{{
-                                            t('ui_eco', 'ECO') }}</button>
+                                            :class="acState.eco ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-white/5 border-white/5 text-slate-600'">{{ t('ui_eco', 'ECO') }}</button>
                                         <button @click="acState.sleep = !acState.sleep"
                                             class="h-12 rounded-xl border text-[9px] font-black uppercase transition-all"
-                                            :class="acState.sleep ? 'bg-indigo-500/20 border-indigo-500 text-indigo-400' : 'bg-white/5 border-white/5 text-slate-600'">{{
-                                            t('ui_sleep', 'SLEEP') }}</button>
+                                            :class="acState.sleep ? 'bg-indigo-500/20 border-indigo-500 text-indigo-400' : 'bg-white/5 border-white/5 text-slate-600'">{{ t('ui_sleep', 'SLEEP') }}</button>
 
                                         <button @click="setAcMode('cool')"
                                             class="h-10 rounded-lg border text-[8px] font-black uppercase transition-all"
-                                            :class="acState.mode === 'cool' ? 'bg-blue-600/30 border-blue-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{
-                                            t('ui_cool', 'COOL') }}</button>
+                                            :class="acState.mode === 'cool' ? 'bg-blue-600/30 border-blue-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{ t('ui_cool', 'COOL') }}</button>
                                         <button @click="setAcMode('heat')"
                                             class="h-10 rounded-lg border text-[8px] font-black uppercase transition-all"
-                                            :class="acState.mode === 'heat' ? 'bg-orange-600/30 border-orange-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{
-                                            t('ui_heat', 'HEAT') }}</button>
+                                            :class="acState.mode === 'heat' ? 'bg-orange-600/30 border-orange-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{ t('ui_heat', 'HEAT') }}</button>
                                         <button @click="setAcMode('dry')"
                                             class="h-10 rounded-lg border text-[8px] font-black uppercase transition-all"
-                                            :class="acState.mode === 'dry' ? 'bg-teal-600/30 border-teal-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{
-                                            t('ui_dry', 'DRY') }}</button>
+                                            :class="acState.mode === 'dry' ? 'bg-teal-600/30 border-teal-500 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{ t('ui_dry', 'DRY') }}</button>
                                         <button @click="setAcMode('fan')"
                                             class="h-10 rounded-lg border text-[8px] font-black uppercase transition-all"
-                                            :class="acState.mode === 'fan' ? 'bg-slate-700 border-white/30 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{
-                                            t('ui_fan', 'FAN') }}</button>
+                                            :class="acState.mode === 'fan' ? 'bg-slate-700 border-white/30 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{ t('ui_fan', 'FAN') }}</button>
                                         <button @click="toggleAcDisplay"
                                             class="h-10 rounded-lg border text-[8px] font-black uppercase transition-all"
-                                            :class="acState.display ? 'bg-cyan-900/30 border-cyan-700 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{
-                                            t('ui_display', 'DISPLAY') }}</button>
+                                            :class="acState.display ? 'bg-cyan-900/30 border-cyan-700 text-white' : 'bg-white/5 border-white/5 text-slate-700'">{{ t('ui_display', 'DISPLAY') }}</button>
                                         <button
-                                            class="h-10 rounded-lg bg-white/5 border border-white/5 text-[8px] font-black text-slate-700 uppercase">{{
-                                            t('ui_timer', 'TIMER') }}</button>
+                                            class="h-10 rounded-lg bg-white/5 border border-white/5 text-[8px] font-black text-slate-700 uppercase">{{ t('ui_timer', 'TIMER') }}</button>
 
                                         <button @click="toggleAcPower"
                                             class="col-span-6 h-14 rounded-2xl flex items-center justify-center gap-6 transition-all font-black text-xs uppercase tracking-[0.5em] shadow-xl border mt-2"
@@ -3266,14 +3214,10 @@ const selectFolder = async (settingKey) => {
                                                     :stroke-dasharray="2 * Math.PI * 28"
                                                     :stroke-dashoffset="2 * Math.PI * 28 * (1 - (systemStats.cpu?.percent || 0) / 100)" />
                                             </svg>
-                                            <span class="absolute text-xs font-black text-white">{{
-                                                Math.round(systemStats.cpu?.percent || 0)
-                                                }}%</span>
+                                            <span class="absolute text-xs font-black text-white">{{ Math.round(systemStats.cpu?.percent || 0) }}%</span>
                                         </div>
                                         <span
-                                            class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">{{
-                                            t('ui_cpu_load',
-                                            'CARGA CPU') }}</span>
+                                            class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">{{ t('ui_cpu_load', 'CARGA CPU') }}</span>
                                     </div>
 
                                     <!-- RAM Circle -->
@@ -3289,33 +3233,24 @@ const selectFolder = async (settingKey) => {
                                                     :stroke-dasharray="2 * Math.PI * 28"
                                                     :stroke-dashoffset="2 * Math.PI * 28 * (1 - systemStats.ram.percent / 100)" />
                                             </svg>
-                                            <span class="absolute text-xs font-black text-white">{{
-                                                Math.round(systemStats.ram.percent)
-                                                }}%</span>
+                                            <span class="absolute text-xs font-black text-white">{{ Math.round(systemStats.ram.percent) }}%</span>
                                         </div>
                                         <span
-                                            class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">{{
-                                            t('ui_ram_usage',
-                                            'USO RAM') }}</span>
+                                            class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">{{ t('ui_ram_usage', 'USO RAM') }}</span>
                                     </div>
                                 </div>
 
                                 <div class="z-10 mt-auto pt-4 border-t border-white/5 w-full">
                                     <div class="flex justify-between items-center mb-1">
-                                        <span class="text-[9px] font-bold text-slate-500 uppercase">{{ t('ui_storage',
-                                            'Almacenamiento (Root)')
-                                            }}</span>
-                                        <span class="text-[9px] font-bold text-white">{{ systemStats.disk.percent
-                                            }}%</span>
+                                        <span class="text-[9px] font-bold text-slate-500 uppercase">{{ t('ui_storage', 'Almacenamiento (Root)') }}</span>
+                                        <span class="text-[9px] font-bold text-white">{{ systemStats.disk.percent }}%</span>
                                     </div>
                                     <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                         <div class="h-full bg-gradient-to-r from-cyan-600 to-blue-500 transition-all duration-1000"
                                             :style="{ width: systemStats.disk.percent + '%' }"></div>
                                     </div>
                                     <div class="flex justify-between items-center mt-1">
-                                        <span class="text-[8px] font-mono text-slate-600 uppercase">{{
-                                            systemStats.disk.free }}{{ t('ui_free',
-                                            'GB Libres') }}</span>
+                                        <span class="text-[8px] font-mono text-slate-600 uppercase">{{ systemStats.disk.free }}{{ t('ui_free', 'GB Libres') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -3332,16 +3267,14 @@ const selectFolder = async (settingKey) => {
                                         <i class="fa-solid fa-shield-halved text-3xl text-red-500"></i>
                                     </div>
                                     <div>
-                                        <h3 class="text-xl font-black text-white uppercase tracking-tighter">{{
-                                            t('ui_firewall', 'Firewall') }}
+                                        <h3 class="text-xl font-black text-white uppercase tracking-tighter">{{ t('ui_firewall', 'Firewall') }}
                                         </h3>
                                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
                                             {{ t('ui_real_time_protection', 'Protección en Tiempo Real') }}</p>
                                     </div>
                                     <div
                                         class="w-full flex items-center justify-between px-6 py-3 bg-white/5 rounded-2xl border border-white/5 mt-2">
-                                        <span class="text-[9px] font-black text-slate-400 uppercase">{{ t('ui_status',
-                                            'Estado') }}</span>
+                                        <span class="text-[9px] font-black text-slate-400 uppercase">{{ t('ui_status', 'Estado') }}</span>
                                         <span
                                             class="text-[9px] font-black text-emerald-500 uppercase flex items-center gap-2">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -3355,12 +3288,8 @@ const selectFolder = async (settingKey) => {
                                     <i class="fa-solid fa-radar text-red-400 text-lg group-hover/btn:animate-spin"></i>
                                     <div class="flex flex-col items-start leading-none">
                                         <span
-                                            class="text-[9px] font-black text-red-300 uppercase tracking-[0.2em] mb-1">{{
-                                            t('ui_access',
-                                            'Acceder a') }}</span>
-                                        <span class="text-sm font-black text-white uppercase tracking-wider">{{
-                                            t('ui_sentinel', 'CENTINELA')
-                                            }}</span>
+                                            class="text-[9px] font-black text-red-300 uppercase tracking-[0.2em] mb-1">{{ t('ui_access', 'Acceder a') }}</span>
+                                        <span class="text-sm font-black text-white uppercase tracking-wider">{{ t('ui_sentinel', 'CENTINELA') }}</span>
                                     </div>
                                 </button>
                             </div>
@@ -3376,8 +3305,7 @@ const selectFolder = async (settingKey) => {
                                             class="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">
                                             Fina</h3>
                                         <span
-                                            class="text-[10px] font-bold text-cyan-400 tracking-[0.4em] uppercase mt-2">{{
-                                                t('ui_personal_assistant', 'Personal Assistant') }}</span>
+                                            class="text-[10px] font-bold text-cyan-400 tracking-[0.4em] uppercase mt-2">{{ t('ui_personal_assistant', 'Personal Assistant') }}</span>
                                     </div>
                                     <div class="flex items-center gap-4">
                                         <i class="fa-solid fa-bell text-slate-500 relative cursor-pointer">
@@ -3406,11 +3334,9 @@ const selectFolder = async (settingKey) => {
                                                     'border-purple-500/50': index % 3 === 1,
                                                     'border-pink-500/50': index % 3 === 2
                                                 }">
-                                                <span class="text-[11px] font-bold text-white">{{ reminder.task
-                                                    }}</span>
+                                                <span class="text-[11px] font-bold text-white">{{ reminder.task }}</span>
                                                 <span
-                                                    class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{
-                                                    reminder.time }}</span>
+                                                    class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{ reminder.time }}</span>
                                             </div>
                                             <div v-if="!userData.reminders || userData.reminders.length === 0"
                                                 class="text-[10px] text-slate-600 font-bold uppercase py-4">
@@ -3446,23 +3372,18 @@ const selectFolder = async (settingKey) => {
                                                 class="flex flex-col border-r-2 border-blue-500/50 pr-4 py-1 items-end text-right hover:bg-white/5 rounded-l-lg transition-colors cursor-pointer">
                                                 <span class="text-[11px] font-bold text-white">{{ mail.subject }}</span>
                                                 <span
-                                                    class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{
-                                                    mail.from
-                                                    }}</span>
+                                                    class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{{ mail.from }}</span>
                                             </div>
                                             <div v-if="mailError"
                                                 class="flex flex-col border-r-2 border-red-500/50 pr-4 py-1 items-end text-right">
-                                                <span class="text-[10px] font-bold text-red-400 leading-tight">{{
-                                                    mailError }}</span>
+                                                <span class="text-[10px] font-bold text-red-400 leading-tight">{{ mailError }}</span>
                                                 <span
                                                     class="text-[8px] text-slate-600 uppercase font-black tracking-widest mt-1">CONFIGURACIÓN
                                                     REQUERIDA</span>
                                             </div>
                                             <div v-else-if="recentEmails.length === 0"
                                                 class="flex flex-col border-r-2 border-slate-500/50 pr-4 py-1 items-end text-right">
-                                                <span class="text-[11px] font-bold text-slate-400">{{ isFetchingMails ?
-                                                    t('ui_fetching',
-                                                    'Actualizando...') : t('ui_no_subjects', 'Sin asuntos') }}</span>
+                                                <span class="text-[11px] font-bold text-slate-400">{{ isFetchingMails ? t('ui_fetching', 'Actualizando...') : t('ui_no_subjects', 'Sin asuntos') }}</span>
                                                 <span
                                                     class="text-[9px] text-slate-600 uppercase font-black tracking-widest mt-0.5">FINA
                                                     AL DÍA</span>
@@ -3481,13 +3402,10 @@ const selectFolder = async (settingKey) => {
                                             class="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
                                             {{ t('ui_my_day', 'Mi Día') }}
                                         </h3>
-                                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">{{
-                                            currentDate }}</span>
+                                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">{{ currentDate }}</span>
                                     </div>
                                     <div class="flex items-center gap-4">
-                                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">{{
-                                            t('ui_today_events', '3
-                                            Eventos Hoy') }}</span>
+                                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">{{ t('ui_today_events', '3 Eventos Hoy') }}</span>
 
                                         <i class="fa-solid fa-calendar-day text-slate-500"></i>
                                     </div>
@@ -3521,9 +3439,7 @@ const selectFolder = async (settingKey) => {
                                                     class="text-[10px] text-cyan-200 mt-2 font-bold uppercase tracking-tight">
                                                     {{ t('ui_dev_fina', 'Desarrollo Fina V3') }}
                                                 </p>
-                                                <span class="text-[9px] text-slate-500 font-bold uppercase">{{
-                                                    t('ui_sprint_coding', 'Sprint
-                                                    Coding') }}</span>
+                                                <span class="text-[9px] text-slate-500 font-bold uppercase">{{ t('ui_sprint_coding', 'Sprint Coding') }}</span>
 
                                             </div>
                                         </div>
@@ -3550,9 +3466,7 @@ const selectFolder = async (settingKey) => {
                                                     class="text-[10px] text-purple-200 mt-2 font-bold uppercase tracking-tight">
                                                     {{ t('ui_server_maint', 'Mantenimiento Server') }}
                                                 </p>
-                                                <span class="text-[9px] text-slate-500 font-bold uppercase">{{
-                                                    t('ui_update_logs', 'Update
-                                                    Logs') }}</span>
+                                                <span class="text-[9px] text-slate-500 font-bold uppercase">{{ t('ui_update_logs', 'Update Logs') }}</span>
 
                                             </div>
                                         </div>
@@ -3578,9 +3492,7 @@ const selectFolder = async (settingKey) => {
                                                     class="text-[10px] text-pink-200 mt-2 font-bold uppercase tracking-tight">
                                                     {{ t('ui_prod_deploy', 'Deploy Producción') }}
                                                 </p>
-                                                <span class="text-[9px] text-slate-500 font-bold uppercase">{{
-                                                    t('ui_release', 'Release')
-                                                    }}</span>
+                                                <span class="text-[9px] text-slate-500 font-bold uppercase">{{ t('ui_release', 'Release') }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -3591,13 +3503,10 @@ const selectFolder = async (settingKey) => {
                             <div
                                 class="w-full max-w-7xl bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-[40px] p-8 shadow-2xl shrink-0">
                                 <div class="flex items-center justify-between mb-6">
-                                    <h4 class="text-sm font-black text-white uppercase tracking-[0.2em]">{{
-                                        t('ui_communication',
-                                        'Comunicación') }}
+                                    <h4 class="text-sm font-black text-white uppercase tracking-[0.2em]">{{ t('ui_communication', 'Comunicación') }}
                                     </h4>
                                     <div class="flex items-center gap-2">
-                                        <span class="text-[9px] font-black text-slate-500">{{ t('ui_sync', 'SÍNC.')
-                                            }}</span>
+                                        <span class="text-[9px] font-black text-slate-500">{{ t('ui_sync', 'SÍNC.') }}</span>
                                         <i class="fa-solid fa-arrows-rotate text-[10px] text-emerald-400"></i>
                                     </div>
                                 </div>
@@ -3609,12 +3518,9 @@ const selectFolder = async (settingKey) => {
                                             <i class="fa-solid fa-comment-dots text-3xl"></i>
                                         </div>
                                         <div class="flex flex-col">
-                                            <span class="text-sm font-black text-white uppercase">{{ t('ui_messaging',
-                                                'Mensajería') }}</span>
+                                            <span class="text-sm font-black text-white uppercase">{{ t('ui_messaging', 'Mensajería') }}</span>
                                             <span
-                                                class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate max-w-[120px]">{{
-                                                    linkedMobileDevice ? linkedMobileDevice.name : t('ui_link_app',
-                                                'Vincular App') }}</span>
+                                                class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate max-w-[120px]">{{ linkedMobileDevice ? linkedMobileDevice.name : t('ui_link_app', 'Vincular App') }}</span>
                                         </div>
                                     </div>
                                     <div @click="handleCallClick"
@@ -3624,12 +3530,9 @@ const selectFolder = async (settingKey) => {
                                             <i class="fa-solid fa-phone-flip text-2xl"></i>
                                         </div>
                                         <div class="flex flex-col">
-                                            <span class="text-sm font-black text-white uppercase">{{ t('ui_call',
-                                                'Llamada') }}</span>
+                                            <span class="text-sm font-black text-white uppercase">{{ t('ui_call', 'Llamada') }}</span>
                                             <span
-                                                class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate max-w-[120px]">{{
-                                                    linkedMobileDevice ? linkedMobileDevice.name : t('ui_link', 'Vincular')
-                                                }}</span>
+                                                class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate max-w-[120px]">{{ linkedMobileDevice ? linkedMobileDevice.name : t('ui_link', 'Vincular') }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -3660,9 +3563,7 @@ const selectFolder = async (settingKey) => {
                                             <i class="fa-solid fa-brain text-4xl text-indigo-400"></i>
                                         </div>
                                         <span
-                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10 text-indigo-400 text-lg">{{
-                                            t('ui_domain', 'Dominio') }}<br><span>{{ t('ui_dom_intel', 'Inteligencia')
-                                                }}</span></span>
+                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10 text-indigo-400 text-lg">{{ t('ui_domain', 'Dominio') }}<br><span>{{ t('ui_dom_intel', 'Inteligencia') }}</span></span>
                                     </button>
 
                                     <!-- DOMINIO VISUAL (TV, Timbre, Iluminación) -->
@@ -3676,9 +3577,7 @@ const selectFolder = async (settingKey) => {
                                             <i class="fa-solid fa-eye text-4xl text-purple-400"></i>
                                         </div>
                                         <span
-                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10 text-purple-400 text-lg">{{
-                                            t('ui_domain', 'Dominio') }}<br><span>{{ t('ui_dom_visual', 'Visual')
-                                                }}</span></span>
+                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10 text-purple-400 text-lg">{{ t('ui_domain', 'Dominio') }}<br><span>{{ t('ui_dom_visual', 'Visual') }}</span></span>
                                     </button>
 
                                     <!-- DOMINIO HABITAT (Aire, Ventanas, Riego, etc) -->
@@ -3692,9 +3591,7 @@ const selectFolder = async (settingKey) => {
                                             <i class="fa-solid fa-leaf text-4xl text-emerald-400"></i>
                                         </div>
                                         <span
-                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10 text-emerald-400 text-lg">{{
-                                            t('ui_domain', 'Dominio') }}<br><span>{{ t('ui_dom_habitat', 'Habitat')
-                                                }}</span></span>
+                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10 text-emerald-400 text-lg">{{ t('ui_domain', 'Dominio') }}<br><span>{{ t('ui_dom_habitat', 'Habitat') }}</span></span>
                                     </button>
 
                                     <!-- DOMINIO SEGURIDAD (Biometría, Cámaras, Puertas) -->
@@ -3708,9 +3605,7 @@ const selectFolder = async (settingKey) => {
                                             <i class="fa-solid fa-shield-halved text-4xl text-red-400"></i>
                                         </div>
                                         <span
-                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10 text-red-400 text-lg">{{
-                                            t('ui_domain', 'Dominio') }}<br><span>{{ t('ui_dom_security', 'Seguridad')
-                                                }}</span></span>
+                                            class="text-xs font-black text-slate-200 uppercase tracking-widest z-10 text-red-400 text-lg">{{ t('ui_domain', 'Dominio') }}<br><span>{{ t('ui_dom_security', 'Seguridad') }}</span></span>
                                     </button>
                                 </div>
                             </div>
@@ -3871,8 +3766,7 @@ const selectFolder = async (settingKey) => {
                                                         class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Estado
                                                         Core: </span>
                                                     <span
-                                                        class="text-[10px] font-black text-white uppercase tracking-widest">{{
-                                                        t('ui_local_infra', 'Infraestructura Local') }}</span>
+                                                        class="text-[10px] font-black text-white uppercase tracking-widest">{{ t('ui_local_infra', 'Infraestructura Local') }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -3923,20 +3817,16 @@ const selectFolder = async (settingKey) => {
                                                 <div class="mt-8 text-center z-10">
                                                     <div class="flex items-center gap-6 justify-center">
                                                         <div class="flex flex-col items-center">
-                                                            <span class="text-4xl font-black text-white leading-none">{{
-                                                                neuralActivity
-                                                                }}%</span>
+                                                            <span class="text-4xl font-black text-white leading-none">{{ neuralActivity }}%</span>
                                                             <span
-                                                                class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-2">{{
-                                                                t('ui_neural_activity', 'Actividad Neural') }}</span>
+                                                                class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-2">{{ t('ui_neural_activity', 'Actividad Neural') }}</span>
                                                         </div>
                                                         <div class="w-px h-10 bg-white/10"></div>
                                                         <div class="flex flex-col items-center">
                                                             <span
                                                                 class="text-4xl font-black text-white leading-none">V3.2</span>
                                                             <span
-                                                                class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-2">{{
-                                                                t('ui_revision', 'Revisión') }}
+                                                                class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-2">{{ t('ui_revision', 'Revisión') }}
                                                                 Matrix</span>
                                                         </div>
                                                     </div>
@@ -3951,8 +3841,7 @@ const selectFolder = async (settingKey) => {
                                                     <div
                                                         class="p-6 border-b border-white/5 flex items-center justify-between bg-white/5">
                                                         <span
-                                                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{
-                                                            t('ui_thought_stream', 'Flujo de') }}
+                                                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ t('ui_thought_stream', 'Flujo de') }}
                                                             {{ t('ui_migrated_core', 'Migración Core') }}</span>
                                                         <div class="flex gap-1">
                                                             <div
@@ -3981,18 +3870,15 @@ const selectFolder = async (settingKey) => {
                                                     class="bg-gradient-to-br from-indigo-900/40 to-slate-900/60 p-8 rounded-[40px] border border-indigo-500/20 relative group overflow-hidden">
                                                     <div class="flex flex-col gap-4 relative z-10">
                                                         <span
-                                                            class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{{
-                                                            t('ui_active_base_model', 'Modelo Base Activo') }}</span>
+                                                            class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{{ t('ui_active_base_model', 'Modelo Base Activo') }}</span>
                                                         <h4
                                                             class="text-2xl font-black text-white italic tracking-tighter">
                                                             {{ activeModel }}</h4>
                                                         <div class="flex items-center gap-2 mt-2">
                                                             <span
-                                                                class="px-2 py-0.5 bg-indigo-600 text-[8px] font-black text-white rounded uppercase">{{
-                                                                t('ui_ultra_low_latency', 'Ultra-Low Latency') }}</span>
+                                                                class="px-2 py-0.5 bg-indigo-600 text-[8px] font-black text-white rounded uppercase">{{ t('ui_ultra_low_latency', 'Ultra-Low Latency') }}</span>
                                                             <span
-                                                                class="px-2 py-0.5 bg-white/10 text-[8px] font-black text-indigo-300 rounded uppercase">{{
-                                                                t('ui_self_optimizing', 'Self-Optimizing') }}</span>
+                                                                class="px-2 py-0.5 bg-white/10 text-[8px] font-black text-indigo-300 rounded uppercase">{{ t('ui_self_optimizing', 'Self-Optimizing') }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -4015,13 +3901,11 @@ const selectFolder = async (settingKey) => {
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{
-                                                            t('ui_intelligence_level', 'Nivel de Inteligencia') }}</span>
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{ t('ui_intelligence_level', 'Nivel de Inteligencia') }}</span>
                                                     <div v-for="(label, key) in { GITHUB_TOKEN: 'Mistral (GH Token)', OPENAI_API_KEY: 'OpenAI API Key', ELEVENLABS_API_KEY: 'ElevenLabs SDK', FINA_VOICE_ID: 'ElevenLabs Voice ID' }"
                                                         :key="key" class="space-y-2">
                                                         <label
-                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                            label }}</label>
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{ label }}</label>
                                                         <div class="relative">
                                                             <input
                                                                 :type="showPass[key.toLowerCase().split('_')[0]] ? 'text' : 'password'"
@@ -4040,20 +3924,17 @@ const selectFolder = async (settingKey) => {
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{
-                                                            t('ui_messaging_service', 'Servicio de Mensajería') }}</span>
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{ t('ui_messaging_service', 'Servicio de Mensajería') }}</span>
                                                     <div class="space-y-6">
                                                         <div class="space-y-2">
                                                             <label
-                                                                class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                                t('ui_email_user', 'Email Usuario') }}</label>
+                                                                class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{ t('ui_email_user', 'Email Usuario') }}</label>
                                                             <input type="text" v-model="userSettings.apis.EMAIL_USER"
                                                                 class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs font-mono focus:border-indigo-500 outline-none transition-all" />
                                                         </div>
                                                         <div class="space-y-2">
                                                             <label
-                                                                class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                                t('ui_app_password', 'Password Aplicación') }}</label>
+                                                                class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{ t('ui_app_password', 'Password Aplicación') }}</label>
                                                             <div class="relative">
                                                                 <input :type="showPass.email ? 'text' : 'password'"
                                                                     v-model="userSettings.apis.EMAIL_PASSWORD"
@@ -4071,20 +3952,16 @@ const selectFolder = async (settingKey) => {
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{
-                                                            t('ui_models_heuristics', 'Modelos & Heurísticas') }}</span>
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{ t('ui_models_heuristics', 'Modelos & Heurísticas') }}</span>
 
                                                     <div class="space-y-2">
                                                         <label
-                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                                t('ui_universal_language', `Idioma Universal (Voz y
-                                                            Escucha)`) }}</label>
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{ t('ui_universal_language', `Idioma Universal (Voz y Escucha)`) }}</label>
 
                                                         <select v-model="userSettings.apis.FINA_LANGUAGE"
                                                             @change="() => notifyFina(t('ui_restart_for_lang', 'REQUIERE REINICIO PARA APLICAR IDIOMA'))"
                                                             class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs font-black text-indigo-300 focus:border-indigo-500 outline-none transition-all appearance-none cursor-pointer">
-                                                            <option value="" disabled>{{ t('ui_select_language',
-                                                                'Seleccione un idioma...') }}
+                                                            <option value="" disabled>{{ t('ui_select_language', 'Seleccione un idioma...') }}
                                                             </option>
                                                             <option value="es">Español (Recomendado)</option>
                                                             <option value="en">Inglés (English)</option>
@@ -4093,17 +3970,13 @@ const selectFolder = async (settingKey) => {
                                                             <option value="ja">Japonés (日本語)</option>
                                                             <option value="zh">Chino (中文)</option>
                                                         </select>
-                                                        <p class="text-[9px] text-slate-500 italic px-2">{{
-                                                            t('ui_language_download_hint', `Fina
-                                                            descargará automáticamente los modelos en el próximo
-                                                            inicio.`) }}</p>
+                                                        <p class="text-[9px] text-slate-500 italic px-2">{{ t('ui_language_download_hint', `Fina descargará automáticamente los modelos en el próximo inicio.`) }}</p>
                                                     </div>
 
                                                     <div v-for="(label, key) in { VOICE_MODELS_PATH: t('ui_custom_voices_folder_opt', 'Carpeta de Voces Custom (Opcional)'), VOSK_MODEL_PATH: t('ui_custom_vosk_model_opt', 'Modelo Vosk Custom (Opcional)') }"
                                                         :key="key" class="space-y-2">
                                                         <label
-                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                            label }}</label>
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{ label }}</label>
                                                         <div class="flex gap-2">
                                                             <input type="text" v-model="userSettings.apis[key]"
                                                                 placeholder="Ej: /home/usuario/voces/"
@@ -4120,13 +3993,11 @@ const selectFolder = async (settingKey) => {
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{
-                                                        t('ui_external_sensors', 'Sensores Externos') }}</span>
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{ t('ui_external_sensors', 'Sensores Externos') }}</span>
                                                     <div v-for="(label, key) in { WEATHER_API_KEY: 'OpenWeather Map', WEATHER_CITY_ID: 'Ciudad ID (Weather)', NEWS_API_KEY: 'NewsAPI.org' }"
                                                         :key="key" class="space-y-2">
                                                         <label
-                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                            label }}</label>
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{ label }}</label>
                                                         <div class="relative">
                                                             <input
                                                                 :type="key.includes('KEY') && !showPass[key.toLowerCase().split('_')[0]] ? 'password' : 'text'"
@@ -4147,13 +4018,11 @@ const selectFolder = async (settingKey) => {
                                                 <div
                                                     class="p-10 bg-indigo-500/5 rounded-[40px] border border-indigo-500/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-indigo-500/10 pb-4 italic">{{
-                                                            t('ui_system_heuristics', 'Heurísticas de Sistema') }}</span>
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-indigo-500/10 pb-4 italic">{{ t('ui_system_heuristics', 'Heurísticas de Sistema') }}</span>
                                                     <div v-for="(label, key) in { VOICE_MODELS_PATH: t('ui_voice_models_path_label', 'Ruta Modelos Voz'), VOSK_MODEL_PATH: t('ui_vosk_path_label', 'Ruta Vosk (Local)') }"
                                                         :key="key" class="space-y-2">
                                                         <label
-                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                            label }}</label>
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{ label }}</label>
                                                         <div class="flex gap-2">
                                                             <input type="text" v-model="userSettings.apis[key]"
                                                                 class="flex-1 bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-[10px] font-mono focus:border-indigo-500 outline-none transition-all" />
@@ -4170,14 +4039,11 @@ const selectFolder = async (settingKey) => {
                                                 <div
                                                     class="p-10 bg-white/5 rounded-[40px] border border-white/10 space-y-8">
                                                     <span
-                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{
-                                                            t('ui_generative_generators', 'Generadores Generativos')
-                                                        }}</span>
+                                                        class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block border-b border-white/5 pb-4 italic underline decoration-indigo-500/30">{{ t('ui_generative_generators', 'Generadores Generativos') }}</span>
                                                     <div v-for="(label, key) in { UNSPLASH_ACCESS_KEY: 'Unsplash Access Key', UNSPLASH_SECRET_KEY: 'Unsplash Secret Key', RUNAWAY_API_KEY: 'Runway Gen-2 API' }"
                                                         :key="key" class="space-y-2">
                                                         <label
-                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{
-                                                            label }}</label>
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{ label }}</label>
                                                         <div class="relative">
                                                             <input
                                                                 :type="showPass[key.toLowerCase().split('_')[0]] ? 'text' : 'password'"
@@ -4241,9 +4107,7 @@ const selectFolder = async (settingKey) => {
                                                     class="px-6 py-2 bg-indigo-500/10 hover:bg-indigo-500 border border-indigo-500/30 rounded-full text-white text-[10px] font-black uppercase tracking-widest transition-all">
                                                     <i class="fa-solid mr-2 shadow-sm"
                                                         :class="isScanningNetwork ? 'fa-spinner fa-spin' : 'fa-arrows-rotate'"></i>
-                                                    {{ isScanningNetwork ? t('ui_scanning', 'Escaneando...') :
-                                                    t('ui_scan_network', 'Escanear
-                                                    Red') }}
+                                                    {{ isScanningNetwork ? t('ui_scanning', 'Escaneando...') : t('ui_scan_network', 'Escanear Red') }}
 
                                                 </button>
                                             </div>
@@ -4253,8 +4117,7 @@ const selectFolder = async (settingKey) => {
                                             <!-- Panel de Dispositivos Detectados -->
                                             <div class="bg-white/5 rounded-[40px] border border-white/10 p-8">
                                                 <span
-                                                    class="text-[10px] font-black text-indigo-400 uppercase tracking-widest block mb-6 italic">{{
-                                                    t('ui_local_infra', 'Infraestructura Local') }}</span>
+                                                    class="text-[10px] font-black text-indigo-400 uppercase tracking-widest block mb-6 italic">{{ t('ui_local_infra', 'Infraestructura Local') }}</span>
                                                 <div
                                                     class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
                                                     <div v-for="(dev, index) in scannedDevices" :key="index"
@@ -4267,22 +4130,17 @@ const selectFolder = async (settingKey) => {
                                                                         :class="dev.assignedType ? (deviceTypesList.find(t => t.id === dev.assignedType)?.icon || 'fa-check') : 'fa-network-wired'"></i>
                                                                 </div>
                                                                 <div class="flex flex-col">
-                                                                    <span class="text-xs font-black text-slate-200">{{
-                                                                        dev.assignedName ||
-                                                                        dev.vendor || 'Nodo Desconocido' }}</span>
+                                                                    <span class="text-xs font-black text-slate-200">{{ dev.assignedName || dev.vendor || 'Nodo Desconocido' }}</span>
                                                                     <span
-                                                                        class="text-[9px] font-mono text-slate-500 uppercase tracking-widest">{{
-                                                                        dev.ip }}</span>
+                                                                        class="text-[9px] font-mono text-slate-500 uppercase tracking-widest">{{ dev.ip }}</span>
                                                                 </div>
                                                             </div>
                                                             <button v-if="!dev.assignedType"
                                                                 @click="assigningDeviceIp = assigningDeviceIp === dev.ip ? null : dev.ip; customDeviceName = dev.vendor || ''; customDeviceRoom = 'Living'"
-                                                                class="px-4 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500 text-white text-[9px] font-black uppercase transition-all">{{
-                                                                t('ui_assign', 'Asignar') }}</button>
+                                                                class="px-4 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500 text-white text-[9px] font-black uppercase transition-all">{{ t('ui_assign', 'Asignar') }}</button>
                                                             <div v-else class="flex items-center gap-3">
                                                                 <span
-                                                                    class="px-3 py-1 rounded-lg bg-green-500/10 text-green-400 text-[10px] font-black uppercase border border-green-500/20 italic">{{
-                                                                    dev.assignedType }}</span>
+                                                                    class="px-3 py-1 rounded-lg bg-green-500/10 text-green-400 text-[10px] font-black uppercase border border-green-500/20 italic">{{ dev.assignedType }}</span>
 
                                                                 <!-- Button to toggle Primary Status for Mobile Phones -->
                                                                 <button v-if="dev.assignedType === 'Celular'"
@@ -4305,23 +4163,18 @@ const selectFolder = async (settingKey) => {
                                                                 <div class="grid grid-cols-2 gap-4">
                                                                     <div class="space-y-1">
                                                                         <label
-                                                                            class="text-[8px] font-black text-slate-500 uppercase ml-2">{{
-                                                                            t('ui_custom_name', 'Nombre Personalizado')
-                                                                            }}</label>
+                                                                            class="text-[8px] font-black text-slate-500 uppercase ml-2">{{ t('ui_custom_name', 'Nombre Personalizado') }}</label>
                                                                         <input type="text" v-model="customDeviceName"
                                                                             placeholder="Ej: Celular Principal"
                                                                             class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold text-white outline-none focus:border-indigo-500 placeholder-slate-600" />
                                                                     </div>
                                                                     <div class="space-y-1">
                                                                         <label
-                                                                            class="text-[8px] font-black text-slate-500 uppercase ml-2">{{
-                                                                            t('ui_room_solo_tv', 'Habitáculo (Solo TV)')
-                                                                            }}</label>
+                                                                            class="text-[8px] font-black text-slate-500 uppercase ml-2">{{ t('ui_room_solo_tv', 'Habitáculo (Solo TV)') }}</label>
                                                                         <select v-model="customDeviceRoom"
                                                                             class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold text-white outline-none focus:border-indigo-500 appearance-none">
                                                                             <option v-for="room in roomList" :key="room"
-                                                                                :value="room">{{ room
-                                                                                }}
+                                                                                :value="room">{{ room }}
                                                                             </option>
                                                                         </select>
                                                                     </div>
@@ -4335,8 +4188,7 @@ const selectFolder = async (settingKey) => {
                                                                         <i class="fa-solid text-sm mb-2 group-hover:scale-110"
                                                                             :class="type.icon"></i>
                                                                         <span
-                                                                            class="text-[7px] font-black uppercase text-center leading-tight">{{
-                                                                            type.label }}</span>
+                                                                            class="text-[7px] font-black uppercase text-center leading-tight">{{ type.label }}</span>
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -4370,16 +4222,12 @@ const selectFolder = async (settingKey) => {
                                                     class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex items-center justify-between">
                                                     <div class="flex flex-col">
                                                         <span
-                                                            class="text-sm font-black text-white uppercase tracking-widest">{{
-                                                            t('ui_migrated_core', 'Migración Core') }}</span>
+                                                            class="text-sm font-black text-white uppercase tracking-widest">{{ t('ui_migrated_core', 'Migración Core') }}</span>
                                                         <span
-                                                            class="text-[10px] text-slate-500 uppercase font-black mt-1">{{
-                                                            t('ui_sync_root_config', 'Sincronizar config raíz')
-                                                            }}</span>
+                                                            class="text-[10px] text-slate-500 uppercase font-black mt-1">{{ t('ui_sync_root_config', 'Sincronizar config raíz') }}</span>
                                                     </div>
                                                     <button @click="importFromCore"
-                                                        class="px-8 py-3 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl text-indigo-400 text-[10px] font-black uppercase hover:bg-indigo-500 hover:text-white transition-all text-white">{{
-                                                        t('ui_import', 'Importar') }}</button>
+                                                        class="px-8 py-3 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl text-indigo-400 text-[10px] font-black uppercase hover:bg-indigo-500 hover:text-white transition-all text-white">{{ t('ui_import', 'Importar') }}</button>
                                                 </div>
 
                                                 <!-- ADB -->
@@ -4387,11 +4235,9 @@ const selectFolder = async (settingKey) => {
                                                     class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex items-center justify-between">
                                                     <div class="flex flex-col">
                                                         <span
-                                                            class="text-sm font-black text-white uppercase tracking-widest">{{
-                                                            t('ui_adb_debugging', 'Depuración ADB') }}</span>
+                                                            class="text-sm font-black text-white uppercase tracking-widest">{{ t('ui_adb_debugging', 'Depuración ADB') }}</span>
                                                         <span
-                                                            class="text-[10px] text-slate-500 uppercase font-black mt-1">{{
-                                                            t('ui_restart_tv_server', 'Reiniciar servidor TV') }}</span>
+                                                            class="text-[10px] text-slate-500 uppercase font-black mt-1">{{ t('ui_restart_tv_server', 'Reiniciar servidor TV') }}</span>
                                                     </div>
                                                     <button
                                                         class="px-8 py-3 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400 text-[10px] font-black uppercase hover:bg-red-500 hover:text-white transition-all text-white">ADB
@@ -4401,8 +4247,7 @@ const selectFolder = async (settingKey) => {
                                             <div v-if="mobileHubError"
                                                 class="p-4 mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-4 animate-in slide-in-from-top-2">
                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
-                                                <span class="text-xs font-bold text-red-200 uppercase">{{ mobileHubError
-                                                    }}</span>
+                                                <span class="text-xs font-bold text-red-200 uppercase">{{ mobileHubError }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4435,17 +4280,14 @@ const selectFolder = async (settingKey) => {
                                                         <span class="text-xs font-black text-white uppercase">TV
                                                             {{ activeTvRoom }}</span>
                                                         <span
-                                                            class="text-[10px] font-black text-purple-400 mt-1 uppercase tracking-widest leading-relaxed">{{
-                                                            t('ui_primary_device', 'Dispositivo Principal') }}</span>
+                                                            class="text-[10px] font-black text-purple-400 mt-1 uppercase tracking-widest leading-relaxed">{{ t('ui_primary_device', 'Dispositivo Principal') }}</span>
                                                         <span v-if="activeTvIp"
                                                             class="text-[9px] font-mono text-emerald-400 mt-1 font-bold">IPV4:
                                                             {{ activeTvIp }}</span>
                                                         <span v-if="activeTvIp"
-                                                            class="text-[9px] font-bold text-emerald-400 mt-1 uppercase">{{
-                                                            t('ui_synced', 'Sincronizado') }}</span>
+                                                            class="text-[9px] font-bold text-emerald-400 mt-1 uppercase">{{ t('ui_synced', 'Sincronizado') }}</span>
                                                         <span v-else
-                                                            class="text-[9px] font-bold text-red-500 mt-1 uppercase">{{
-                                                            t('ui_no_connection', 'Sin Conexión') }}</span>
+                                                            class="text-[9px] font-bold text-red-500 mt-1 uppercase">{{ t('ui_no_connection', 'Sin Conexión') }}</span>
                                                     </div>
                                                     <div class="w-3 h-3 rounded-full shadow-[0_0_10px_lime] animate-pulse"
                                                         :class="activeTvIp ? 'bg-green-500' : 'bg-red-500'">
@@ -4454,18 +4296,14 @@ const selectFolder = async (settingKey) => {
 
                                                 <div v-if="activeTvIp && tvStatuses[activeTvIp]" class="space-y-4">
                                                     <span
-                                                        class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-4">{{
-                                                        t('ui_apps_config', 'Configuración de Apps') }}</span>
+                                                        class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-4">{{ t('ui_apps_config', 'Configuración de Apps') }}</span>
                                                     <div class="grid grid-cols-2 gap-4">
                                                         <div v-for="(pkg, app) in userSettings.tv_apps" :key="app"
                                                             class="p-4 bg-white/5 rounded-2xl border border-white/5">
                                                             <span
-                                                                class="text-[9px] font-black text-purple-400 uppercase block mb-1">{{
-                                                                app
-                                                                }}</span>
+                                                                class="text-[9px] font-black text-purple-400 uppercase block mb-1">{{ app }}</span>
                                                             <span
-                                                                class="text-[8px] font-mono text-slate-400 truncate block">{{
-                                                                pkg }}</span>
+                                                                class="text-[8px] font-mono text-slate-400 truncate block">{{ pkg }}</span>
                                                         </div>
                                                     </div>
                                                     <button @click="scanTvApps"
@@ -4479,9 +4317,7 @@ const selectFolder = async (settingKey) => {
                                                     <i
                                                         class="fa-solid fa-plug-circle-xmark text-3xl text-slate-600"></i>
                                                     <span
-                                                        class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{{
-                                                            t('ui_connect_device_for_apps', `Conecte el dispositivo para ver
-                                                        apps`) }}</span>
+                                                        class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{{ t('ui_connect_device_for_apps', `Conecte el dispositivo para ver apps`) }}</span>
 
                                                 </div>
                                             </div>
@@ -4507,14 +4343,10 @@ const selectFolder = async (settingKey) => {
                                                                 :class="isChannelEnabled(name) ? 'bg-emerald-500' : 'bg-red-500'">
                                                             </div>
                                                             <span class="text-xs font-black"
-                                                                :class="isChannelEnabled(name) ? 'text-white' : 'text-slate-500'">{{
-                                                                name
-                                                                }}</span>
+                                                                :class="isChannelEnabled(name) ? 'text-white' : 'text-slate-500'">{{ name }}</span>
                                                         </div>
                                                         <span class="text-[9px] font-mono"
-                                                            :class="isChannelEnabled(name) ? 'text-purple-400' : 'text-slate-600'">{{
-                                                            num
-                                                            }}</span>
+                                                            :class="isChannelEnabled(name) ? 'text-purple-400' : 'text-slate-600'">{{ num }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -4544,9 +4376,7 @@ const selectFolder = async (settingKey) => {
                                         class="animate-in fade-in slide-in-from-right-4 duration-500">
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter mb-10 flex items-center gap-4">
-                                            <span class="w-12 h-1 bg-purple-500 rounded-full"></span> {{
-                                                t('ui_timbre_title', 'Visual: Timbre
-                                            Tuya') }}
+                                            <span class="w-12 h-1 bg-purple-500 rounded-full"></span> {{ t('ui_timbre_title', 'Visual: Timbre Tuya') }}
                                         </h3>
                                         <div class="space-y-6">
                                             <div class="flex flex-col gap-2">
@@ -4589,9 +4419,7 @@ const selectFolder = async (settingKey) => {
                                         class="animate-in fade-in slide-in-from-right-4 duration-500">
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter mb-10 flex items-center gap-4">
-                                            <span class="w-12 h-1 bg-purple-500 rounded-full"></span> {{
-                                                t('ui_lighting_title', 'Visual:
-                                            Iluminación') }}
+                                            <span class="w-12 h-1 bg-purple-500 rounded-full"></span> {{ t('ui_lighting_title', 'Visual: Iluminación') }}
                                         </h3>
                                         <div class="grid grid-cols-3 gap-6">
                                             <div v-for="luz in ['Living Principal', 'Cocina', 'Dormitorio', 'Pasillo']"
@@ -4600,8 +4428,7 @@ const selectFolder = async (settingKey) => {
                                                 <i
                                                     class="fa-solid fa-lightbulb text-4xl text-slate-700 group-hover:text-yellow-400 transition-colors shadow-2xl"></i>
                                                 <span
-                                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{
-                                                    luz }}</span>
+                                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ luz }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4611,9 +4438,7 @@ const selectFolder = async (settingKey) => {
                                         class="animate-in fade-in slide-in-from-right-4 duration-500 flex flex-col h-full">
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter mb-6 flex items-center gap-4">
-                                            <span class="w-12 h-1 bg-red-500 rounded-full"></span> {{
-                                                t('ui_security_title', 'Seguridad Avanzada
-                                            Fina') }}
+                                            <span class="w-12 h-1 bg-red-500 rounded-full"></span> {{ t('ui_security_title', 'Seguridad Avanzada Fina') }}
                                         </h3>
 
                                         <!-- TABLA SUPERIOR (Bio, Camaras, Puertas) -->
@@ -4639,20 +4464,12 @@ const selectFolder = async (settingKey) => {
                                                         <i class="fa-solid fa-fingerprint text-5xl text-red-500"></i>
                                                     </div>
                                                     <div>
-                                                        <h4 class="text-xl font-black text-white uppercase">{{
-                                                            t('ui_bio_finger_title', 'Escáner
-                                                            Dactilar') }}</h4>
-                                                        <p class="text-[10px] text-slate-400 mt-2 max-w-sm mx-auto">{{
-                                                            t('ui_bio_finger_desc',
-                                                            'Gestión de huellas mediante fprintd. Utilice el sensor
-                                                            físico para registrar o
-                                                            eliminar accesos.') }}</p>
+                                                        <h4 class="text-xl font-black text-white uppercase">{{ t('ui_bio_finger_title', 'Escáner Dactilar') }}</h4>
+                                                        <p class="text-[10px] text-slate-400 mt-2 max-w-sm mx-auto">{{ t('ui_bio_finger_desc', 'Gestión de huellas mediante fprintd. Utilice el sensor físico para registrar o eliminar accesos.') }}</p>
                                                     </div>
                                                     <button @click="enrollFinger"
                                                         class="px-10 py-4 bg-red-600 hover:bg-red-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
-                                                        <i class="fa-solid fa-plus mr-2"></i> {{ t('ui_bio_finger_btn',
-                                                        'Registrar Nueva
-                                                        Huella') }}
+                                                        <i class="fa-solid fa-plus mr-2"></i> {{ t('ui_bio_finger_btn', 'Registrar Nueva Huella') }}
                                                     </button>
                                                 </div>
 
@@ -4664,14 +4481,8 @@ const selectFolder = async (settingKey) => {
                                                             class="fa-solid fa-face-smile-beam text-5xl text-blue-500"></i>
                                                     </div>
                                                     <div>
-                                                        <h4 class="text-xl font-black text-white uppercase">{{
-                                                            t('ui_bio_facial_title',
-                                                            'Reconocimiento Facial') }}</h4>
-                                                        <p class="text-[10px] text-slate-400 mt-2 max-w-sm mx-auto">{{
-                                                            t('ui_bio_facial_desc',
-                                                            'Sistema de autenticación mediante cámara web y modelos de
-                                                            visión computarizada
-                                                            local.') }}</p>
+                                                        <h4 class="text-xl font-black text-white uppercase">{{ t('ui_bio_facial_title', 'Reconocimiento Facial') }}</h4>
+                                                        <p class="text-[10px] text-slate-400 mt-2 max-w-sm mx-auto">{{ t('ui_bio_facial_desc', 'Sistema de autenticación mediante cámara web y modelos de visión computarizada local.') }}</p>
                                                     </div>
                                                     <div class="flex gap-4">
                                                         <button @click="enrollFace"
@@ -4689,19 +4500,12 @@ const selectFolder = async (settingKey) => {
                                                             class="fa-solid fa-microphone-lines text-5xl text-purple-500"></i>
                                                     </div>
                                                     <div>
-                                                        <h4 class="text-xl font-black text-white uppercase">{{
-                                                            t('ui_bio_voice_title',
-                                                            'Biometría de Voz') }}</h4>
-                                                        <p class="text-[10px] text-slate-400 mt-2 max-w-sm mx-auto">{{
-                                                            t('ui_bio_voice_desc',
-                                                            'Fina aprende de tu voz para validar comandos críticos de
-                                                            seguridad.') }}</p>
+                                                        <h4 class="text-xl font-black text-white uppercase">{{ t('ui_bio_voice_title', 'Biometría de Voz') }}</h4>
+                                                        <p class="text-[10px] text-slate-400 mt-2 max-w-sm mx-auto">{{ t('ui_bio_voice_desc', 'Fina aprende de tu voz para validar comandos críticos de seguridad.') }}</p>
                                                     </div>
                                                     <button @click="enrollVoice"
                                                         class="px-10 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
-                                                        <i class="fa-solid fa-microphone mr-2"></i> {{
-                                                        t('ui_bio_voice_btn', 'Iniciar
-                                                        Entrenamiento') }}
+                                                        <i class="fa-solid fa-microphone mr-2"></i> {{ t('ui_bio_voice_btn', 'Iniciar Entrenamiento') }}
                                                     </button>
                                                 </div>
                                             </div>
@@ -4718,8 +4522,7 @@ const selectFolder = async (settingKey) => {
                                                         class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-bold text-slate-400">Grid
                                                         2x4</button>
                                                     <button
-                                                        class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-bold text-slate-400">{{
-                                                        t('ui_btn_list', 'Listado') }}</button>
+                                                        class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-bold text-slate-400">{{ t('ui_btn_list', 'Listado') }}</button>
                                                 </div>
                                             </div>
                                             <div class="grid grid-cols-4 gap-4 flex-1">
@@ -4754,8 +4557,7 @@ const selectFolder = async (settingKey) => {
                                                         Garaje</h4>
                                                     <div class="flex gap-2">
                                                         <span
-                                                            class="px-4 py-1.5 rounded-full bg-red-500/20 text-red-500 text-[10px] font-black uppercase">{{
-                                                            t('ui_closed', 'Cerrado') }}</span>
+                                                            class="px-4 py-1.5 rounded-full bg-red-500/20 text-red-500 text-[10px] font-black uppercase">{{ t('ui_closed', 'Cerrado') }}</span>
                                                         <span
                                                             class="px-4 py-1.5 rounded-full bg-slate-800 text-slate-500 text-[10px] font-black uppercase">Wifi</span>
                                                     </div>
@@ -4820,15 +4622,12 @@ const selectFolder = async (settingKey) => {
                                                         <div class="flex flex-col items-center">
                                                             <div class="flex items-baseline">
                                                                 <span
-                                                                    class="text-2xl font-mono text-white tracking-tighter leading-none">{{
-                                                                    acState.watts !== undefined ? acState.watts : '---'
-                                                                    }}</span>
+                                                                    class="text-2xl font-mono text-white tracking-tighter leading-none">{{ acState.watts !== undefined ? acState.watts : '---' }}</span>
                                                                 <span
                                                                     class="text-xs font-black text-emerald-400/40 ml-2">W</span>
                                                             </div>
                                                             <span
-                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">{{
-                                                                t('ui_power', 'Potencia') }}</span>
+                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">{{ t('ui_power', 'Potencia') }}</span>
                                                         </div>
                                                         <div class="w-px h-12 bg-white/10">
                                                         </div>
@@ -4836,14 +4635,12 @@ const selectFolder = async (settingKey) => {
                                                             class="flex flex-col items-center">
                                                             <div class="flex items-baseline">
                                                                 <span
-                                                                    class="text-2xl font-black text-red-400/70 tracking-tighter leading-none">{{
-                                                                    acState.total_kwh }}</span>
+                                                                    class="text-2xl font-black text-red-400/70 tracking-tighter leading-none">{{ acState.total_kwh }}</span>
                                                                 <span
                                                                     class="text-xs font-black text-purple-400/40 ml-1">kWh</span>
                                                             </div>
                                                             <span
-                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">{{
-                                                                t('ui_accumulated', 'Acumulado') }}</span>
+                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">{{ t('ui_accumulated', 'Acumulado') }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -4860,24 +4657,18 @@ const selectFolder = async (settingKey) => {
                                                         <span
                                                             class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Energía</span>
                                                         <span class="text-xs font-black"
-                                                            :class="acState.power ? 'text-emerald-500' : 'text-red-500'">{{
-                                                            acState.power ?
-                                                            'ENCENDIDO' : 'APAGADO' }}</span>
+                                                            :class="acState.power ? 'text-emerald-500' : 'text-red-500'">{{ acState.power ? 'ENCENDIDO' : 'APAGADO' }}</span>
                                                     </div>
                                                     <div
                                                         class="flex justify-between items-center border-b border-emerald-500/10 pb-2">
                                                         <span
-                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest">{{
-                                                            t('ui_temperature', 'Temperatura') }}</span>
-                                                        <span class="text-xs font-mono font-bold text-white">{{
-                                                            acState.temp }}°C</span>
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest">{{ t('ui_temperature', 'Temperatura') }}</span>
+                                                        <span class="text-xs font-mono font-bold text-white">{{ acState.temp }}°C</span>
                                                     </div>
                                                     <div class="flex justify-between items-center">
                                                         <span
-                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest">{{
-                                                            t('ui_mode', 'Modo') }}</span>
-                                                        <span class="text-xs font-black text-white uppercase">{{
-                                                            acState.mode }}</span>
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest">{{ t('ui_mode', 'Modo') }}</span>
+                                                        <span class="text-xs font-black text-white uppercase">{{ acState.mode }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -4933,33 +4724,24 @@ const selectFolder = async (settingKey) => {
                             </h3>
                             <div
                                 class="flex items-center gap-2 bg-cyan-400/10 px-3 py-1 rounded-full border border-cyan-400/20">
-                                <span class="text-[10px] font-mono text-cyan-400 font-bold tracking-widest uppercase">{{
-                                    version
-                                    }}</span>
+                                <span class="text-[10px] font-mono text-cyan-400 font-bold tracking-widest uppercase">{{ version }}</span>
                             </div>
                         </div>
                         <div class="p-10 space-y-8">
                             <div class="grid grid-cols-2 gap-6 w-full text-center">
                                 <div class="p-5 bg-white/5 rounded-3xl border border-white/5">
-                                    <span class="text-[9px] font-black text-slate-500 uppercase block mb-1">{{
-                                        t('ui_author',
-                                        'Autor') }}</span>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase block mb-1">{{ t('ui_author', 'Autor') }}</span>
                                     <span class="text-sm font-bold text-slate-200">Dankopetro</span>
                                 </div>
                                 <div class="p-5 bg-white/5 rounded-3xl border border-white/5">
-                                    <span class="text-[9px] font-black text-slate-500 uppercase block mb-1">{{
-                                        t('ui_created',
-                                        'Creado') }}</span>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase block mb-1">{{ t('ui_created', 'Creado') }}</span>
                                     <span class="text-sm font-bold text-slate-200 uppercase">{{ buildDate }}</span>
                                 </div>
                             </div>
-                            {{ t('ui_fina_description', '"Sistema avanzado de asistencia por voz e integración domótica
-                            diseñado
-                            para Linux(Mac y Windows también)"') }}
+                            {{ t('ui_fina_description', '"Sistema avanzado de asistencia por voz e integración domótica diseñado para Linux(Mac y Windows también)"') }}
 
                             <button @click="showCredits = false"
-                                class="w-full h-14 rounded-3xl bg-cyan-500 text-[#020617] font-black text-xs uppercase tracking-widest shadow-xl shadow-cyan-900/30">{{
-                                t('ui_close', 'Cerrar') }}</button>
+                                class="w-full h-14 rounded-3xl bg-cyan-500 text-[#020617] font-black text-xs uppercase tracking-widest shadow-xl shadow-cyan-900/30">{{ t('ui_close', 'Cerrar') }}</button>
                         </div>
                     </div>
                 </div>
@@ -5095,8 +4877,7 @@ const selectFolder = async (settingKey) => {
                                 <div
                                     class="inline-flex items-center gap-3 px-6 py-2 bg-red-500/10 border border-red-500/20 rounded-full mb-4">
                                     <div class="w-2 h-2 bg-red-500 rounded-full animate-blink"></div>
-                                    <span class="text-xs font-black text-red-500 uppercase tracking-widest">{{
-                                        t('ui_scanning_network', 'Escaneando Red...') }}</span>
+                                    <span class="text-xs font-black text-red-500 uppercase tracking-widest">{{ t('ui_scanning_network', 'Escaneando Red...') }}</span>
                                 </div>
                                 <h3 class="text-6xl font-black text-white tracking-tighter drop-shadow-2xl">
                                     NIVEL 4</h3>
@@ -5129,41 +4910,29 @@ const selectFolder = async (settingKey) => {
                             <div class="grid grid-cols-2 gap-4 shrink-0">
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
-                                    <span class="text-xs font-black text-slate-500 uppercase mb-1">{{ t('ui_cpu_load',
-                                        'CPU')
-                                        }}</span>
-                                    <span class="text-xl font-black text-white">{{ Math.round(systemStats.cpu?.percent
-                                        || 0)
-                                        }}%</span>
+                                    <span class="text-xs font-black text-slate-500 uppercase mb-1">{{ t('ui_cpu_load', 'CPU') }}</span>
+                                    <span class="text-xl font-black text-white">{{ Math.round(systemStats.cpu?.percent || 0) }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.cpu?.freq }}
                                         MHz</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
-                                    <span class="text-xs font-black text-slate-500 uppercase mb-1">{{ t('ui_ram_usage',
-                                        'RAM')
-                                        }}</span>
+                                    <span class="text-xs font-black text-slate-500 uppercase mb-1">{{ t('ui_ram_usage', 'RAM') }}</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.ram?.percent }}%</span>
-                                    <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.ram?.used }} / {{
-                                        systemStats.ram?.total }} GB</span>
+                                    <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.ram?.used }} / {{ systemStats.ram?.total }} GB</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
-                                    <span class="text-xs font-black text-slate-500 uppercase mb-1">{{ t('ui_disk_free',
-                                        'DISCO')
-                                        }}</span>
+                                    <span class="text-xs font-black text-slate-500 uppercase mb-1">{{ t('ui_disk_free', 'DISCO') }}</span>
                                     <span class="text-xl font-black text-white">{{ systemStats.disk?.percent }}%</span>
                                     <span class="text-[11px] text-slate-600 font-mono">{{ systemStats.disk?.free }} GB
                                         Libres</span>
                                 </div>
                                 <div
                                     class="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center">
-                                    <span class="text-xs font-black text-slate-500 uppercase mb-1">{{ t('ui_network_m',
-                                        'RED (M)')
-                                        }}</span>
+                                    <span class="text-xs font-black text-slate-500 uppercase mb-1">{{ t('ui_network_m', 'RED (M)') }}</span>
                                     <div class="flex flex-col items-center leading-none">
-                                        <span class="text-[11px] text-emerald-400 font-bold">↑ {{ systemStats.net?.sent
-                                            }} MB</span>
+                                        <span class="text-[11px] text-emerald-400 font-bold">↑ {{ systemStats.net?.sent }} MB</span>
                                         <span class="text-[11px] text-cyan-400 font-bold">↓ {{ systemStats.net?.recv }}
                                             MB</span>
                                     </div>
@@ -5176,8 +4945,7 @@ const selectFolder = async (settingKey) => {
                                     <div class="flex flex-col">
                                         <span
                                             class="text-3xl font-black text-white group-hover:text-red-400 transition-colors">24</span>
-                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{
-                                            t('ui_ips_blocked_label', 'IPs Bloqueadas') }}</span>
+                                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ t('ui_ips_blocked_label', 'IPs Bloqueadas') }}</span>
                                     </div>
                                     <i
                                         class="fa-solid fa-ban text-2xl text-slate-700 group-hover:text-red-500/50 transition-colors"></i>
@@ -5199,12 +4967,9 @@ const selectFolder = async (settingKey) => {
                                 <div class="flex items-center justify-between mb-3">
                                     <span
                                         class="text-xs font-bold text-yellow-500 uppercase tracking-widest flex items-center gap-2">
-                                        <i class="fa-solid fa-triangle-exclamation"></i> {{ t('ui_global_threat_level',
-                                        'Nivel de
-                                        Amenaza Global') }}
+                                        <i class="fa-solid fa-triangle-exclamation"></i> {{ t('ui_global_threat_level', 'Nivel de Amenaza Global') }}
                                     </span>
-                                    <span class="text-xs font-black text-white bg-yellow-500/20 px-2 py-0.5 rounded">{{
-                                        t('ui_threat_level_elevated', 'ELEVADO') }}</span>
+                                    <span class="text-xs font-black text-white bg-yellow-500/20 px-2 py-0.5 rounded">{{ t('ui_threat_level_elevated', 'ELEVADO') }}</span>
                                 </div>
                                 <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
                                     <div
@@ -5285,9 +5050,7 @@ const selectFolder = async (settingKey) => {
                         <button @click="openMessagingCenter"
                             class="w-full py-4 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl flex items-center justify-center gap-3 hover:bg-indigo-500 transition-all group/center">
                             <i class="fa-solid fa-window-restore text-indigo-400 group-hover:text-white"></i>
-                            <span class="text-[10px] font-black text-white uppercase tracking-widest">{{
-                                t('ui_open_unified_center',
-                                'Abrir Centro de Mensajería Unificado') }}</span>
+                            <span class="text-[10px] font-black text-white uppercase tracking-widest">{{ t('ui_open_unified_center', 'Abrir Centro de Mensajería Unificado') }}</span>
                         </button>
 
                         <!-- Inputs -->
@@ -5308,15 +5071,13 @@ const selectFolder = async (settingKey) => {
                                             : 'border-transparent text-slate-600 hover:text-slate-400'">
                                         <i
                                             :class="[SUPPORTED_MESSAGING_APPS[appId].icon, selectedMessagingApp === appId ? SUPPORTED_MESSAGING_APPS[appId].color : '']"></i>
-                                        <span class="text-[10px] font-bold uppercase tracking-wider">{{
-                                            SUPPORTED_MESSAGING_APPS[appId].name }}</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">{{ SUPPORTED_MESSAGING_APPS[appId].name }}</span>
                                     </button>
                                 </div>
                             </div>
 
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{{
-                                    t('ui_recipient', 'Destinatario') }}</label>
+                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{{ t('ui_recipient', 'Destinatario') }}</label>
                                 <div class="relative">
                                     <i
                                         class="fa-solid fa-address-book absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
@@ -5326,8 +5087,7 @@ const selectFolder = async (settingKey) => {
                             </div>
 
                             <div v-if="commMode === 'sms'" class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{{
-                                    t('ui_message', 'Mensaje') }}</label>
+                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{{ t('ui_message', 'Mensaje') }}</label>
                                 <textarea v-model="commBody" rows="4" placeholder="Escribe tu mensaje aquí..."
                                     class="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-4 text-sm font-medium text-slate-300 outline-none focus:border-cyan-500/50 transition-all placeholder-slate-700 resize-none"></textarea>
                             </div>
@@ -5345,8 +5105,7 @@ const selectFolder = async (settingKey) => {
                                     ? 'bg-gradient-to-r from-green-400 to-emerald-500 hover:scale-[1.02] shadow-green-500/20'
                                     : 'bg-gradient-to-r from-blue-400 to-indigo-500 hover:scale-[1.02] shadow-blue-500/20'">
                                 <i class="fa-solid" :class="commMode === 'sms' ? 'fa-paper-plane' : 'fa-phone'"></i>
-                                {{ commMode === 'sms' ? t('ui_send_message_btn', 'Enviar Mensaje') : t('ui_call_btn',
-                                'Llamar') }}
+                                {{ commMode === 'sms' ? t('ui_send_message_btn', 'Enviar Mensaje') : t('ui_call_btn', 'Llamar') }}
                             </button>
                         </div>
 
@@ -5378,8 +5137,7 @@ const selectFolder = async (settingKey) => {
                                 {{ t('ui_pair_android', 'Emparejar Android') }} {{ detectedAndroidVersion }}+
                             </h2>
                             <p class="text-slate-400 text-xs font-medium px-4">
-                                {{ t('ui_android_pairing_desc', 'En tu celular, ve a Ajutes > Opciones de
-                                desarrollador...') }}
+                                {{ t('ui_android_pairing_desc', 'En tu celular, ve a Ajutes > Opciones de desarrollador...') }}
                             </p>
                         </div>
 
@@ -5453,12 +5211,8 @@ const selectFolder = async (settingKey) => {
                                 <span
                                     class="w-8 h-8 shrink-0 bg-cyan-500 text-black font-black flex items-center justify-center rounded-xl text-xs">1</span>
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-white">{{ t('ui_physical_connection', 'Conexión
-                                        Física')
-                                        }}</span>
-                                    <span class="text-xs text-slate-500">{{ t('ui_usb_conn_desc', 'Conecta tu celular a
-                                        la PC usando
-                                        un cable USB de buena calidad.') }}</span>
+                                    <span class="text-sm font-bold text-white">{{ t('ui_physical_connection', 'Conexión Física') }}</span>
+                                    <span class="text-xs text-slate-500">{{ t('ui_usb_conn_desc', 'Conecta tu celular a la PC usando un cable USB de buena calidad.') }}</span>
                                 </div>
                             </div>
                             <div v-if="mobileHelpContext === 'offline'"
@@ -5466,14 +5220,8 @@ const selectFolder = async (settingKey) => {
                                 <span
                                     class="w-8 h-8 shrink-0 bg-cyan-500 text-black font-black flex items-center justify-center rounded-xl text-xs">2</span>
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-white">{{ t('ui_unlock_auth', 'Desbloquear y
-                                        Autorizar')
-                                        }}</span>
-                                    <span class="text-xs text-slate-500">{{ t('ui_usb_auth_desc', 'Mira la pantalla de
-                                        tu celular.
-                                        Si aparece "Permitir depuración USB", selecciona "Permitir siempre" y dale a
-                                        Aceptar.')
-                                        }}</span>
+                                    <span class="text-sm font-bold text-white">{{ t('ui_unlock_auth', 'Desbloquear y Autorizar') }}</span>
+                                    <span class="text-xs text-slate-500">{{ t('ui_usb_auth_desc', 'Mira la pantalla de tu celular. Si aparece "Permitir depuración USB", selecciona "Permitir siempre" y dale a Aceptar.') }}</span>
                                 </div>
                             </div>
                             <div v-if="mobileHelpContext === 'missing'"
@@ -5481,11 +5229,8 @@ const selectFolder = async (settingKey) => {
                                 <span
                                     class="w-8 h-8 shrink-0 bg-blue-500 text-white font-black flex items-center justify-center rounded-xl text-xs">A</span>
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-white">{{ t('ui_config', 'Configuración')
-                                        }}</span>
-                                    <span class="text-xs text-slate-500">{{ t('ui_mobile_config_desc', 'Ve a Ajustes >
-                                        Plugins y
-                                        busca el ícono de Celular para añadir un nuevo dispositivo.') }}</span>
+                                    <span class="text-sm font-bold text-white">{{ t('ui_config', 'Configuración') }}</span>
+                                    <span class="text-xs text-slate-500">{{ t('ui_mobile_config_desc', 'Ve a Ajustes > Plugins y busca el ícono de Celular para añadir un nuevo dispositivo.') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -5495,9 +5240,7 @@ const selectFolder = async (settingKey) => {
                             <button
                                 @click="showMobileHelpModal = false; mobileHelpContext === 'offline' && retryMobileConnection()"
                                 class="w-full py-4 bg-cyan-500 text-black font-black rounded-2xl hover:bg-cyan-400 transition-all uppercase tracking-widest text-xs">
-                                {{ mobileHelpContext === 'offline' ? t('ui_understood_v_conn', 'ENTENDIDO - VERIFICAR
-                                CONEXIÓN') :
-                                t('ui_understood', 'ENTENDIDO') }}
+                                {{ mobileHelpContext === 'offline' ? t('ui_understood_v_conn', 'ENTENDIDO - VERIFICAR CONEXIÓN') : t('ui_understood', 'ENTENDIDO') }}
                             </button>
                             <button v-if="mobileHelpContext === 'missing'"
                                 @click="activeTab = 'ajustes'; activeSettingsDomain = 'inteligencia'; activeSettingsTab = 'plugins'; showMobileHelpModal = false; showCommModal = false"
@@ -5529,9 +5272,7 @@ const selectFolder = async (settingKey) => {
                                 <i class="fa-solid fa-link text-xl"></i>
                             </div>
                             <div>
-                                <h2 class="text-xl font-black text-white uppercase tracking-wider">{{
-                                    t('ui_link_apps_title',
-                                    'Vincular Apps') }}</h2>
+                                <h2 class="text-xl font-black text-white uppercase tracking-wider">{{ t('ui_link_apps_title', 'Vincular Apps') }}</h2>
                                 <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
                                     {{ t('ui_apps_query', '¿Qué apps quieres usar con Fina?') }}
                                 </p>
@@ -5550,15 +5291,12 @@ const selectFolder = async (settingKey) => {
                                         <i :class="SUPPORTED_MESSAGING_APPS[appId].icon + ' ' + SUPPORTED_MESSAGING_APPS[appId].color"
                                             class="text-xl"></i>
                                     </div>
-                                    <span class="text-sm font-black text-white uppercase tracking-wide">{{
-                                        SUPPORTED_MESSAGING_APPS[appId].name }}</span>
+                                    <span class="text-sm font-black text-white uppercase tracking-wide">{{ SUPPORTED_MESSAGING_APPS[appId].name }}</span>
                                 </div>
                                 <span
                                     class="text-[9px] font-black px-2 py-1 rounded border uppercase tracking-widest transition-colors"
                                     :class="selectedAppsToLink.includes(appId) ? 'text-cyan-400 bg-cyan-500/20 border-cyan-500/30' : 'text-slate-400 bg-white/5 border-white/10 group-hover:text-cyan-200'">
-                                    {{ selectedAppsToLink.includes(appId) ? t('ui_app_selected', 'SELECCIONADA') :
-                                    t('ui_app_link',
-                                    'VINCULAR') }}
+                                    {{ selectedAppsToLink.includes(appId) ? t('ui_app_selected', 'SELECCIONADA') : t('ui_app_link', 'VINCULAR') }}
                                 </span>
                             </div>
                         </div>
@@ -5566,9 +5304,7 @@ const selectFolder = async (settingKey) => {
                         <!-- Info Text -->
                         <div class="p-4 bg-cyan-900/10 border border-cyan-500/20 rounded-2xl z-10">
                             <p class="text-[10px] text-cyan-200 font-medium leading-relaxed">
-                                {{ t('ui_apps_link_desc', 'Al vincular estas aplicaciones, permitirás que Fina te ayude
-                                a leer y
-                                redactar mensajes. Tienes el control total.') }}
+                                {{ t('ui_apps_link_desc', 'Al vincular estas aplicaciones, permitirás que Fina te ayude a leer y redactar mensajes. Tienes el control total.') }}
                             </p>
                         </div>
 
@@ -5648,13 +5384,11 @@ const selectFolder = async (settingKey) => {
                                             }"></i>
                                         </div>
                                         <span
-                                            class="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[10px] font-black text-cyan-400 uppercase tracking-widest">{{
-                                            plugin.category }}</span>
+                                            class="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[10px] font-black text-cyan-400 uppercase tracking-widest">{{ plugin.category }}</span>
                                     </div>
 
                                     <div>
-                                        <h3 class="text-xl font-black text-white uppercase tracking-tight">{{
-                                            plugin.name }}</h3>
+                                        <h3 class="text-xl font-black text-white uppercase tracking-tight">{{ plugin.name }}</h3>
                                         <p class="text-xs text-slate-500 font-bold mt-1">{{ plugin.brand }}</p>
                                     </div>
 
@@ -5676,10 +5410,7 @@ const selectFolder = async (settingKey) => {
 
                         <!-- Footer Info -->
                         <div class="p-6 bg-black/40 border-t border-white/5 text-center shrink-0">
-                            <p class="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">{{
-                                t('ui_plugin_install_hint', 'Los plugins se instalan automáticamente en la carpeta de
-                                ejecución
-                                local.') }}</p>
+                            <p class="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">{{ t('ui_plugin_install_hint', 'Los plugins se instalan automáticamente en la carpeta de ejecución local.') }}</p>
                         </div>
                     </div>
                 </div>
