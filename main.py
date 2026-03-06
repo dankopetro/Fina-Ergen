@@ -419,29 +419,27 @@ async def main():
                     print(f"🌍 Idioma '{sys_lang.upper()}' auto-detectado y guardado.")
             except: pass
         
-        update_ui_state("idle", "Inicializando sistemas...")
-        print("DEBUG: [1] Inicializando Intents...")
-        
-        # 1. Precargar Intents (Sentence Transformers es pesado)
-        try:
-            from intent_classifier import _initialize_model, detect_intent
-            _initialize_model()
-            print("DEBUG: [1] Intents Cargados.")
-            # "Warm-up" del clasificador
-            detect_intent("hola", confidence_threshold=0.1)
-        except ImportError as e:
-            logger.error(f"❌ Error en inicialización: {e}")
-            update_ui_state("idle", "ERROR: FALTA TORCH")
-        
-        # 2. Precargar Vosk
-        print("DEBUG: [2] Cargando Vosk...")
-        try:
-            utils.load_vosk_model(sys_lang)
-            print("DEBUG: [2] Vosk Cargado.")
-        except:
-            print("⚠️ Vosk no cargado. Funcionamiento limitado.")
-            
-        # --- LAZY LOADING DE MÓDULOS PESADOS (AHORA TEMPRANO PARA VELOCIDAD) ---
+        import threading
+        # --- CARGA ASÍNCRONA DE MOTORES PESADOS (FONDO) ---
+        print("🚀 Lanzando carga de motores en segundo plano...", flush=True)
+        def load_engines():
+            try:
+                from intent_classifier import _initialize_model, detect_intent
+                _initialize_model()
+                detect_intent("hola", confidence_threshold=0.1)
+                print("✅ Motores de Intentos listos.", flush=True)
+            except Exception as e:
+                logger.error(f"Error en hilos de motores: {e}")
+
+            try:
+                utils.load_vosk_model(sys_lang)
+                print("✅ Vosk listo.", flush=True)
+            except Exception as e:
+                logger.error(f"Error cargando Vosk en fondo: {e}")
+
+        threading.Thread(target=load_engines, daemon=True).start()
+
+        # --- INICIALIZACIÓN DE PLUGINS Y BIOMETRÍA ---
         print("🔌 Inicializando plugins y biometría...", flush=True)
         update_ui_state("idle", i18n("init_systems", "Iniciando sistemas..."))
         
@@ -455,9 +453,14 @@ async def main():
             from auth.voice_auth import VoiceAuthenticator
             from fina_plugin_integration import setup_plugins
             
-            # Inicializar plugins antes del saludo para que la data esté lista (Temp, etc)
+            # Inicializar plugins de inmediato
             plugin_integration = setup_plugins(speak_callback=lambda text, sink=None: speak(text, DEFAULT_VOICE, sink=sink))
             
+            # Forzar actualización inicial de estado (Clima, etc)
+            try:
+                threading.Thread(target=lambda: plugin_integration.handle_intent("ac_control", "status"), daemon=True).start()
+            except: pass
+
             # Inicializar biometría
             try:
                 voice_auth = VoiceAuthenticator()
@@ -472,42 +475,26 @@ async def main():
         # --- VERIFICACIÓN DE MODELOS PARA NOVATOS ---
         vosk_model_name, _ = utils.VOSK_MODELS.get(sys_lang, utils.VOSK_MODELS["en"])
         vosk_path = os.path.join(os.path.expanduser("~"), ".config", "Fina", "model", vosk_model_name)
-        models_missing = (not DEFAULT_VOICE or not os.path.exists(DEFAULT_VOICE)) or (not os.path.exists(vosk_path))
         
-        # EL ALERT SOLO DEBE APARECER SI FALTAN MODELOS Y NO SE HAN CONFIGURADO LOS SETTINGS
-        # O SI NUNCA SE ABRIÓ EL MANUAL. Evitamos que parpadee en cada arranque normal.
+        # EL ALERT SOLO SI REALMENTE NO HAY NADA DE NADA
+        models_missing = (not DEFAULT_VOICE or not os.path.exists(DEFAULT_VOICE)) and (not os.path.exists(vosk_path))
         manual_lock = os.path.join(CONFIG_DIR, ".manual_opened")
-        show_alert = models_missing and (not CONFIG_FOUND or not os.path.exists(manual_lock))
+        show_alert = models_missing and not CONFIG_FOUND
 
         if show_alert:
             msg_novato = utils.i18n("novice_alert", "¡HOLA! NECESITO MIS MODELOS (VER MANUAL)")
             update_ui_state("idle", msg_novato)
-            print(f"💡 Sugerencia para novatos: Mostrando mensaje de configuración inicial.")
-            # Intentar abrir el manual automáticamente solo una vez
+            print(f"💡 Alerta Inicial Novato.")
             if not os.path.exists(manual_lock):
                 import webbrowser
                 lang = sys_lang
-                
-                # Definir nombres según idioma
-                if lang == "es":
-                    base_name = "Manual_Guia_Configuracion_Fina"
-                else:
-                    base_name = "Manual_Configuration_Guide_Fina_EN"
-                    
+                base_name = "Manual_Guia_Configuracion_Fina" if lang == "es" else "Manual_Configuration_Guide_Fina_EN"
                 manual_html = os.path.join(PROJECT_ROOT, "docs", f"{base_name}.html")
-                manual_pdf = os.path.join(PROJECT_ROOT, "docs", f"{base_name}.pdf")
-                
-                opened = False
                 if os.path.exists(manual_html):
-                    opened = webbrowser.open(f"file://{manual_html}")
-                
-                if not opened and os.path.exists(manual_pdf):
-                    webbrowser.open(f"file://{manual_pdf}")
-                
+                    webbrowser.open(f"file://{manual_html}")
                 with open(manual_lock, "w") as f: f.write("done")
         
         # --- SALUDO INICIAL ---
-        # Solo limpiar si NO estamos en modo novato
         if not show_alert:
             update_ui_state("idle", None)
             
