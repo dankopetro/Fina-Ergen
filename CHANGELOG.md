@@ -10,7 +10,7 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
-## [v3.5.8-11] - 2026-03-06 (Hotfix: TV Scripts y Monitor M8)
+## [v3.5.8-12] - 2026-03-06 (Hotfix: TV Scripts y Monitor M8)
 Correcciones críticas para la ejecución de scripts en plugins y la infraestructura Android del timbre.
 
 ### Arreglado

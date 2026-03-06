@@ -494,8 +494,18 @@ async def main():
                     webbrowser.open(f"file://{manual_html}")
                 with open(manual_lock, "w") as f: f.write("done")
         
-        # --- SALUDO INICIAL ---
+        # --- SALUDO INICIAL (CON ESPERA POR DATA) ---
         if not show_alert:
+            update_ui_state("idle", i18n("ui_loading_data", "Sincronizando datos..."))
+            
+            # Forzar actualización inicial de estado (Clima, AC, etc)
+            if plugin_integration:
+                print("⏳ Obteniendo estados iniciales...", flush=True)
+                # Ejecutamos asíncronamente pero esperamos un poco antes de hablar
+                threading.Thread(target=lambda: plugin_integration.handle_intent("ac_control", "status"), daemon=True).start()
+                # Pequeña pausa para que la data de clima/ciudad llegue
+                time.sleep(4) 
+            
             update_ui_state("idle", None)
             
         if CONFIG_FOUND:

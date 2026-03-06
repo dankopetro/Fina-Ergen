@@ -141,7 +141,7 @@ async def control_aire():
                     resp_energy = await device._send_commands_get_responses([EnergyHackCommand(0x44)])
                     if resp_energy:
                         for r in resp_energy:
-                            if r.id == 0xC1 and r.payload[3] == 0x44:
+                            if r.id in [0xC0, 0xC1] and r.payload[3] == 0x44:
                                 d = r.payload
                                 # El acumulado viene en Wh, lo pasamos a kWh dividiendo por 1000
                                 raw_wh = (10000 * decode_bcd(d[4]) + 100 * decode_bcd(d[5]) + 1 * decode_bcd(d[6]) + 0.01 * decode_bcd(d[7]))
@@ -158,7 +158,7 @@ async def control_aire():
                         if resp_power:
                             found_43 = False
                             for r in resp_power:
-                                if r.id == 0xC1 and r.payload[3] == 0x43:
+                                if r.id in [0xC0, 0xC1] and r.payload[3] == 0x43:
                                     raw_w = r.payload[16]
                                     watts = raw_w * 10
                                     found_43 = True
