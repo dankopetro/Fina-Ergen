@@ -479,6 +479,7 @@ async def main():
         # EL ALERT SOLO SI REALMENTE NO HAY NADA DE NADA
         models_missing = (not DEFAULT_VOICE or not os.path.exists(DEFAULT_VOICE)) and (not os.path.exists(vosk_path))
         manual_lock = os.path.join(CONFIG_DIR, ".manual_opened")
+        # El aviso de modelos solo si DE VERDAD no hay config ni modelos.
         show_alert = models_missing and not CONFIG_FOUND
 
         if show_alert:
@@ -501,10 +502,10 @@ async def main():
             # Forzar actualización inicial de estado (Clima, AC, etc)
             if plugin_integration:
                 print("⏳ Obteniendo estados iniciales...", flush=True)
-                # Ejecutamos asíncronamente pero esperamos un poco antes de hablar
+                # Ejecutamos asíncronamente
                 threading.Thread(target=lambda: plugin_integration.handle_intent("ac_control", "status"), daemon=True).start()
-                # Pequeña pausa para que la data de clima/ciudad llegue
-                time.sleep(4) 
+                # Pausa reducida para que la data crítica (clima) llegue sin bloquear tanto
+                time.sleep(2) 
             
             update_ui_state("idle", None)
             

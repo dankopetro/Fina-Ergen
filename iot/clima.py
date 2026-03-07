@@ -143,9 +143,8 @@ async def control_aire():
                         for r in resp_energy:
                             if r.id in [0xC0, 0xC1] and r.payload[3] == 0x44:
                                 d = r.payload
-                                # El acumulado viene en Wh, lo pasamos a kWh dividiendo por 1000
-                                raw_wh = (10000 * decode_bcd(d[4]) + 100 * decode_bcd(d[5]) + 1 * decode_bcd(d[6]) + 0.01 * decode_bcd(d[7]))
-                                total_kwh = round(raw_wh / 1000, 2)
+                                # El acumulado viene en kWh directamente
+                                total_kwh = (10000 * decode_bcd(d[4]) + 100 * decode_bcd(d[5]) + 1 * decode_bcd(d[6]) + 0.01 * decode_bcd(d[7]))
                                 found_energy = True
                                 break
                     if found_energy: break

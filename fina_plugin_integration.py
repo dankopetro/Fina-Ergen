@@ -36,7 +36,7 @@ class FinaPluginIntegration:
         # Iniciar servidor UDP para eventos externos (como clima.py)
         self._start_udp_server()
     
-    def _start_udp_server(self, port=5005):
+    def _start_udp_server(self, port=5555):
         """Inicia un servidor UDP para escuchar eventos de plugins efímeros"""
         def listen():
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
