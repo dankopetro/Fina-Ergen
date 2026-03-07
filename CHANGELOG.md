@@ -10,6 +10,12 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
+## [v3.5.8-14] - 2026-03-06 (Limpieza de Core: Arquitectura de Plugins)
+
+### Arreglado
+- **Desacoplamiento de IoT**: Se ha eliminado `iot/clima.py` del núcleo del sistema. Ahora el control del aire acondicionado es gestionado al 100% por el sistema de plugins, siguiendo la arquitectura modular.
+- **Limpieza de `main.py`**: Eliminadas las rutas hardcodeadas hacia controladores de hardware específicos, delegando la responsabilidad plenamente a los plugins del Market.
+
 ## [v3.5.8-13] - 2026-03-06 (Verificación Funcional y Saludo)
 
 ### Añadido

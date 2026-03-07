@@ -142,7 +142,7 @@ config, CONFIG_FOUND = load_config()
 
 # --- DIAGNÓSTICO INICIAL ---
 import getpass
-print(f"--- Fina Ergen Cerebro V3.5.8-13 (06/03/2026 21:10) ---", flush=True)
+print(f"--- Fina Ergen Cerebro V3.5.8-14 (06/03/2026 21:20) ---", flush=True)
 print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
 if os.getuid() == 0:
     print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)
@@ -918,37 +918,6 @@ async def main():
                     subprocess.run(["python3", os.path.join(PROJECT_ROOT, "scripts", "hangup_doorbell.py")], check=False)
                 except Exception as e:
                     logger.error(f"Error colgado timbre: {e}")
-            
-            elif intent == "ac_control":
-                # Verificar dependencias del plugin
-                try:
-                    import msmart
-                except ImportError:
-                    speak(i18n("msg_ac_deps_error", "Para controlar el aire acondicionado, precisás instalar las dependencias de ese módulo desde la carpeta plugins clima."), selected_voice_model)
-                    continue
-                
-                # Lógica simple de extracción de comandos para el aire
-                cmd_script = os.path.join(GLOBAL_ROOT, "iot", "clima.py")
-                py_path = sys.executable
-                
-                if "apaga" in commandFinal or "cerrar" in commandFinal:
-                    speak(i18n("msg_ac_turning_off", "Apagando el aire acondicionado..."), selected_voice_model)
-                    subprocess.run([py_path, cmd_script, "--power", "off", "--lang", sys_lang], check=False)
-                elif "prende" in commandFinal or "encender" in commandFinal:
-                    speak(i18n("msg_ac_turning_on", "Encendiendo el aire acondicionado..."), selected_voice_model)
-                    subprocess.run([py_path, cmd_script, "--power", "on", "--lang", sys_lang], check=False)
-                elif "turbo" in commandFinal:
-                    speak(i18n("msg_ac_turbo_on", "Activando el modo turbo..."), selected_voice_model)
-                    subprocess.run([py_path, cmd_script, "--turbo", "on", "--lang", sys_lang], check=False)
-                else:
-                    # Intentar buscar un número (temperatura)
-                    temps = re.findall(r'\d+', commandFinal)
-                    if temps:
-                        t = temps[0]
-                        speak(i18n("msg_ac_temp_set").format(temp=t), selected_voice_model)
-                        subprocess.run([py_path, cmd_script, "--temp", t, "--lang", sys_lang], check=False)
-                    else:
-                        speak(i18n("msg_ac_error", "No entendí qué querés que haga con el aire."), selected_voice_model)
             
             elif intent == "pause_music":
                 pause_music(selected_voice_model)

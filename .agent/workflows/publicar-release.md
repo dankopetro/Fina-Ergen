@@ -34,6 +34,7 @@ Antes de crear el Tag o el Release, verifica que los siguientes archivos tengan 
 3.  **`src-tauri/tauri.conf.json`**: Campo `"version"`.
 4.  **`CHANGELOG.md`**: Nueva entrada con la versión y descripción del Hotfix/Mejora.
 5.  **`src-tauri/binaries/brain-x86_64...`**: Comentario de versión en la cabecera.
+6.  **`Market Repository`**: Si se modificaron plugins en `.local_lab/Fina-Plugins-Market-Working/`, se DEBE hacer commit y push en dicho repositorio de forma independiente.
 
 #### 1. Preparación y Validación
 1.  Ejecutar `.local_lab/tools/fix_vue_syntax.py` sobre `src/App.vue`.

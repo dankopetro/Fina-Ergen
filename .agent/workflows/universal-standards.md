@@ -22,6 +22,7 @@ Este documento es de lectura OBLIGATORIA antes de cada modificación de código.
 - [ ] ¿He sincronizado el número de versión en App.vue, package.json, tauri.conf.json, brain binary y CHANGELOG?
 - [ ] ¿He verificado que el script de lanzamiento funciona si la carpeta se mueve de lugar?
 - [ ] ¿He actualizado los requerimientos si añadí una librería nueva?
+- [ ] ¿He sincronizado y subido los cambios al repositorio independiente del Market (en `.local_lab/Fina-Plugins-Market-Working/`) si hubo cambios en plugins?
 - [ ] ¿El acceso directo (.desktop) generado es relativo al HOME del usuario actual?
 
 *Fina Ergen es para todos los humanos, no solo para su desarrollador.*

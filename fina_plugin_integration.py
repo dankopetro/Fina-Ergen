@@ -33,7 +33,7 @@ class FinaPluginIntegration:
         
         logger.info("Integración de plugins inicializada")
         
-        # Iniciar servidor UDP para eventos externos (como clima.py)
+        # Iniciar servidor UDP para eventos de plugins (IoT, Sensores, etc)
         self._start_udp_server()
     
     def _start_udp_server(self, port=5555):
