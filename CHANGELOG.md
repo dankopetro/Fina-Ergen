@@ -10,6 +10,12 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
+## [v3.5.8-13] - 2026-03-06 (Verificación Funcional y Saludo)
+
+### Añadido
+- **Verificación Funcional en Arranque**: El sistema ahora verifica que el clima y el aire acondicionado respondan antes de saludar, eliminando la espera por tiempo fijo.
+- **Nuevo Saludo**: El saludo inicial ahora solicita amablemente el nombre del usuario para comenzar la interacción.
+
 ## [v3.5.8-12] - 2026-03-06 (Hotfix: TV Scripts y Monitor M8)
 Correcciones críticas para la ejecución de scripts en plugins y la infraestructura Android del timbre.
 

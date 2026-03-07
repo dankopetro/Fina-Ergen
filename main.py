@@ -142,7 +142,7 @@ config, CONFIG_FOUND = load_config()
 
 # --- DIAGNÓSTICO INICIAL ---
 import getpass
-print(f"--- Fina Ergen Cerebro V3.5.5 (03/03/2026 16:15) ---", flush=True)
+print(f"--- Fina Ergen Cerebro V3.5.8-13 (06/03/2026 21:10) ---", flush=True)
 print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
 if os.getuid() == 0:
     print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)
@@ -495,24 +495,60 @@ async def main():
                     webbrowser.open(f"file://{manual_html}")
                 with open(manual_lock, "w") as f: f.write("done")
         
-        # --- SALUDO INICIAL (CON ESPERA POR DATA) ---
+        # --- SALUDO INICIAL (CON VERIFICACIÓN DE FUNCIONES) ---
         if not show_alert:
             update_ui_state("idle", i18n("ui_loading_data", "Sincronizando datos..."))
             
-            # Forzar actualización inicial de estado (Clima, AC, etc)
+            ready_weather = threading.Event()
+            ready_ac = threading.Event()
+            
+            # 1. Determinar si AC está configurado
+            ac_configured = False
+            try:
+                if os.path.exists(SETTINGS_PATH):
+                    with open(SETTINGS_PATH, 'r') as f:
+                        import json
+                        data = json.load(f)
+                        ac_configured = bool(data.get("apis", {}).get("AC_IP"))
+            except: pass
+            
+            if not ac_configured: ready_ac.set()
+            
+            # 2. Registrar Listener AC
             if plugin_integration:
-                print("⏳ Obteniendo estados iniciales...", flush=True)
-                # Ejecutamos asíncronamente
+                plugin_integration.register_event_listener("ac-status-update", lambda p: ready_ac.set())
+                # Forzar actualización inicial
                 threading.Thread(target=lambda: plugin_integration.handle_intent("ac_control", "status"), daemon=True).start()
-                # Pausa reducida para que la data crítica (clima) llegue sin bloquear tanto
-                time.sleep(2) 
+
+            # 3. Verificar Clima (si hay internet)
+            def check_weather_readiness():
+                try:
+                    import asyncio
+                    asyncio.run(utils.get_weather())
+                except: pass
+                finally: ready_weather.set()
+            
+            try:
+                import socket
+                socket.create_connection(("8.8.8.8", 53), timeout=1.5)
+                threading.Thread(target=check_weather_readiness, daemon=True).start()
+            except:
+                ready_weather.set()
+
+            # 4. Loop de espera funcional
+            wait_start = time.time()
+            print("⏳ Verificando funciones críticas...", flush=True)
+            while time.time() - wait_start < 8:
+                if ready_weather.is_set() and ready_ac.is_set():
+                    break
+                time.sleep(0.5)
             
             update_ui_state("idle", None)
             
         if CONFIG_FOUND:
             greeting = get_time_based_greeting()
-            systems_ready_msg = utils.i18n("systems_ready", "Sistemas listos. Diga Fina para empezar.")
-            speak(f"{greeting}. {systems_ready_msg}", DEFAULT_VOICE)
+            msg = "Sistemas listos. Por favor, diga su nombre para comenzar."
+            speak(f"{greeting}. {msg}", DEFAULT_VOICE)
         else:
             msg = utils.i18n("systems_ready", "Bienvenido. Por favor, consulta el manual para configurarme.")
             speak(msg, DEFAULT_VOICE)
