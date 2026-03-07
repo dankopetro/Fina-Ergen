@@ -8,20 +8,15 @@ import sys
 socket.setdefaulttimeout(5)
 
 # Valores por defecto o argumentos
-if len(sys.argv) > 3:
+if len(sys.argv) > 2:
     API_KEY = sys.argv[1]
     CITY_ID = sys.argv[2]
-    LANG = sys.argv[3]
-elif len(sys.argv) > 2:
-    API_KEY = sys.argv[1]
-    CITY_ID = sys.argv[2]
-    LANG = "es"
 else:
     # Fallback o Error
-    print(json.dumps({"cod": 400, "message": "Missing arguments"}))
+    print(json.dumps({"cod": 400, "message": "Missing API Key or City ID arguments"}))
     sys.exit(1)
 
-URL = f"http://api.openweathermap.org/data/2.5/weather?id={CITY_ID}&appid={API_KEY}&units=metric&lang={LANG}"
+URL = f"http://api.openweathermap.org/data/2.5/weather?id={CITY_ID}&appid={API_KEY}&units=metric&lang=es"
 
 try:
     # Usamos urllib estándar de Python (sin pip install requests)

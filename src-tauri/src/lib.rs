@@ -171,12 +171,29 @@ fn start_streamer(app_handle: tauri::AppHandle) -> Result<String, String> {
         .map_err(|e| format!("Error obteniendo ruta de recursos: {}", e))?;
     
     let python = get_python_exe(&resource_dir);
+    
+    // 1. Prioridad: Plugins del Usuario (~/.config/Fina/plugins)
+    let home = std::env::var("HOME").unwrap_or_else(|_| "/root".to_string());
+    let user_plugin_path = std::path::PathBuf::from(&home)
+        .join(".config/Fina/plugins/doorbell/streamer.py");
+    
+    // 2. Fallback: Plugins del Sistema (Resources)
     let resource_path = resource_dir.join("plugins/doorbell/streamer.py");
+
+    let script_to_run = if user_plugin_path.exists() {
+        user_plugin_path
+    } else {
+        resource_path
+    };
+
+    if !script_to_run.exists() {
+        return Err(format!("No se encontró el script de streaming en {:?}", script_to_run));
+    }
 
     let _child = Command::new(python)
         .env_remove("PYTHONHOME")
         .env_remove("PYTHONPATH")
-        .arg(resource_path)
+        .arg(script_to_run)
         .spawn()
         .map_err(|e| format!("Error iniciando streamer: {}", e))?;
     println!("[RUST] Streamer iniciado exitosamente");

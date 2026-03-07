@@ -1,97 +1,69 @@
-#!/usr/bin/env python3
-import sys
 import os
-import urllib.request
-import urllib.error
-import json
+import sys
 import shutil
-import base64
+import requests
+import zipfile
+import io
 
-def error_exit(msg):
-    print(f"ERROR: {msg}")
-    sys.exit(1)
-
-def main():
-    if len(sys.argv) < 3:
-        error_exit("Faltan argumentos (category, subpath)")
-
-    category = sys.argv[1]
-    subpath = sys.argv[2]
+def install_plugin(category, subpath):
+    repo_url = "https://github.com/dankopetro/Fina-Plugins-Market/archive/refs/heads/main.zip"
+    # Ruta Universal: ~/.config/Fina/plugins
+    plugins_dir = os.path.expanduser("~/.config/Fina/plugins")
+    if not os.path.exists(plugins_dir):
+        os.makedirs(plugins_dir, exist_ok=True)
     
-    # Github API tree URL para el market
-    repo = "dankopetro/Fina-Plugins-Market"
-    
-    print(f"Instalando plugin {subpath} desde categoría {category}...")
-    
-    # --- DINAMIC PATH FOR PORTABILITY ---
-    def get_config_dir():
-        xdg_config = os.environ.get("XDG_CONFIG_HOME")
-        if xdg_config:
-            return os.path.join(xdg_config, "Fina")
-        return os.path.join(os.path.expanduser("~"), ".config", "Fina")
-
-    config_dir = get_config_dir()
-    
-    # Mapeo de categoría Github -> Carpeta local
-    dir_map = {
-        "TVs": "tv",
-        "Decos": "decos",
-        "Doorbells": "doorbell",
-        "AirConditioning": "ac"
-    }
-    
-    local_cat = dir_map.get(category)
-    if not local_cat:
-        error_exit(f"Categoría desconocida: {category}")
-        
-    # Destino real: ~/.config/Fina/plugins/local_cat/modelo
-    parts = subpath.split('/')
-    if len(parts) < 2:
-        error_exit("Ruta de subpath inválida. Formato esperado: Marca/Modelo")
-        
-    brand = parts[0]
-    model = parts[1]
-    
-    # En la estructura Fina, ignoramos la marca y usamos el modelo directo
-    dest_dir = os.path.join(config_dir, "plugins", local_cat, model)
-    os.makedirs(dest_dir, exist_ok=True)
-    
-    api_url = f"https://api.github.com/repos/{repo}/contents/{category}/{subpath}"
-    
-    req = urllib.request.Request(api_url)
-    req.add_header('User-Agent', 'Fina-Installer')
-    req.add_header('Accept', 'application/vnd.github.v3+json')
+    print(f"Buscando plugin: {category}/{subpath}...")
     
     try:
-        with urllib.request.urlopen(req) as response:
-            contents = json.loads(response.read().decode('utf-8'))
+        # Download ZIP
+        r = requests.get(repo_url)
+        if r.status_code != 200:
+            print(f"ERROR: No se pudo descargar el repositorio ({r.status_code})")
+            return
             
-            for item in contents:
-                if item["type"] == "file":
-                    file_name = item["name"]
-                    download_url = item["download_url"]
-                    if not download_url:
-                        continue
-                    
-                    file_dest = os.path.join(dest_dir, file_name)
-                    print(f"Descargando {file_name}...")
-                    
-                    file_req = urllib.request.Request(download_url)
-                    file_req.add_header('User-Agent', 'Fina-Installer')
-                    with urllib.request.urlopen(file_req) as f_res:
-                        with open(file_dest, "wb") as f_out:
-                            f_out.write(f_res.read())
-                    
-                    # Hacer ejecutables los .py y .sh
-                    if file_name.endswith('.py') or file_name.endswith('.sh'):
-                        os.chmod(file_dest, 0o755)
-                        
-            print(f"✅ Plugin instalado con éxito en {dest_dir}")
+        with zipfile.ZipFile(io.BytesIO(r.content)) as z:
+            # The root folder in the zip is usually Fina-Plugins-Market-main
+            root = z.namelist()[0]
+            # Construct target path in zip
+            # Example: Fina-Plugins-Market-main/TVs/TCL/tcl32s60a/
+            target_zip_path = f"{root}{category}/{subpath}/"
             
-    except urllib.error.HTTPError as e:
-        error_exit(f"Fallo HTTP al contactar GitHub Market: {e.code} - {e.reason}")
+            # Find all files belonging to this plugin
+            plugin_files = [f for f in z.namelist() if f.startswith(target_zip_path)]
+            
+            if not plugin_files:
+                print(f"ERROR: No se encontró el plugin en la ruta {target_zip_path}")
+                return
+                
+            # Final destination: plugins/<subpath_name>
+            plugin_name = os.path.basename(subpath.rstrip('/'))
+            dest_dir = os.path.join(plugins_dir, category.lower(), plugin_name)
+            
+            if os.path.exists(dest_dir):
+                shutil.rmtree(dest_dir)
+            os.makedirs(dest_dir, exist_ok=True)
+            
+            print(f"Instalando en {dest_dir}...")
+            
+            for f in plugin_files:
+                if f.endswith('/'): continue # Skip directories
+                
+                # Get relative path from target_zip_path
+                relative_path = f[len(target_zip_path):]
+                dest_file = os.path.join(dest_dir, relative_path)
+                
+                os.makedirs(os.path.dirname(dest_file), exist_ok=True)
+                with open(dest_file, 'wb') as df:
+                    df.write(z.read(f))
+            
+            print(f"SUCCESS: Plugin {plugin_name} instalado correctamente.")
+            
     except Exception as e:
-        error_exit(f"Fallo al instalar: {e}")
+        print(f"ERROR CRÍTICO: {e}")
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) < 3:
+        print("Uso: python3 install_plugin.py <Category> <SubPath>")
+        sys.exit(1)
+        
+    install_plugin(sys.argv[1], sys.argv[2])

@@ -55,8 +55,8 @@ def purge_fina():
     print("🧹 Refrescando ADB en segundo plano...")
     try:
         # Lanzamos esto completamente desconectado para que janitor termine INMEDIATAMENTE
-        # No esperamos a que ADB responda. Solo reiniciamos el servidor.
-        cmd = "nohup sh -c 'adb kill-server; adb start-server' >/dev/null 2>&1 &"
+        # No esperamos a que ADB responda
+        cmd = "nohup sh -c 'adb kill-server; adb start-server; adb connect 192.168.0.10; adb connect 192.168.0.11; adb connect 192.168.0.9' >/dev/null 2>&1 &"
         subprocess.Popen(cmd, shell=True, start_new_session=True)
             
     except Exception as e:

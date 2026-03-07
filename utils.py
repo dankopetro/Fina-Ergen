@@ -1161,9 +1161,8 @@ def close_app(n):
     return "No encontrado."
 
 def change_wallpaper(m): 
-    script = os.path.join(ERGEN_ROOT, "scripts", "wallpaper_selector.sh")
-    subprocess.run([script, "select"])
-    return "Cambiando fondo."
+    if _run_system_script("wallpaper_selector.sh", "select"): return "Cambiando fondo."
+    return "No pude cambiar el fondo."
 
 def web_search(q): 
     subprocess.Popen(["google-chrome", f"https://www.google.com/search?q={q}"])
@@ -1171,10 +1170,24 @@ def web_search(q):
 
 # --- LOCAL SCRIPTS ---
 def _run_system_script(script_name, arg):
-    """Ejecuta un script de sistema con timeout para evitar cuelgues."""
-    script_path = os.path.join(ERGEN_ROOT, "scripts", script_name)
+    """Ejecuta un script de sistema buscando en varias ubicaciones."""
+    posibles = [
+        os.path.join(ERGEN_ROOT, "scripts", script_name),
+        os.path.join(ERGEN_ROOT, "plugins", "system", "scripts", script_name)
+    ]
+    
+    script_path = None
+    for p in posibles:
+        if os.path.exists(p):
+            script_path = p
+            break
+            
+    if not script_path:
+        logger.error(f"No se encontró el script de sistema: {script_name}")
+        return False
+
     try:
-        # Timeout de 5s para evitar que un sudo pidiendo pass cuelgue a Fina
+        # Timeout de 5s para evitar bloqueos
         subprocess.run([script_path, arg], timeout=5, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return True
     except Exception as e:
