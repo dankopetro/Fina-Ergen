@@ -10,14 +10,17 @@ import threading
 import socket
 import re
 from typing import Dict, Optional, Callable
-from plugin_manager import PluginManager
+try:
+    from plugin_manager import PluginManager # type: ignore
+except ImportError:
+    from .plugin_manager import PluginManager # type: ignore
 
 logger = logging.getLogger("FinaPlugins")
 
 class FinaPluginIntegration:
     """Integra el sistema de plugins con Fina"""
     
-    def __init__(self, speak_callback: Callable = None):
+    def __init__(self, speak_callback: Optional[Callable] = None):
         """
         Inicializa la integración de plugins
         
@@ -29,14 +32,14 @@ class FinaPluginIntegration:
         self.plugin_intents: Dict[str, dict] = {}
         self.event_listeners: Dict[str, list] = {}
         self.stop_event = threading.Event()
-        self.udp_thread = None
+        self.udp_thread: Optional[threading.Thread] = None
         
         logger.info("Integración de plugins inicializada")
         
         # Iniciar servidor UDP para eventos de plugins (IoT, Sensores, etc)
         self._start_udp_server()
     
-    def _start_udp_server(self, port=5555):
+    def _start_udp_server(self, port=13333):
         """Inicia un servidor UDP para escuchar eventos de plugins efímeros"""
         def listen():
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -51,7 +54,7 @@ class FinaPluginIntegration:
                         data, addr = sock.recvfrom(4096)
                         try:
                             msg = json.loads(data.decode())
-                            event_name = msg.get("event")
+                            event_name = msg.get("name") # Corregido: Clave correcta según clima.py
                             payload = msg.get("payload")
                             
                             if event_name:
@@ -71,8 +74,9 @@ class FinaPluginIntegration:
             finally:
                 sock.close()
         
-        self.udp_thread = threading.Thread(target=listen, daemon=True)
-        self.udp_thread.start()
+        thread = threading.Thread(target=listen, daemon=True)
+        self.udp_thread = thread
+        thread.start()
     
     def initialize_plugins(self, auto_start: bool = True):
         """
@@ -189,15 +193,18 @@ class FinaPluginIntegration:
                 if text:
                     # Pasar el sink a la función speak si está disponible
                     try:
-                        # Si self.speak es el objeto lambda de main.py, intentamos pasar el sink
-                        # Como en main.py pasamos: lambda text: speak(text, DEFAULT_VOICE)
-                        # Necesitamos que la lambda acepte un argumento opcional o invocar directamente.
-                        # Para no romper la lambda actual si no acepta sink, usamos inspección o simplemente
-                        # confiamos en que si es una función compleja la llamaremos bien.
-                        self.speak(text, sink=sink)
-                    except TypeError:
-                        # Fallback por si la callback no acepta sink
-                        self.speak(text)
+                        import inspect
+                        sig = inspect.signature(self.speak)
+                        if 'sink' in sig.parameters:
+                            self.speak(text, sink=sink) # type: ignore
+                        else:
+                            self.speak(text)
+                    except Exception:
+                        # Fallback seguro
+                        try:
+                            self.speak(text)
+                        except:
+                            pass
             
             elif event_name == 'doorbell-ring':
                 # Timbre detectado
@@ -209,7 +216,8 @@ class FinaPluginIntegration:
                 logger.info("Timbre colgado")
             
             # Notificar a listeners registrados
-            self._notify_event_listeners(event_name, payload)
+            if isinstance(event_name, str):
+                self._notify_event_listeners(event_name, payload)
     
     def _notify_event_listeners(self, event_name: str, payload: dict):
         """Notifica a los listeners de un evento"""
@@ -332,7 +340,7 @@ class FinaPluginIntegration:
 
 
 # Función helper para integrar con main.py
-def setup_plugins(speak_callback: Callable = None) -> FinaPluginIntegration:
+def setup_plugins(speak_callback: Optional[Callable] = None) -> FinaPluginIntegration:
     """
     Configura el sistema de plugins para Fina
     

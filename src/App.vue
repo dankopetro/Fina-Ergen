@@ -1560,34 +1560,39 @@ const weatherIcon = computed(() => {
         showDoorbell.value = true;
         finaState.value.process = t("proc_doorbell_conn", "Conectando con el timbre...");
 
-        // Disparar secuencia de backend (Wake + Cast TV) - UNIVERSAL MARKET TEST
+        // Lanzamiento ultrarrápido (tipo Fina Phoenix)
         const pyPath = pythonExecutable.value;
-        const findMonitor = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/Doorbells" -name "monitor.py" | head -n 1`;
-        
-        try {
-            const scriptPath = (await invoke("execute_shell_command", { command: findMonitor })).trim();
-            if (scriptPath) {
-                invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --trigger` }).catch(e =>
-                    console.error("Error trigger:", e));
-            }
-        } catch (e) {}
-
+        const shCmd = `
+        MARKET="${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/Doorbells/Tuya/M8/monitor_ergen.py"
+        CONFIG="$HOME/.config/Fina/plugins/doorbell/monitor_ergen.py"
+        if [ -f "$CONFIG" ]; then
+            "${pyPath}" "$CONFIG" --trigger &
+        elif [ -f "$MARKET" ]; then
+            "${pyPath}" "$MARKET" --trigger &
+        fi
+        `;
+        invoke("spawn_shell_command", { command: shCmd }).catch(e => console.error(e));
         invoke('start_streamer').catch(() => { });
+
         setTimeout(() => {
             streamUrl.value = "http://127.0.0.1:8555/stream.mjpg?t=" + Date.now();
             streamKey.value = Date.now();
-        }, 1000); // Dar un poco más de margen
+        }, 800);
     };
 
 const hangUp = async () => {
     try {
         const pyPath = pythonExecutable.value;
-        const findHangup = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/Doorbells" -name "hangup_doorbell.py" | head -n 1`;
-        
-        const scriptPath = (await invoke("execute_shell_command", { command: findHangup })).trim();
-        if (scriptPath) {
-            await invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}"` });
-        }
+        const shCmdHangup = `
+        MARKET="${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/Doorbells/Tuya/M8/hangup_doorbell.py"
+        CONFIG="$HOME/.config/Fina/plugins/doorbell/hangup_doorbell.py"
+        if [ -f "$CONFIG" ]; then
+            "${pyPath}" "$CONFIG" &
+        elif [ -f "$MARKET" ]; then
+            "${pyPath}" "$MARKET" &
+        fi
+        `;
+        invoke("spawn_shell_command", { command: shCmdHangup }).catch(e => console.error(e));
 
         showDoorbell.value = false;
         finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
@@ -2299,7 +2304,19 @@ onMounted(async () => {
                 } else if (cmd.name === 'doorbell-ring') {
                     showDoorbell.value = true;
                     finaState.value.process = t("proc_answering_door", "Atendiendo Timbre");
-                    // Intentar arrancar streamer si no está (vía Rust)
+                    
+                    const pyPath = pythonExecutable.value;
+                    const shCmdStr = `
+                    MARKET="${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/Doorbells/Tuya/M8/streamer.py"
+                    CONFIG="$HOME/.config/Fina/plugins/doorbell/streamer.py"
+                    if [ -f "$CONFIG" ]; then
+                        "${pyPath}" "$CONFIG" &
+                    elif [ -f "$MARKET" ]; then
+                        "${pyPath}" "$MARKET" &
+                    fi
+                    `;
+                    invoke("spawn_shell_command", { command: shCmdStr }).catch(() => {});
+
                     invoke('start_streamer').catch(() => { });
                     setTimeout(() => {
                         // Forzamos actualización de URL de video (SIEMPRE MJPG)
