@@ -51,21 +51,26 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: 1
         with:
           tagName: v__VERSION__
-          releaseName: "Fina Ergen v__VERSION__"
+          releaseName: "Fina Ergen v3.5.8-19"
           releaseBody: |
-            ### 🚀 Fina Ergen v3.5.8-18 - Estabilidad y Telemetría Total
+            ### 🚀 Fina Ergen v3.5.8-19 - Mejoras de Conectividad y Telemetría
             
-            Esta actualización resuelve problemas críticos detectados en la visualización de video y la recopilación de datos energéticos.
+            Esta actualización introduce mejoras críticas en el motor de plugins y la visualización de datos:
             
-            #### 🛠️ Correcciones y Mejoras:
-            * **❄️ AC Power Master**: Sincronización profunda y en tiempo real de campos de energía (Watts, kWh Total y Mensual) en el panel principal.
-            * **📸 Doorbell Stream Fix**: Reparación definitiva del enlace de video del timbre. Se corrigió el error del signo "?" y se optimizó el arranque del capturador MJPEG.
-            * **🌐 IP Waydroid Dynamic**: Detección inteligente de la IP de Waydroid compatible con rangos 172.x y 10.x para una conectividad sin fallos.
-            * **📺 TV & Deco Sync**: Mejoras en la persistencia del estado de conexión para dispositivos multimedia.
-            * **📋 Market Alignment**: Sincronización de los últimos parches de seguridad y estabilidad del repositorio oficial de plugins.
-            
-            ### 📦 Instalación:
-            Actualiza tu versión actual descargando el nuevo paquete. No es necesario desinstalar la versión anterior, los datos de configuración se mantienen intactos.
+            - **❄️ Aire Acondicionado (Surrey/Midea):**
+                - Implementación de **autodescubrimiento inteligente de ID** (Handshake).
+                - Nuevo motor de telemetría con barrido secuencial de comandos (0x12, 0x44, 0x43) para compatibilidad universal.
+                - Sincronización exacta de kWh (Acumulado desde base histórica y mensual).
+            - **🔔 Doorbell MJPEG Stream:**
+                - Reparación definitiva del enlace de video (el signo "?" ya no aparece).
+                - Autodetección de IP de Waydroid mejorada.
+                - Sistema de reintento automático en la UI si el stream se demora.
+            - **🛠️ Refactor de Mercado:**
+                - Sincronización total entre los plugins locales y el repositorio del Market.
+                - Limpieza de logs de depuración para un rendimiento óptimo.
+
+            ---
+            *Desarrollado con ❤️ por el equipo de Fina Ergen.*
           releaseDraft: false
           prerelease: false
           args: --bundles deb,rpm

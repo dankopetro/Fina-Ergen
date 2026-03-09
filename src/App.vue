@@ -195,8 +195,8 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.8-18 (09/03/2026 11:42)";
-const buildDate = "Lun 09 Mar 2026 11:42";
+const version = "Fina Ergen v 3.5.8-19 (09/03/2026 13:06)";
+const buildDate = "Lun 09 Mar 2026 13:06";
 
 const showOptInModal = ref(false);
 const newDetectedApps = ref([]);
@@ -1574,9 +1574,9 @@ const weatherIcon = computed(() => {
 
         invoke('start_streamer').catch(() => { });
         setTimeout(() => {
-            streamUrl.value = "http://127.0.0.1:8555/view?t=" + Date.now();
+            streamUrl.value = "http://127.0.0.1:8555/stream.mjpg?t=" + Date.now();
             streamKey.value = Date.now();
-        }, 500); // Video disponible mucho antes ahora
+        }, 1000); // Dar un poco más de margen
     };
 
 const hangUp = async () => {
@@ -2302,7 +2302,7 @@ onMounted(async () => {
                     // Intentar arrancar streamer si no está (vía Rust)
                     invoke('start_streamer').catch(() => { });
                     setTimeout(() => {
-                        // Forzamos actualización de URL de video
+                        // Forzamos actualización de URL de video (SIEMPRE MJPG)
                         streamUrl.value = "http://127.0.0.1:8555/stream.mjpg?t=" + Date.now();
                         streamKey.value = Date.now();
                     }, 4000); // 4 seg para asegurar que Waydroid despertó
@@ -2312,16 +2312,20 @@ onMounted(async () => {
                 }
             }
 
-            // --- SYNC AC STATUS (Desde Plugins/Cerebro) ---
+            // --- SYNC AC STATUS (Sincronización Profunda y Persistente) ---
             if (data.ac_status) {
-                // Sincronización PROFUNDA de campos de energía y estado
-                acState.value.power = data.ac_status.power !== undefined ? data.ac_status.power : acState.value.power;
-                acState.value.temp = data.ac_status.temp || acState.value.temp;
-                acState.value.indoor = data.ac_status.indoor || acState.value.indoor;
-                acState.value.outdoor = data.ac_status.outdoor || acState.value.outdoor;
-                acState.value.watts = data.ac_status.watts !== undefined ? data.ac_status.watts : acState.value.watts;
-                acState.value.total_kwh = data.ac_status.total_kwh !== undefined ? data.ac_status.total_kwh : acState.value.total_kwh;
-                acState.value.monthly_kwh = data.ac_status.monthly_kwh !== undefined ? data.ac_status.monthly_kwh : acState.value.monthly_kwh;
+                console.log("❄️ AC Status Data:", data.ac_status);
+                // Mapeo uno a uno para asegurar reactividad en todos los sub-objetos
+                if (data.ac_status.power !== undefined) acState.value.power = data.ac_status.power;
+                if (data.ac_status.temp) acState.value.temp = data.ac_status.temp;
+                if (data.ac_status.indoor) acState.value.indoor = data.ac_status.indoor;
+                if (data.ac_status.outdoor) acState.value.outdoor = data.ac_status.outdoor;
+                if (data.ac_status.mode) acState.value.mode = data.ac_status.mode.toLowerCase();
+                
+                // Valores de Energía (Críticos para Claudio)
+                if (data.ac_status.watts !== undefined) acState.value.watts = data.ac_status.watts;
+                if (data.ac_status.total_kwh !== undefined) acState.value.total_kwh = data.ac_status.total_kwh;
+                if (data.ac_status.monthly_kwh !== undefined) acState.value.monthly_kwh = data.ac_status.monthly_kwh;
             }
 
             // --- SYNC TIMER VISUAL (ROBUSTO CON ID) ---
