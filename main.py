@@ -142,7 +142,7 @@ config, CONFIG_FOUND = load_config()
 
 # --- DIAGNÓSTICO INICIAL ---
 import getpass
-print(f"--- Fina Ergen Cerebro V3.5.8-16 (09/03/2026 02:25) ---", flush=True)
+print(f"--- Fina Ergen Cerebro V3.5.8-17 (09/03/2026 09:53) ---", flush=True)
 print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
 if os.getuid() == 0:
     print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)
@@ -520,13 +520,20 @@ async def main():
             
             if not ac_configured: ready_ac.set()
             
-            # 2. Registrar Listener AC
+            # 2. Registrar Listener AC (Y propagar a la UI)
             if plugin_integration:
-                plugin_integration.register_event_listener("ac-status-update", lambda p: ready_ac.set())
+                def handle_ac_update(payload):
+                    # Actualizamos visualmente el panel de AC
+                    update_ui_state("idle", extra_payload={"ac_status": payload})
+                    ready_ac.set()
+                
+                plugin_integration.register_event_listener("ac-status-update", handle_ac_update)
+                
                 # Forzar actualización inicial
                 def ac_boot_update():
                     if plugin_integration:
-                        plugin_integration.handle_intent("ac_control", "status")
+                        # Buscamos por el nombre exacto del intent en el plugin (aire_estado)
+                        plugin_integration.handle_intent("aire_estado", "status")
                 threading.Thread(target=ac_boot_update, daemon=True).start()
 
             # 3. Verificar Clima (si hay internet)

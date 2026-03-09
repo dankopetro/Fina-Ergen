@@ -19,8 +19,20 @@ sleep 5
 echo "🖥️  Lanzando Weston..."
 unset WAYLAND_DISPLAY
 export DISPLAY=:0
+
+# Buscar weston.ini robustamente
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+WESTON_CONFIG="./weston.ini"
+if [ ! -f "$WESTON_CONFIG" ]; then
+    WESTON_CONFIG="$SCRIPT_DIR/../weston.ini"
+fi
+if [ ! -f "$WESTON_CONFIG" ]; then
+    WESTON_CONFIG="$SCRIPT_DIR/weston.ini"
+fi
+
+echo "📝 Usando config: $WESTON_CONFIG"
 # Iniciar Weston con config para evitar bloqueo usando ruta absoluta
-weston --config="./weston.ini" --width=450 --height=820 &
+weston --config="$WESTON_CONFIG" --width=450 --height=820 &
 WESTON_PID=$!
 
 echo "⏳ Esperando a que Weston aparezca..."

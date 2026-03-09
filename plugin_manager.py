@@ -5,6 +5,11 @@ import logging
 from pathlib import Path
 from typing import List, Dict, Optional, Any
 
+# Asegurar que el directorio base esté en el path para importar utils y otros
+base_dir = os.path.dirname(os.path.abspath(__file__))
+if base_dir not in sys.path:
+    sys.path.insert(0, base_dir)
+
 # Logger Setup
 logger = logging.getLogger("PluginManager")
 logger.setLevel(logging.DEBUG)
@@ -140,7 +145,10 @@ class PluginManager:
             return False
             
         config = self.loaded_plugins[plugin_name]
+        # Buscar el monitor primero en la raíz y luego en la sección 'scripts'
         monitor_script = config.get('monitor')
+        if not monitor_script and 'scripts' in config:
+            monitor_script = config['scripts'].get('monitor')
         
         if not monitor_script:
             return False

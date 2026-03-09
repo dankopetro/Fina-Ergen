@@ -195,8 +195,8 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.8-16 (09/03/2026 02:25)";
-const buildDate = "Lun 09 Mar 2026 02:25";
+const version = "Fina Ergen v 3.5.8-17 (09/03/2026 09:53)";
+const buildDate = "Lun 09 Mar 2026 09:53";
 
 const showOptInModal = ref(false);
 const newDetectedApps = ref([]);
@@ -2577,23 +2577,28 @@ const scanChannels = async () => {
 const tuneChannel = async (val) => {
     console.log("Tuning to channel:", val);
     const channelNum = String(val).split(' ')[0];
-    // SIEMPRE ir a TV/Aire primero: si está en VLC, App u otra fuente, 
-    // los keyevents de canal se pierden. Armamos la secuencia completa en un solo spawn.
+    // SIEMPRE ir a TV/Aire primero
     finaState.value.process = t("proc_tv_input", "CAMBIANDO A AIRE...");
     const ip = activeTvIp.value;
     if (!ip) return;
     const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
     if (!activeTv?.type) return;
+    
     const model = activeTv.type.toLowerCase().replace(/_/g, '');
     const pyPath = pythonExecutable.value;
+    const userPluginsPath = `${configDir.value}/plugins`;
+    const marketPath = `${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working`;
 
-    const findInput  = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working" -path "*/${model}/tv_input.py" | head -n 1`;
-    const findCh     = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working" -path "*/${model}/set_channel.py" | head -n 1`;
+    // MOTOR DE BÚSQUEDA DINÁMICO (Compatible con subcarpetas)
+    const findInputCmd = `find "${userPluginsPath}" "${marketPath}" -ipath "*${model}*tv_input.py" 2>/dev/null | head -n 1`;
+    const findChCmd = `find "${userPluginsPath}" "${marketPath}" -ipath "*${model}*set_channel.py" 2>/dev/null | head -n 1`;
 
     try {
-        const inputScript = (await invoke("execute_shell_command", { command: findInput })).trim();
-        const chScript    = (await invoke("execute_shell_command", { command: findCh })).trim();
+        const inputScript = (await invoke("execute_shell_command", { command: findInputCmd })).trim();
+        const chScript = (await invoke("execute_shell_command", { command: findChCmd })).trim();
+
         if (!inputScript || !chScript) {
+            console.error(`❌ Scripts no encontrados para ${model}`);
             finaState.value.process = t("proc_err_not_found", "SCRIPT NO ENCONTRADO");
             return;
         }

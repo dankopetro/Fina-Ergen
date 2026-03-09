@@ -53,18 +53,15 @@ jobs:
           tagName: v__VERSION__
           releaseName: "Fina Ergen v__VERSION__"
           releaseBody: |
-            ### 🚀 Fina Ergen v__VERSION__ - Edición "Universal & Inteligente"
+            Esta actualización optimiza la experiencia de usuario y la estabilidad del sistema de plugins, asegurando una integración perfecta con dispositivos IoT y multimedia.
 
-            Esta actualización transforma a Fina en un asistente verdaderamente global, capaz de adaptarse a tu idioma y entorno desde el primer segundo sin configuraciones manuales tediosas.
-
-            ### 🌍 Novedades Críticas:
-            * **🌎 Auto-Detección de Idioma**: Fina ahora detecta el idioma de tu sistema operativo (OS) en el primer arranque para configurar la UI y la voz automáticamente (Soportados: ES, EN, FR, DE, JA, ZH).
-            * **🗣️ Descarga Dinámica de Voces (Piper)**: El sistema de síntesis descarga automáticamente el modelo de voz pequeño correspondiente a tu idioma detectado.
-            * **🧠 Reconocimiento Inteligente (Vosk)**: El motor de oído ahora es consciente del idioma y alerta dinámicamente si falta el modelo específico de tu región.
-            * **⚡ Traducción Visual 100%**: Todo el panel principal, menús de domótica, biometría y estados del sistema han sido traducidos a los 6 idiomas principales.
-            * **⚡ Auto-Bootstrap (Zero Terminal)**: Fina detecta si faltan librerías críticas de IA e intenta instalarlas sola en un entorno aislado.
-            * **📖 Guía Proactiva**: Apertura automática del manual de configuración al detectar falta de modelos.
-            * **🛡️ Blindaje de Configuración**: Mayor resiliencia ante errores en archivos de texto, el sistema arranca siempre y te guía.
+            ### 🚀 Novedades y Mejoras Críticas:
+            * **🔌 Plugin Manager Evolucionado**: Nuevo sistema de descubrimiento de monitores que soporta estructuras anidadas y garantiza la carga de scripts en cualquier categoría.
+            * **🌡️ Panel de Clima en Tiempo Real**: Sincronización automática de datos de AC (consumo, temperatura, potencia) directamente en el panel principal desde el arranque.
+            * **📺 Control de TV Universal**: Motor de sintonía de canales robustecido que localiza dinámicamente scripts de control en todo el repositorio del mercado.
+            * **🔔 Optimización de Timbre Inteligente**: Corrección en el arranque del ecosistema Weston/Waydroid, asegurando que la cámara y el audio del timbre funcionen siempre desde la primera llamada.
+            * **🛡️ Importación de Múltiples Rutas**: Mejora en la resolución de dependencias locales para plugins, eliminando errores de importación en entornos complejos.
+            * **💎 Refinamiento Visual**: Actualización de marcas de tiempo y versiones en toda la interfaz para una trazabilidad total.
 
             ### 📦 Instalación:
             Descarga el archivo `.deb` o `.rpm` e instálalo normalmente. Al abrir Fina, ella te saludará en tu idioma y te guiará en los pasos iniciales si detecta que faltan componentes.
