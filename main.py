@@ -142,7 +142,7 @@ config, CONFIG_FOUND = load_config()
 
 # --- DIAGNÓSTICO INICIAL ---
 import getpass
-print(f"--- Fina Ergen Cerebro V3.5.8-14 (06/03/2026 21:20) ---", flush=True)
+print(f"--- Fina Ergen Cerebro V3.5.8-16 (09/03/2026 02:25) ---", flush=True)
 print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
 if os.getuid() == 0:
     print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)
@@ -388,7 +388,9 @@ if not CONFIG_FOUND:
 # Logger Setup (Centralized in Ergen Root)
 # Logger Setup Centralizado en utils.py
 # Simplemente obtenemos el logger (utils ya configuró el root)
-# logger = logging.getLogger("FinaMain") # Ya importado arriba
+logger = logging.getLogger("FinaPlugins")
+logger.setLevel(logging.DEBUG)
+ # Ya importado arriba
 logger.info(f"--- FINA ERGEN MAIN INICIADO ---")
 
 async def main():
@@ -457,9 +459,13 @@ async def main():
             plugin_integration = setup_plugins(speak_callback=lambda text, sink=None: speak(text, DEFAULT_VOICE, sink=sink))
             
             # Forzar actualización inicial de estado (Clima, etc)
-            try:
-                threading.Thread(target=lambda: plugin_integration.handle_intent("ac_control", "status"), daemon=True).start()
-            except: pass
+            if plugin_integration:
+                try:
+                    def ac_update_worker():
+                        if plugin_integration:
+                            plugin_integration.handle_intent("ac_control", "status")
+                    threading.Thread(target=ac_update_worker, daemon=True).start()
+                except: pass
 
             # Inicializar biometría
             try:
@@ -518,7 +524,10 @@ async def main():
             if plugin_integration:
                 plugin_integration.register_event_listener("ac-status-update", lambda p: ready_ac.set())
                 # Forzar actualización inicial
-                threading.Thread(target=lambda: plugin_integration.handle_intent("ac_control", "status"), daemon=True).start()
+                def ac_boot_update():
+                    if plugin_integration:
+                        plugin_integration.handle_intent("ac_control", "status")
+                threading.Thread(target=ac_boot_update, daemon=True).start()
 
             # 3. Verificar Clima (si hay internet)
             def check_weather_readiness():
@@ -547,7 +556,8 @@ async def main():
             
         if CONFIG_FOUND:
             greeting = get_time_based_greeting()
-            msg = "Sistemas listos. Por favor, diga su nombre para comenzar."
+            msg = "Sistemas listos. Por favor, diga Fina para comenzar."
+            update_ui_state("idle", msg)
             speak(f"{greeting}. {msg}", DEFAULT_VOICE)
         else:
             msg = utils.i18n("systems_ready", "Bienvenido. Por favor, consulta el manual para configurarme.")

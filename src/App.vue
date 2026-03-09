@@ -195,8 +195,8 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.8-15 (09/03/2026 01:40)";
-const buildDate = "Lun 09 Mar 2026 01:45";
+const version = "Fina Ergen v 3.5.8-16 (09/03/2026 02:25)";
+const buildDate = "Lun 09 Mar 2026 02:25";
 
 const showOptInModal = ref(false);
 const newDetectedApps = ref([]);
@@ -1898,30 +1898,37 @@ const sendTvCommand = async (script, args = "") => {
     const mac = activeTv?.mac || "";
     const pyPath = pythonExecutable.value;
 
-    // MOTOR DE BÚSQUEDA DINÁMICO DE MERCADO (Testing)
-    const findCommand = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working" -path "*/${model}/${script}" | head -n 1`;
-
-    // El comando final ejecuta el hallazgo o falla elegantemente
-    let fullCommand = `${pyPath} \` ${findCommand} \` --ip ${ip}`;
-
-    // Manejo de MAC para scripts que la requieren
-    const macScripts = ["tv_on.py", "tv_power.py", "tv_input.py", "deco_on.py", "deco_power.py"];
-    if (mac && macScripts.includes(script)) {
-        fullCommand += ` --mac ${mac}`;
-    }
-    if (args) fullCommand += ` ${args}`;
-
+    // MOTOR DE BÚSQUEDA DINÁMICO DE MERCADO (Robusto)
+    const userPluginsPath = `${configDir.value}/plugins`;
+    const marketPath = `${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working`;
+    
+    // Búsqueda más flexible que tolere subcarpetas o variaciones del nombre del modelo
+    const findCommand = `find "${userPluginsPath}" "${marketPath}" -ipath "*${model}*${script}" 2>/dev/null | head -n 1`;
+    
     try {
-        console.log(`📺 Ejecutando comando TV (${model}): ${script}`);
-        // Verificamos si existe el script antes de lanzar
+        console.log(`📺 Buscando comando TV (${model}): ${script}`);
+        // Verificamos si existe el script y obtenemos su ruta absoluta
         const pathCheck = await invoke("execute_shell_command", { command: findCommand });
+        
         if (!pathCheck || pathCheck.trim() === "") {
             console.error(`❌ Script no encontrado: ${script} para el modelo ${model}`);
             finaState.value.process = t("proc_err_not_found", "SCRIPT NO ENCONTRADO");
             return;
         }
 
-        await invoke("spawn_shell_command", { command: fullCommand });
+        const scriptPath = pathCheck.trim();
+        let finalCmd = `${pyPath} "${scriptPath}" --ip ${ip}`;
+        
+        // Manejo de MAC para scripts que la requieren
+        const macScripts = ["tv_on.py", "tv_power.py", "tv_input.py", "deco_on.py", "deco_power.py"];
+        if (mac && macScripts.includes(script)) {
+            finalCmd += ` --mac ${mac}`;
+        }
+        if (args) finalCmd += ` ${args}`;
+
+        console.log(`🚀 Ejecutando: ${finalCmd}`);
+        await invoke("spawn_shell_command", { command: finalCmd });
+        
         setTimeout(() => {
             if (finaState.value.process === "COMANDO TV...") finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
         }, 2000);
