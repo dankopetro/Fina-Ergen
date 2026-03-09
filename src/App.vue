@@ -100,6 +100,23 @@ const listen = async (event, handler) => {
     return await tauriListen(event, handler);
 };
 
+const submitUniversalPin = async () => {
+    if (universalPinInput.value.length === 6) {
+        try {
+            await emit("plugin-pin-response", {
+                plugin_id: universalPinData.value.plugin_id,
+                pin: universalPinInput.value,
+                ip: universalPinData.value.ip
+            });
+            showUniversalPinModal.value = false;
+            universalPinInput.value = "";
+            addChatMessage(t('ui_pairing_sent', 'PIN enviado. Procesando...'));
+        } catch (e) {
+            console.error("Error enviando PIN:", e);
+        }
+    }
+};
+
 // --- STATE ---
 const i18nData = ref({});
 const userSettings = ref({
@@ -159,6 +176,9 @@ const detectedAndroidVersion = ref(0);
 const qrCodeDataURL = ref('');
 const contacts = ref({}); // { "Nombre": "Numero" }
 const userData = ref({ notes: [], reminders: [] });
+const showUniversalPinModal = ref(false);
+const universalPinData = ref({ title: "Configuración", device: "Dispositivo", plugin_id: "", ip: "" });
+const universalPinInput = ref("");
 
 const installedMessagingApps = ref(['sms']); // IDs de apps instaladas
 const selectedMessagingApp = ref('sms'); // ID de app seleccionada
@@ -239,7 +259,8 @@ const acState = ref({
     outdoor: 28,
     humidity: 45,
     watts: 0,
-    total_kwh: 0
+    total_kwh: 0,
+    monthly_kwh: 0
 });
 
 const activeTvIp = ref(null);
@@ -350,6 +371,27 @@ onMounted(() => {
     updateNeuralState();
     syncAllDevices(true);
     syncSystemInfo();
+
+    listen("plugin-request-pin", (event) => {
+        console.log("📥 Recibida petición de PIN de plugin:", event.payload);
+        universalPinData.value = {
+            title: event.payload.title || "Vincular Dispositivo",
+            device: event.payload.device || "Android TV",
+            plugin_id: event.payload.plugin_id,
+            ip: event.payload.ip
+        };
+        universalPinInput.value = "";
+        showUniversalPinModal.value = true;
+    });
+
+    listen("plugin-pin-response-status", (event) => {
+        if (event.payload.status === "success") {
+            addChatMessage("✅ Dispositivo vinculado con éxito.");
+            showUniversalPinModal.value = false;
+        } else {
+            addChatMessage("❌ Error en vinculación: " + event.payload.message);
+        }
+    });
 });
 
 const handleSentinelCommand = async () => {
@@ -1522,11 +1564,17 @@ const weatherIcon = computed(() => {
         showDoorbell.value = true;
         finaState.value.process = t("proc_doorbell_conn", "Conectando con el timbre...");
 
-        // Disparar secuencia de backend (Wake + Cast TV) - ASÍNCRONO REAL
+        // Disparar secuencia de backend (Wake + Cast TV) - UNIVERSAL MARKET TEST
         const pyPath = pythonExecutable.value;
-        const scriptPath = `${projectRoot.value}/plugins/doorbell/monitor.py`;
-        invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --trigger` }).catch(e =>
-            console.error("Error trigger:", e));
+        const findMonitor = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/Doorbells" -name "monitor.py" | head -n 1`;
+        
+        try {
+            const scriptPath = (await invoke("execute_shell_command", { command: findMonitor })).trim();
+            if (scriptPath) {
+                invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --trigger` }).catch(e =>
+                    console.error("Error trigger:", e));
+            }
+        } catch (e) {}
 
         invoke('start_streamer').catch(() => { });
         setTimeout(() => {
@@ -1537,11 +1585,13 @@ const weatherIcon = computed(() => {
 
 const hangUp = async () => {
     try {
-        // Usar script Python inteligente (detecta IP dinámica + No mata streamer)
         const pyPath = pythonExecutable.value;
-        const hangupScript = `${projectRoot.value}/plugins/doorbell/hangup_doorbell.py`;
-
-        await invoke("spawn_shell_command", { command: `${pyPath} "${hangupScript}"` });
+        const findHangup = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/Doorbells" -name "hangup_doorbell.py" | head -n 1`;
+        
+        const scriptPath = (await invoke("execute_shell_command", { command: findHangup })).trim();
+        if (scriptPath) {
+            await invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}"` });
+        }
 
         showDoorbell.value = false;
         finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
@@ -1606,14 +1656,20 @@ const notifyFina = (msg, duration = 4000) => {
 
 // --- REFRESH SYSTEMS ---
 const refreshAcStatus = async (silent = false) => {
-    const pyPath = pythonExecutable.value;
-    const scriptPath = `${projectRoot.value}/iot/clima.py`;
+    // REFRESH AIR CONDITIONER (UNIVERSAL MARKET TEST)
     const ac_ip = userSettings.value.apis.AC_IP || "";
-    let command = `${pyPath} "${scriptPath}" --status`;
-    if (ac_ip) command += ` --ip ${ac_ip}`;
-    if (silent) command += " --silent";
+    if (!ac_ip) return;
+
+    const pyPath = pythonExecutable.value;
+    const findClima = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/AirConditioning" -name "clima.py" | head -n 1`;
 
     try {
+        const scriptPath = (await invoke("execute_shell_command", { command: findClima })).trim();
+        if (!scriptPath) return;
+
+        let command = `${pyPath} "${scriptPath}" --status --ip ${ac_ip}`;
+        if (silent) command += " --silent";
+
         const output = await invoke("execute_shell_command", { command });
         console.log("Sincronizando Aire...", output);
 
@@ -1625,6 +1681,7 @@ const refreshAcStatus = async (silent = false) => {
         const powerMatch = output.match(/(está|esta) encendido/i);
         const wattsMatch = output.match(/Consumo:\s*(\d+)W/i);
         const kwhMatch = output.match(/Acumulado:\s*([\d.]+)kWh/i);
+        const monthlyMatch = output.match(/monthly_kwh":\s*([\d.]+)/i); // Extraemos del JSON payload en el log si es necesario, o añadimos al msg
 
         if (tempMatch) acState.value.temp = Math.round(parseFloat(tempMatch[1]));
         if (indoorMatch) acState.value.indoor = Math.round(parseFloat(indoorMatch[1]));
@@ -1633,6 +1690,17 @@ const refreshAcStatus = async (silent = false) => {
         if (modeMatch) acState.value.mode = modeMatch[1].toLowerCase();
         if (wattsMatch) acState.value.watts = parseInt(wattsMatch[1]);
         if (kwhMatch) acState.value.total_kwh = parseFloat(kwhMatch[1]);
+        
+        // Intentar parsear el JSON de la respuesta directamente si está presente para mayor exactitud
+        try {
+            const jsonMatch = output.match(/\{"power":.*\}/);
+            if (jsonMatch) {
+                const acData = JSON.parse(jsonMatch[0]);
+                if (acData.monthly_kwh !== undefined) acState.value.monthly_kwh = acData.monthly_kwh;
+                if (acData.total_kwh !== undefined) acState.value.total_kwh = acData.total_kwh;
+            }
+        } catch(e) {}
+
         acState.value.power = !!powerMatch;
     } catch (e) {
         console.error("Error refreshing AC status:", e);
@@ -1641,11 +1709,14 @@ const refreshAcStatus = async (silent = false) => {
 
 const refreshDoorbellStatus = async () => {
     const pyPath = pythonExecutable.value;
-    const scriptPath = `${projectRoot.value}/plugins/doorbell/doorbell_status.py`;
-    const command = `${pyPath} "${scriptPath}"`;
+    const findScript = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/Doorbells" -name "doorbell_status.py" | head -n 1`;
+
     try {
-        const output = await invoke("execute_shell_command", { command });
-        if (output.trim() !== "N/A" && output.trim() !== "") {
+        const scriptPath = (await invoke("execute_shell_command", { command: findScript })).trim();
+        if (!scriptPath) return;
+
+        const output = await invoke("execute_shell_command", { command: `${pyPath} "${scriptPath}"` });
+        if (output && output.trim() !== "" && !isNaN(parseInt(output))) {
             doorbellBattery.value = output.trim();
             console.log("✅ Batería Timbre sincronizada:", doorbellBattery.value + "%");
         }
@@ -1821,23 +1892,40 @@ const sendTvCommand = async (script, args = "") => {
         return;
     }
 
-    const modelFolder = activeTv?.type || 'tcl_32s60a';
-    const mac = activeTv?.mac || "";
-
-    const pyPath = pythonExecutable.value;
-    const tvScript = `${projectRoot.value}/plugins/tv/${modelFolder}/${script}`;
-
-    let command = `${pyPath} "${tvScript}" --ip ${ip}`;
-    // La MAC solo es necesaria para comandos que despiertan la TV (Power/On/Input TV)
-    // Otros scripts como set_channel.py fallan si reciben un argumento desconocido
-    const macScripts = ["tv_on.py", "tv_power.py", "tv_input.py"];
-    if (mac && macScripts.includes(script)) {
-        command += ` --mac ${mac}`;
+    // NORMALIZACIÓN DEL MODELO (DINÁMICO DESDE SETTINGS)
+    if (!activeTv?.type) {
+        console.error("❌ Error: No se ha definido el tipo (modelo) para este dispositivo en settings.json");
+        finaState.value.process = t("proc_err_no_model", "MODELO NO DEFINIDO");
+        return;
     }
-    if (args) command += ` ${args}`;
+    const model = activeTv.type.toLowerCase().replace(/_/g, '');
+    const mac = activeTv?.mac || "";
+    const pyPath = pythonExecutable.value;
+
+    // MOTOR DE BÚSQUEDA DINÁMICO DE MERCADO (Testing)
+    const findCommand = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working" -path "*/${model}/${script}" | head -n 1`;
+
+    // El comando final ejecuta el hallazgo o falla elegantemente
+    let fullCommand = `${pyPath} \` ${findCommand} \` --ip ${ip}`;
+
+    // Manejo de MAC para scripts que la requieren
+    const macScripts = ["tv_on.py", "tv_power.py", "tv_input.py", "deco_on.py", "deco_power.py"];
+    if (mac && macScripts.includes(script)) {
+        fullCommand += ` --mac ${mac}`;
+    }
+    if (args) fullCommand += ` ${args}`;
+
     try {
-        console.log(`📺 Enviando comando a ${ip} (${modelFolder}): ${script} ${args}`);
-        await invoke("spawn_shell_command", { command });
+        console.log(`📺 Ejecutando comando TV (${model}): ${script}`);
+        // Verificamos si existe el script antes de lanzar
+        const pathCheck = await invoke("execute_shell_command", { command: findCommand });
+        if (!pathCheck || pathCheck.trim() === "") {
+            console.error(`❌ Script no encontrado: ${script} para el modelo ${model}`);
+            finaState.value.process = t("proc_err_not_found", "SCRIPT NO ENCONTRADO");
+            return;
+        }
+
+        await invoke("spawn_shell_command", { command: fullCommand });
         setTimeout(() => {
             if (finaState.value.process === "COMANDO TV...") finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
         }, 2000);
@@ -2000,7 +2088,7 @@ const detectTvIp = async (silent = false) => {
             if (!silent) finaState.value.process = `${currentRoomTv.name} OFFLINE`;
         }
     }
-    // Removed all fallbacks to candidates[0] or alive[0]. 
+    // Removed all fallbacks to candidates[0] or alive[0].
     // If current room TV is offline, it stays offline.
 
     // Actualizar cache solo si es válido Y está vivo
@@ -2363,6 +2451,7 @@ onMounted(async () => {
                 acState.value.outdoor = p.outdoor;
                 acState.value.watts = p.watts;
                 acState.value.total_kwh = p.total_kwh;
+                acState.value.monthly_kwh = p.monthly_kwh;
             } else if (data.type === 'event' && (data.name === 'doorbell-hangup' ||
                 data.event === 'doorbell-hangup')) {
                 showDoorbell.value = false;
@@ -2380,7 +2469,7 @@ const loadTvChannels = async () => {
         const pyPath = pythonExecutable.value;
         // Escolher arquivo baseado na sala
         const channelFile = activeTvRoom.value === 'Deco' ? 'channels_telecentro.json' : 'channels.json';
-        const script = `import json, os; 
+        const script = `import json, os;
 def get_config_dir():
     xdg_config = os.environ.get("XDG_CONFIG_HOME")
     if xdg_config: return os.path.join(xdg_config, "Fina")
@@ -2448,12 +2537,22 @@ const scanChannels = async () => {
     isScanningTv.value = true;
     finaState.value.process = t("proc_scanning_ch", "ESCANEANDO CANALES...");
     const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
-    const modelFolder = activeTv?.type || 'tcl_32s60a';
+    if (!activeTv?.type) {
+        finaState.value.process = t("proc_err_no_model", "MODELO NO DEFINIDO");
+        isScanningTv.value = false;
+        return;
+    }
+    const model = activeTv.type.toLowerCase().replace(/_/g, '');
 
     const pyPath = pythonExecutable.value;
-    const scriptPath = `${projectRoot.value}/plugins/tv/${modelFolder}/scan_ultra_fast.py`;
+    const scriptName = "scan_ultra_fast.py";
+    const findScript = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working" -path "*/${model}/${scriptName}" | head -n 1`;
+
     try {
-        await invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --ip ${ip}` });
+        const scriptPath = await invoke("execute_shell_command", { command: findScript });
+        if (scriptPath && scriptPath.trim() !== "") {
+            await invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath.trim()}" --ip ${ip}` });
+        }
         // En un scan ultra fast no podemos saber exacto cuando termina si usamos spawn_shell_command
         // pero podemos esperar unos segundos o usar execute_shell_command si el usuario acepta la "espera"
         // Para canales mejor execute para saber cuando termina exacto.
@@ -2472,19 +2571,56 @@ const scanChannels = async () => {
     }
 };
 
-const tuneChannel = (val) => {
+const tuneChannel = async (val) => {
     console.log("Tuning to channel:", val);
-    // Asegurarse de que val sea solo el número si viene con prefijos
     const channelNum = String(val).split(' ')[0];
-    sendTvCommand("set_channel.py", `--channel ${channelNum}`);
+    // SIEMPRE ir a TV/Aire primero: si está en VLC, App u otra fuente, 
+    // los keyevents de canal se pierden. Armamos la secuencia completa en un solo spawn.
+    finaState.value.process = t("proc_tv_input", "CAMBIANDO A AIRE...");
+    const ip = activeTvIp.value;
+    if (!ip) return;
+    const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
+    if (!activeTv?.type) return;
+    const model = activeTv.type.toLowerCase().replace(/_/g, '');
+    const pyPath = pythonExecutable.value;
+
+    const findInput  = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working" -path "*/${model}/tv_input.py" | head -n 1`;
+    const findCh     = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working" -path "*/${model}/set_channel.py" | head -n 1`;
+
+    try {
+        const inputScript = (await invoke("execute_shell_command", { command: findInput })).trim();
+        const chScript    = (await invoke("execute_shell_command", { command: findCh })).trim();
+        if (!inputScript || !chScript) {
+            finaState.value.process = t("proc_err_not_found", "SCRIPT NO ENCONTRADO");
+            return;
+        }
+        // Paso 1: cambiar a TV/Aire
+        await invoke("execute_shell_command", { command: `${pyPath} "${inputScript}" --ip ${ip}` });
+        // Paso 2 (con delay): enviar canal
+        finaState.value.process = `CANAL ${channelNum}...`;
+        setTimeout(async () => {
+            await invoke("spawn_shell_command", { command: `${pyPath} "${chScript}" --ip ${ip} --channel ${channelNum}` });
+            setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
+        }, 1500);
+    } catch (e) {
+        console.error("Channel tune error:", e);
+        finaState.value.process = t("proc_err_tv", "ERROR TV");
+    }
 };
 
 const sendAcCommand = async (args, msg) => {
     finaState.value.process = msg.toUpperCase();
+    const ac_ip = userSettings.value.apis.AC_IP || "";
+    if (!ac_ip) return;
+
     const pyPath = pythonExecutable.value;
-    const scriptPath = `${projectRoot.value}/iot/clima.py`;
-    const command = `${pyPath} "${scriptPath}" ${args}`;
+    const findClima = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/AirConditioning" -name "clima.py" | head -n 1`;
+
     try {
+        const scriptPath = (await invoke("execute_shell_command", { command: findClima })).trim();
+        if (!scriptPath) return;
+
+        const command = `${pyPath} "${scriptPath}" ${args} --ip ${ac_ip}`;
         await invoke("spawn_shell_command", { command });
         setTimeout(() => refreshAcStatus(true), 2000);
     } catch (e) {
@@ -2499,19 +2635,24 @@ const launchTvApp = async (pkg) => {
         return;
     }
     finaState.value.process = `ABRIENDO APP...`;
-    const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
-    const modelFolder = activeTv?.type || 'tcl_32s60a';
 
+    const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
+    if (!activeTv?.type) return;
+
+    const model = activeTv.type.toLowerCase().replace(/_/g, '');
     const pyPath = pythonExecutable.value;
-    const scriptPath = `${projectRoot.value}/plugins/tv/${modelFolder}/launch_app.py`;
+    const script = "launch_app.py";
+    const findCmd = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working" -path "*/${model}/${script}" | head -n 1`;
 
     try {
-        await invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --package ${pkg} --ip ${ip}` });
-        finaState.value.process = t("proc_app_started", "APP INICIADA");
-        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
+        const scriptPath = (await invoke("execute_shell_command", { command: findCmd })).trim();
+        if (scriptPath) {
+            await invoke("spawn_shell_command", { command: `${pyPath} "${scriptPath}" --package ${pkg} --ip ${ip}` });
+            finaState.value.process = t("proc_app_started", "APP INICIADA");
+            setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
+        }
     } catch (e) {
         console.error("App launch error:", e);
-        finaState.value.process = t("proc_err_app_start", "ERROR AL INICIAR APP");
     }
 };
 
@@ -2523,20 +2664,22 @@ const scanTvApps = async () => {
     }
     isScanningTv.value = true;
     finaState.value.process = t("proc_scanning_apps", "ESCANEANDO APPS...");
-    const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
-    const modelFolder = activeTv?.type || 'tcl_32s60a';
 
+    const activeTv = userSettings.value.tvs?.find(t => t.ip === ip);
+    if (!activeTv?.type) return;
+
+    const model = activeTv.type.toLowerCase().replace(/_/g, '');
     const pyPath = pythonExecutable.value;
-    const scriptPath = `${projectRoot.value}/plugins/tv/${modelFolder}/list_tv_apps.py`;
+    const script = "list_tv_apps.py";
+    const findCmd = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working" -path "*/${model}/${script}" | head -n 1`;
 
     try {
-        const i18nResp = await fetch("http://127.0.0.1:18000/api/i18n");
-        if (i18nResp.ok) i18nData.value = await i18nResp.json();
-
-        await invoke("execute_shell_command", { command: `${pyPath} "${scriptPath}" --ip ${ip}` });
-        // Recargar settings para ver nuevas apps
-        await fetchSettings();
-        finaState.value.process = t("proc_apps_scanned", "APPS ESCANEADAS");
+        const scriptPath = (await invoke("execute_shell_command", { command: findCmd })).trim();
+        if (scriptPath) {
+            await invoke("execute_shell_command", { command: `${pyPath} "${scriptPath}" --ip ${ip}` });
+            await fetchSettings();
+            finaState.value.process = t("proc_apps_scanned", "APPS ESCANEADAS");
+        }
         isScanningTv.value = false;
         setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
     } catch (e) {
@@ -2837,6 +2980,11 @@ const selectFolder = async (settingKey) => {
                                             class="text-right text-[12.5px] font-black text-purple-500 uppercase mt-1">{{ t('ui_tot', 'TOT') }}:</span>
                                         <span v-if="acState.total_kwh !== undefined && acState.total_kwh !== null"
                                             class="text-left text-[12.5px] font-black text-purple-400 ml-1 uppercase mt-1 text-[8px] ml-0.5">{{ acState.total_kwh }}<span>kWh</span></span>
+
+                                        <span v-if="acState.monthly_kwh !== undefined"
+                                            class="text-right text-[12.5px] font-black text-pink-500 uppercase mt-1">{{ t('ui_mes', 'MES') }}:</span>
+                                        <span v-if="acState.monthly_kwh !== undefined"
+                                            class="text-left text-[12.5px] font-black text-pink-400 ml-1 uppercase mt-1 text-[8px] ml-0.5">{{ acState.monthly_kwh }}<span>kWh</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -4376,7 +4524,7 @@ const selectFolder = async (settingKey) => {
                                         class="animate-in fade-in slide-in-from-right-4 duration-500">
                                         <h3
                                             class="text-2xl font-black text-white uppercase tracking-tighter mb-10 flex items-center gap-4">
-                                            <span class="w-12 h-1 bg-purple-500 rounded-full"></span> {{ t('ui_timbre_title', 'Visual: Timbre Tuya') }}
+                                            <span class="w-12 h-1 bg-purple-500 rounded-full"></span> {{ t('ui_timbre_title', 'Visual: Timbre Cam') }}
                                         </h3>
                                         <div class="space-y-6">
                                             <div class="flex flex-col gap-2">
@@ -5411,6 +5559,46 @@ const selectFolder = async (settingKey) => {
                         <!-- Footer Info -->
                         <div class="p-6 bg-black/40 border-t border-white/5 text-center shrink-0">
                             <p class="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">{{ t('ui_plugin_install_hint', 'Los plugins se instalan automáticamente en la carpeta de ejecución local.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+            <!-- UNIVERSAL PIN MODAL -->
+            <transition name="fade">
+                <div v-if="showUniversalPinModal"
+                    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl p-6"
+                    @click.self="showUniversalPinModal = false">
+                    <div class="w-full max-w-md bg-[#070a14] border border-cyan-500/30 rounded-[40px] p-10 shadow-3xl text-center flex flex-col gap-8 relative overflow-hidden"
+                        @click.stop>
+                        <div class="absolute -top-20 -left-20 w-40 h-40 bg-cyan-500/10 blur-[60px] rounded-full"></div>
+                        <div class="z-10 flex flex-col items-center gap-6">
+                            <div class="w-20 h-20 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+                                <i class="fa-solid fa-key-skeleton text-4xl text-cyan-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-black text-white uppercase tracking-tighter">{{ universalPinData.title }}</h3>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">{{ universalPinData.device }}</p>
+                            </div>
+                            <div class="w-full space-y-4">
+                                <label class="text-[10px] font-black text-cyan-400/50 uppercase tracking-[0.3em]">Ingresa los 6 dígitos</label>
+                                <input v-model="universalPinInput" type="text" maxlength="6"
+                                    placeholder="000000"
+                                    @keyup.enter="submitUniversalPin"
+                                    class="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-6 text-4xl font-black text-white text-center tracking-[0.5em] focus:border-cyan-500 transition-all placeholder:opacity-20 outline-none" />
+                            </div>
+                            <p class="text-[9px] text-slate-600 font-bold leading-relaxed uppercase tracking-wider">
+                                Este código aparece en la pantalla de tu dispositivo para asegurar una conexión privada y segura.
+                            </p>
+                        </div>
+                        <div class="z-10 flex gap-3">
+                            <button @click="showUniversalPinModal = false"
+                                class="flex-1 py-4 border border-white/10 rounded-2xl text-slate-400 font-bold text-[10px] hover:bg-white/5 hover:text-white transition-all uppercase tracking-widest">
+                                Cancelar
+                            </button>
+                            <button @click="submitUniversalPin" :disabled="universalPinInput.length !== 6"
+                                class="flex-2 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-cyan-900/40 disabled:opacity-20">
+                                Confirmar y Conectar
+                            </button>
                         </div>
                     </div>
                 </div>

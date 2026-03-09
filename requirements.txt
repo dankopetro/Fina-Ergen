@@ -24,6 +24,8 @@ elevenlabs              # TTS Premium (Voz de Fina de alta calidad)
 # === IOT & DOMÓTICA MÓDULOS DE TERCEROS ===
 # Nota: La domótica ahora es modular. Los requerimientos de Tuya, TV, Clima, etc.
 # se encuentran dentro de sus respectivas carpetas en plugins/*/requirements.txt
+msmart-ng               # Control de Aire Acondicionado (Midea/Surrey)
+androidtvremote2        # Protocolo de Control Remoto de Google (Android TV v2)
 
 # === HERRAMIENTAS DEL SISTEMA & UTILIDADES ===
 psutil                  # Monitor del sistema (CPU, RAM, Procesos)
