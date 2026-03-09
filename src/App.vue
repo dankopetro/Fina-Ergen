@@ -195,8 +195,8 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.8-17 (09/03/2026 09:53)";
-const buildDate = "Lun 09 Mar 2026 09:53";
+const version = "Fina Ergen v 3.5.8-18 (09/03/2026 11:42)";
+const buildDate = "Lun 09 Mar 2026 11:42";
 
 const showOptInModal = ref(false);
 const newDetectedApps = ref([]);
@@ -2299,15 +2299,29 @@ onMounted(async () => {
                 } else if (cmd.name === 'doorbell-ring') {
                     showDoorbell.value = true;
                     finaState.value.process = t("proc_answering_door", "Atendiendo Timbre");
+                    // Intentar arrancar streamer si no está (vía Rust)
                     invoke('start_streamer').catch(() => { });
                     setTimeout(() => {
-                        streamUrl.value = "http://127.0.0.1:8555/view?t=" + Date.now();
+                        // Forzamos actualización de URL de video
+                        streamUrl.value = "http://127.0.0.1:8555/stream.mjpg?t=" + Date.now();
                         streamKey.value = Date.now();
-                    }, 2000);
+                    }, 4000); // 4 seg para asegurar que Waydroid despertó
                 } else if (cmd.name === 'doorbell-hangup') {
                     showDoorbell.value = false;
                     finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
                 }
+            }
+
+            // --- SYNC AC STATUS (Desde Plugins/Cerebro) ---
+            if (data.ac_status) {
+                // Sincronización PROFUNDA de campos de energía y estado
+                acState.value.power = data.ac_status.power !== undefined ? data.ac_status.power : acState.value.power;
+                acState.value.temp = data.ac_status.temp || acState.value.temp;
+                acState.value.indoor = data.ac_status.indoor || acState.value.indoor;
+                acState.value.outdoor = data.ac_status.outdoor || acState.value.outdoor;
+                acState.value.watts = data.ac_status.watts !== undefined ? data.ac_status.watts : acState.value.watts;
+                acState.value.total_kwh = data.ac_status.total_kwh !== undefined ? data.ac_status.total_kwh : acState.value.total_kwh;
+                acState.value.monthly_kwh = data.ac_status.monthly_kwh !== undefined ? data.ac_status.monthly_kwh : acState.value.monthly_kwh;
             }
 
             // --- SYNC TIMER VISUAL (ROBUSTO CON ID) ---
@@ -4930,8 +4944,9 @@ const selectFolder = async (settingKey) => {
                         <!-- VIDEO ENTERO (SIN ESPACIOS VACÍOS - FULL FILL) -->
                         <div
                             class="w-[450px] h-[720px] bg-black rounded-[50px] border-2 border-cyan-500/50 shadow-[0_0_80px_rgba(34,211,238,0.25)] overflow-hidden relative animate-in zoom-in-95 duration-500">
-                            <img v-if="streamUrl" :src="'http://127.0.0.1:8555/stream.mjpg?t=' + streamKey"
-                                class="w-full h-full object-cover" />
+                            <img v-if="showDoorbell && streamUrl" :src="streamUrl"
+                                class="w-full h-full object-cover"
+                                @error="e => { e.target.src = 'http://127.0.0.1:8555/stream.mjpg?retry=' + Date.now(); }" />
                             <div v-else
                                 class="w-full h-full flex flex-col items-center justify-center gap-6 bg-slate-950">
                                 <i class="fa-solid fa-spinner fa-spin text-5xl text-cyan-500"></i>

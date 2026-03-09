@@ -142,7 +142,7 @@ config, CONFIG_FOUND = load_config()
 
 # --- DIAGNÓSTICO INICIAL ---
 import getpass
-print(f"--- Fina Ergen Cerebro V3.5.8-17 (09/03/2026 09:53) ---", flush=True)
+print(f"--- Fina Ergen Cerebro V3.5.8-18 (09/03/2026 11:42) ---", flush=True)
 print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
 if os.getuid() == 0:
     print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)

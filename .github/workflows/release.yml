@@ -53,18 +53,19 @@ jobs:
           tagName: v__VERSION__
           releaseName: "Fina Ergen v__VERSION__"
           releaseBody: |
-            Esta actualización optimiza la experiencia de usuario y la estabilidad del sistema de plugins, asegurando una integración perfecta con dispositivos IoT y multimedia.
-
-            ### 🚀 Novedades y Mejoras Críticas:
-            * **🔌 Plugin Manager Evolucionado**: Nuevo sistema de descubrimiento de monitores que soporta estructuras anidadas y garantiza la carga de scripts en cualquier categoría.
-            * **🌡️ Panel de Clima en Tiempo Real**: Sincronización automática de datos de AC (consumo, temperatura, potencia) directamente en el panel principal desde el arranque.
-            * **📺 Control de TV Universal**: Motor de sintonía de canales robustecido que localiza dinámicamente scripts de control en todo el repositorio del mercado.
-            * **🔔 Optimización de Timbre Inteligente**: Corrección en el arranque del ecosistema Weston/Waydroid, asegurando que la cámara y el audio del timbre funcionen siempre desde la primera llamada.
-            * **🛡️ Importación de Múltiples Rutas**: Mejora en la resolución de dependencias locales para plugins, eliminando errores de importación en entornos complejos.
-            * **💎 Refinamiento Visual**: Actualización de marcas de tiempo y versiones en toda la interfaz para una trazabilidad total.
-
+            ### 🚀 Fina Ergen v3.5.8-18 - Estabilidad y Telemetría Total
+            
+            Esta actualización resuelve problemas críticos detectados en la visualización de video y la recopilación de datos energéticos.
+            
+            #### 🛠️ Correcciones y Mejoras:
+            * **❄️ AC Power Master**: Sincronización profunda y en tiempo real de campos de energía (Watts, kWh Total y Mensual) en el panel principal.
+            * **📸 Doorbell Stream Fix**: Reparación definitiva del enlace de video del timbre. Se corrigió el error del signo "?" y se optimizó el arranque del capturador MJPEG.
+            * **🌐 IP Waydroid Dynamic**: Detección inteligente de la IP de Waydroid compatible con rangos 172.x y 10.x para una conectividad sin fallos.
+            * **📺 TV & Deco Sync**: Mejoras en la persistencia del estado de conexión para dispositivos multimedia.
+            * **📋 Market Alignment**: Sincronización de los últimos parches de seguridad y estabilidad del repositorio oficial de plugins.
+            
             ### 📦 Instalación:
-            Descarga el archivo `.deb` o `.rpm` e instálalo normalmente. Al abrir Fina, ella te saludará en tu idioma y te guiará en los pasos iniciales si detecta que faltan componentes.
+            Actualiza tu versión actual descargando el nuevo paquete. No es necesario desinstalar la versión anterior, los datos de configuración se mantienen intactos.
           releaseDraft: false
           prerelease: false
           args: --bundles deb,rpm
