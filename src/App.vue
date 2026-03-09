@@ -103,11 +103,7 @@ const listen = async (event, handler) => {
 const submitUniversalPin = async () => {
     if (universalPinInput.value.length === 6) {
         try {
-            await emit("plugin-pin-response", {
-                plugin_id: universalPinData.value.plugin_id,
-                pin: universalPinInput.value,
-                ip: universalPinData.value.ip
-            });
+            await emit("plugin-pin-response", { plugin_id: universalPinData.value.plugin_id, pin: universalPinInput.value, ip: universalPinData.value.ip });
             showUniversalPinModal.value = false;
             universalPinInput.value = "";
             addChatMessage(t('ui_pairing_sent', 'PIN enviado. Procesando...'));
@@ -199,8 +195,8 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.8-12 (06/03/2026 20:25)";
-const buildDate = "Vie 06 Mar 2026 18:35";
+const version = "Fina Ergen v 3.5.8-15 (09/03/2026 01:40)";
+const buildDate = "Lun 09 Mar 2026 01:45";
 
 const showOptInModal = ref(false);
 const newDetectedApps = ref([]);

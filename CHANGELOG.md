@@ -10,6 +10,20 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
+## [v3.5.8-15] - 2026-03-09 (Energía Persistente: Surrey Edit)
+
+### Añadido
+- **📊 Monitoreo de Energía Histórico**: Implementación de persistencia para el consumo eléctrico del aire acondicionado. Ahora Fina guarda el total acumulado en `energy_ac.json`.
+- **🌙 Consumo Mensual Automático**: Nuevo cálculo de KWh por mes con reseteo automático el día 1 de cada mes.
+- **🎙️ Intento de Voz `aire_energia`**: Ya puedes preguntarle a Fina: *"¿Fina, cuánto lleva gastado de electricidad el aire?"* y te responderá el total del mes actual.
+- **🖥️ UI Detallada**: Agregado el campo "MES" en el módulo de Clima para visualizar el gasto eléctrico mensual en tiempo real.
+- **📦 Dependencias de Sistema**: Registradas oficialmente `msmart-ng` y `androidtvremote2` en el `requirements.txt` base para garantizar que todas las funciones de IoT nazcan funcionales.
+
+### Arreglado
+- **🩹 Precisión Decimal**: Corregido error de redondeo en `clima.py` (ahora usa 2 decimales reales para KWh).
+- **🔧 Diagnóstico de TV**: Refactorizado `test_metadata.py` con auto-detección de certificados y entorno virtual de Fina.
+- **🛠️ Estabilidad de Scripts**: El sidecar de Brain ahora reconoce correctamente la versión v3.5.8-15.
+
 ## [v3.5.8-14] - 2026-03-06 (Limpieza de Core: Arquitectura de Plugins)
 
 ### Arreglado
