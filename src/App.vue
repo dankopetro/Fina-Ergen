@@ -1911,16 +1911,28 @@ const sendTvCommand = async (script, args = "") => {
     const userPluginsPath = `${configDir.value}/plugins`;
     const marketPath = `${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working`;
     
+    // Adaptación a nomenclatura 'deco_'
+    let targetScript = script;
+    if (model.includes("sei800tc1") || model.includes("deco")) {
+        if (targetScript.startsWith("tv_")) {
+            targetScript = targetScript.replace("tv_", "deco_");
+        } else if (targetScript === "set_channel.py") {
+            targetScript = "set_deco_channel.py";
+        } else if (targetScript === "list_tv_apps.py") {
+            targetScript = "list_deco_apps.py";
+        }
+    }
+    
     // Búsqueda más flexible que tolere subcarpetas o variaciones del nombre del modelo
-    const findCommand = `find "${userPluginsPath}" "${marketPath}" -ipath "*${model}*${script}" 2>/dev/null | head -n 1`;
+    const findCommand = `find "${userPluginsPath}" "${marketPath}" -ipath "*${model}*${targetScript}" 2>/dev/null | head -n 1`;
     
     try {
-        console.log(`📺 Buscando comando TV (${model}): ${script}`);
+        console.log(`📺 Buscando comando TV/Deco (${model}): ${targetScript}`);
         // Verificamos si existe el script y obtenemos su ruta absoluta
         const pathCheck = await invoke("execute_shell_command", { command: findCommand });
         
         if (!pathCheck || pathCheck.trim() === "") {
-            console.error(`❌ Script no encontrado: ${script} para el modelo ${model}`);
+            console.error(`❌ Script no encontrado: ${targetScript} para el modelo ${model}`);
             finaState.value.process = t("proc_err_not_found", "SCRIPT NO ENCONTRADO");
             return;
         }
@@ -1929,8 +1941,8 @@ const sendTvCommand = async (script, args = "") => {
         let finalCmd = `${pyPath} "${scriptPath}" --ip ${ip}`;
         
         // Manejo de MAC para scripts que la requieren
-        const macScripts = ["tv_on.py", "tv_power.py", "tv_input.py", "deco_on.py", "deco_power.py"];
-        if (mac && macScripts.includes(script)) {
+        const macScripts = ["tv_on.py", "tv_power.py", "tv_input.py", "deco_on.py", "deco_power.py", "deco_input.py"];
+        if (mac && macScripts.includes(targetScript)) {
             finalCmd += ` --mac ${mac}`;
         }
         if (args) finalCmd += ` ${args}`;
