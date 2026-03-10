@@ -10,6 +10,23 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
+## [v3.5.8-22] - 2026-03-09 (Edición "M8 Visionary" & Air-Pulse)
+
+### Añadido
+- **🔔 Despertar Automático de M8**: Implementación de gesto 'swipe' sutil vía ADB (100px) para forzar el despertado del video del timbre Tuya.
+- **🛡️ Auto-Heal de Infraestructura**: El monitor ahora verifica no solo el proceso Weston, sino la conexión ADB real. Si el Android de fondo se cuelga (fantasma), lo reinicia automáticamente.
+- **⚡ Proactividad Total**: Weston y Waydroid ahora inician al detectar el plugin, reduciendo el tiempo de espera al sonar el timbre.
+- **📟 Feedback Visual**: Al iniciar el sistema o detectar el timbre, la ventana salta al frente 3 segundos para confirmar el estado del stream.
+
+### Arreglado
+- **🩹 Conflicto de Rutas**: Limpieza de plugins duplicados entre la raíz y la carpeta de usuario.
+- **🔧 Foco de Ventana**: Corregido el pgrep de Weston para detectar variantes `--config=` y `--config`.
+- **🌡️ Sincronía de Clima**: Mejora en la persistencia de datos energéticos del aire acondicionado.
+
+## [v3.5.8-21] - 2026-03-09 (Bugfixes de Aire y Streamer)
+- Correcciones menores en la detección de IP dinámica de Waydroid.
+- Estabilización del proceso de colgado del timbre.
+
 ## [v3.5.8-15] - 2026-03-09 (Energía Persistente: Surrey Edit)
 
 ### Añadido

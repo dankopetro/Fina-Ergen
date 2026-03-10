@@ -195,8 +195,8 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.8-19 (09/03/2026 13:06)";
-const buildDate = "Lun 09 Mar 2026 13:06";
+const version = "Fina Ergen v 3.5.8-22 (09/03/2026 22:50)";
+const buildDate = "Lun 09 Mar 2026 22:50";
 
 const showOptInModal = ref(false);
 const newDetectedApps = ref([]);
@@ -1564,9 +1564,13 @@ const weatherIcon = computed(() => {
         const pyPath = pythonExecutable.value;
         const shCmd = `
         MARKET="${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/Doorbells/Tuya/M8/monitor_ergen.py"
-        CONFIG="$HOME/.config/Fina/plugins/doorbell/monitor_ergen.py"
-        if [ -f "$CONFIG" ]; then
-            "${pyPath}" "$CONFIG" --trigger &
+        CONFIG_NEW="$HOME/.config/Fina/plugins/Doorbells/Tuya/M8/monitor_ergen.py"
+        CONFIG_OLD="$HOME/.config/Fina/plugins/doorbell/monitor_ergen.py"
+        
+        if [ -f "$CONFIG_NEW" ]; then
+            "${pyPath}" "$CONFIG_NEW" --trigger &
+        elif [ -f "$CONFIG_OLD" ]; then
+            "${pyPath}" "$CONFIG_OLD" --trigger &
         elif [ -f "$MARKET" ]; then
             "${pyPath}" "$MARKET" --trigger &
         fi
