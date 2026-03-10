@@ -129,6 +129,8 @@ from utils import (
     translate_text, close_app, open_app, turn_on_tv, turn_off_tv, music_volume_up,
     tv_volume_up_cmd, tv_volume_down_cmd, tv_channel_up_cmd, tv_channel_down_cmd, 
     tv_open_app_cmd, tv_exit_app_cmd, tv_set_channel_cmd, tv_mute_cmd, is_tv_on, 
+    turn_on_deco, turn_off_deco, deco_volume_up_cmd, deco_volume_down_cmd, 
+    deco_channel_up_cmd, deco_channel_down_cmd, deco_set_channel_cmd, deco_mute_cmd,
     ensure_tv_is_on,    tv_set_input_cmd, get_doorbell_status_cmd, show_doorbell_image, 
     show_doorbell_stream, send_ui_command, check_system_dependencies, is_code_worthy,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config,
@@ -1440,6 +1442,57 @@ async def main():
             elif intent == "tv_exit_app":
                 tv_exit_app_cmd(selected_voice_model)
                 
+            elif intent == "turn_on_deco":
+                turn_on_deco(selected_voice_model, commandFinal)
+            
+            elif intent == "turn_off_deco":
+                turn_off_deco(selected_voice_model, commandFinal)
+
+            elif intent == "deco_volume_up":
+                steps = 5
+                numbers = re.findall(r'\d+', commandFinal)
+                if numbers:
+                    try:
+                        steps = min(int(numbers[0]), 20)
+                    except: pass
+                deco_volume_up_cmd(selected_voice_model, steps)
+            
+            elif intent == "deco_volume_down":
+                steps = 5
+                numbers = re.findall(r'\d+', commandFinal)
+                if numbers:
+                    try:
+                        steps = min(int(numbers[0]), 20)
+                    except: pass
+                deco_volume_down_cmd(selected_voice_model, steps)
+            
+            elif intent == "deco_mute" or intent == "deco_unmute":
+                deco_mute_cmd(selected_voice_model)
+            
+            elif intent == "deco_channel_up":
+                deco_channel_up_cmd(selected_voice_model)
+            
+            elif intent == "deco_channel_down":
+                deco_channel_down_cmd(selected_voice_model)
+            
+            elif intent == "deco_set_channel":
+                # Buscar número directo
+                numbers = re.findall(r'\d+[.,]?\d*', commandFinal.replace(" punto ", "."))
+                if numbers:
+                    channel = numbers[0]
+                    deco_set_channel_cmd(channel, selected_voice_model)
+                else:
+                    triggers = ["pon el canal", "cambia al canal", "vete al canal", "quiero ver el canal", "ir al canal", "selecciona el canal", "ponerme en el canal", "pon", "ver"]
+                    channel_name = commandFinal
+                    for t in triggers:
+                        if channel_name.startswith(t):
+                            channel_name = channel_name.replace(t, "", 1).strip()
+                            break
+                    if channel_name:
+                         deco_set_channel_cmd(channel_name, selected_voice_model)
+                    else:
+                        speak(i18n("msg_deco_channel_query", "¿Qué canal pongo?"), selected_voice_model)
+
             elif intent == "tv_set_input":
                 target_input = commandFinal.replace("pon el", "").replace("pon la", "").replace("cambia a la entrada", "").replace("entrada", "").strip()
                 tv_set_input_cmd(target_input, selected_voice_model)

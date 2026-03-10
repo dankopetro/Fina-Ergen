@@ -2479,12 +2479,7 @@
     "prender el televisor",
     "enciende el tele",
     "prende el tele",
-    "quiero ver televisión",
-    "enciende el deco",
-    "enciende el decodificador",
-    "activar deco",
-    "prender el deco",
-    "prender el decodificador"
+    "quiero ver televisión"
   ],
   "turn_off_tv": [
     "apagá el televisor",
@@ -2493,13 +2488,7 @@
     "apaga el tele",
     "apagá el tele",
     "apagá esa tele",
-    "apaga esa tele",
-    "apagá el deco",
-    "apaga el deco",
-    "apagar el deco",
-    "apagá el decodificador",
-    "apaga el decodificador",
-    "apagar el decodificador"
+    "apaga esa tele"
   ],
   "tv_mute": [
     "quitar sonido tele"
@@ -2684,5 +2673,72 @@
   ],
   "tv_off": [
     "tv off"
-  ]
+  ],
+  "turn_on_deco": [
+    "enciende el deco",
+    "enciende el decodificador",
+    "activar deco",
+    "prender el deco",
+    "prender el decodificador",
+    "prendé el deco",
+    "prende el deco",
+    "encendé el deco",
+    "encender el deco",
+    "prende el deco",
+    "quiero ver decovisión"
+  ],
+  "turn_off_deco": [
+    "apagá el deco",
+    "apaga el deco",
+    "apagar el deco",
+    "apagá el decodificador",
+    "apaga el decodificador",
+    "apagar el decodificador",
+    "apagá esa deco",
+    "apaga esa deco"
+  ],
+  "deco_set_channel": [
+    "pon el canal",
+    "poné el canal",
+    "pone el canal",
+    "cambia al canal",
+    "cambiá al canal",
+    "vete al canal",
+    "quiero ver el canal",
+    "ir al canal",
+    "selecciona el canal",
+    "ponerme en el canal",
+    "pon canal 13",
+    "poné canal 13",
+    "pon decofe",
+    "poné decofe",
+    "ver decofe"
+  ],
+  "deco_volume_up": [
+    "sube el volumen del deco",
+    "subir volumen deco",
+    "subir volumen decovisión"
+  ],
+  "deco_volume_down": [
+    "bajá el volumen del deco",
+    "bajar volumen deco",
+    "bajar volumen decovisión"
+  ],
+  "deco_mute": [
+    "quitar sonido deco"
+  ],
+  "deco_unmute": [
+    "activar sonido deco"
+  ],
+  "deco_channel_up": [],
+  "deco_channel_down": [],
+  "deco_set_volume": [],
+  "deco_open_app": [
+    "abrir app deco",
+    "lanzar aplicación en deco"
+  ],
+  "deco_exit_app": [
+    "volver a ver decovisión"
+  ],
+  "deco_set_input": []
 }

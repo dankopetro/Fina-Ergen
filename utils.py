@@ -1241,56 +1241,70 @@ def _send_adb_key(k):
 def turn_on_tv(m, command=""):
     if not _check_tv_deps(m): return
     from main import speak
-    from plugins.tv.tv import TVPlugin
+    plugin = _get_tv_plugin(m)
+    if not plugin: return
     
     # Si no hay comando, usar default
     cmd_text = command if command else "enciende la tele"
     
     try:
-        plugin = TVPlugin(None)
         response = plugin.handle_intent("tv_on", cmd_text)
         if response:
              speak(response, m)
     except Exception as e:
         print(f"Error en turn_on_tv con plugin: {e}")
-        # Fallback al script tonto si falla el plugin
-        subprocess.run(["python3", os.path.join(ERGEN_ROOT, "plugins", "tv", "tcl_32s60a", "tv_on.py")])
+        speak("Hubo un error al intentar encender la televisión.", m)
 
 def turn_off_tv(m, command=""):
     if not _check_tv_deps(m): return
     from main import speak
-    from plugins.tv.tv import TVPlugin
+    plugin = _get_tv_plugin(m)
+    if not plugin: return
     
     cmd_text = command if command else "apaga la tele"
     
     try:
-        plugin = TVPlugin(None)
         response = plugin.handle_intent("tv_off", cmd_text)
         if response:
              speak(response, m)
     except Exception as e:
         print(f"Error en turn_off_tv con plugin: {e}")
-        subprocess.run(["python3", os.path.join(ERGEN_ROOT, "plugins", "tv", "tcl_32s60a", "tv_off.py")])
+        speak("Hubo un error al intentar apagar la televisión.", m)
+
 def tv_volume_up_cmd(m, s=5): 
     if not _check_tv_deps(m): return
     from main import speak
-    speak("Subiendo volumen.", m)
-    script = os.path.join(ERGEN_ROOT, "plugins", "tv", "tcl_32s60a", "tv_volume_up.py")
-    subprocess.run(["python3", script])
+    plugin = _get_tv_plugin(m)
+    if not plugin: return
+    try:
+        response = plugin.handle_intent("tv_volume_up", "sube el volumen")
+        if response:
+             speak(response, m)
+    except Exception as e:
+        print(f"Error en tv_volume_up_cmd con plugin: {e}")
+        speak("Hubo un error al intentar subir el volumen.", m)
+
 def tv_volume_down_cmd(m, s=5): 
     if not _check_tv_deps(m): return
     from main import speak
-    speak("Bajando volumen.", m)
-    script = os.path.join(ERGEN_ROOT, "plugins", "tv", "tcl_32s60a", "tv_volume_down.py")
-    subprocess.run(["python3", script])
+    plugin = _get_tv_plugin(m)
+    if not plugin: return
+    try:
+        response = plugin.handle_intent("tv_volume_down", "baja el volumen")
+        if response:
+             speak(response, m)
+    except Exception as e:
+        print(f"Error en tv_volume_down_cmd con plugin: {e}")
+        speak("Hubo un error al intentar bajar el volumen.", m)
+
 def tv_mute_cmd(m): 
     if not _check_tv_deps(m): return
     from main import speak
-    from plugins.tv.tv import TVPlugin
     speak("Silenciando televisión...", m)
+    plugin = _get_tv_plugin(m)
+    if not plugin: return
     
     try:
-        plugin = TVPlugin(None)
         # Delegamos al plugin robusto (V888) passing STRING not DICT
         response = plugin.handle_intent("tv_mute", "silencia la televisión")
         if response:
@@ -1298,22 +1312,67 @@ def tv_mute_cmd(m):
     except Exception as e:
         print(f"Error en tv_mute_cmd con plugin: {e}")
         speak("Hubo un error al intentar silenciar.", m)
+
 def tv_channel_up_cmd(m): 
     if not _check_tv_deps(m): return
     from main import speak
-    speak("Cambiando al siguiente canal.", m)
-    script = os.path.join(ERGEN_ROOT, "plugins", "tv", "tcl_32s60a", "tv_channel_up.py")
-    subprocess.run(["python3", script])
+    plugin = _get_tv_plugin(m)
+    if not plugin: return
+    try:
+        response = plugin.handle_intent("tv_channel_up", "cambia al siguiente canal")
+        if response:
+             speak(response, m)
+    except Exception as e:
+        print(f"Error en tv_channel_up_cmd con plugin: {e}")
+        speak("Hubo un error al intentar cambiar al siguiente canal.", m)
+
 def tv_channel_down_cmd(m): 
     if not _check_tv_deps(m): return
     from main import speak
-    speak("Cambiando al canal anterior.", m)
-    script = os.path.join(ERGEN_ROOT, "plugins", "tv", "tcl_32s60a", "tv_channel_down.py")
-    subprocess.run(["python3", script])
-def _get_tv_plugin(m):
+    plugin = _get_tv_plugin(m)
+    if not plugin: return
+    try:
+        response = plugin.handle_intent("tv_channel_down", "cambia al canal anterior")
+        if response:
+             speak(response, m)
+    except Exception as e:
+        print(f"Error en tv_channel_down_cmd con plugin: {e}")
+        speak("Hubo un error al intentar cambiar al canal anterior.", m)
+
+def _get_tv_plugin_path():
+    try:
+        from plugin_manager import PluginManager
+        from pathlib import Path
+        pm = PluginManager()
+        pm.discover_plugins()
+        target_plugin = "tcl32s60a"
+        if target_plugin not in pm._plugins_paths:
+            for name, path in pm._plugins_paths.items():
+                if (Path(path) / "tv.py").exists():
+                    return str(path)
+        else:
+            return str(pm._plugins_paths[target_plugin])
+    except: pass
+    return None
+
+def _get_tv_plugin(m=None):
     if not _check_tv_deps(m): return None
-    from plugins.tv.tv import TVPlugin
-    return TVPlugin(None)
+    path = _get_tv_plugin_path()
+    if path:
+        import importlib.util
+        try:
+            spec = importlib.util.spec_from_file_location("dynamic_tv_plugin", os.path.join(path, "tv.py"))
+            if spec and spec.loader:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                if hasattr(module, 'TVPlugin'):
+                    return module.TVPlugin(None)
+        except Exception as e:
+            print(f"Error cargando plugin de TV: {e}")
+    
+    from main import speak
+    if m: speak("No se encontró el plugin de televisión.", m)
+    return None
 
 def tv_set_channel_cmd(c, m): 
     from main import speak
@@ -1803,4 +1862,126 @@ if __name__ == "__main__":
             update_ui_state("idle", process=sys.argv[2])
     else:
         print("Ergen Utils CLI: Use 'speak <msg>' or 'update_ui <msg>'")
+
+
+
+# --- DECO PLUGIN FUNCS ---
+def _check_deco_deps(m=None):
+    try:
+        import urllib.request
+        return True
+    except ImportError:
+        from main import speak
+        if m: speak("Faltan dependencias para el decodificador.", m)
+        return False
+
+def _get_deco_plugin_path():
+    try:
+        from plugin_manager import PluginManager
+        from pathlib import Path
+        pm = PluginManager()
+        pm.discover_plugins()
+        target_plugin = "sei800tc1"
+        if target_plugin not in pm._plugins_paths:
+            for name, path in pm._plugins_paths.items():
+                if (Path(path) / "deco.py").exists():
+                    return str(path)
+        else:
+            return str(pm._plugins_paths[target_plugin])
+    except: pass
+    return None
+
+def _get_deco_plugin(m=None):
+    if not _check_deco_deps(m): return None
+    path = _get_deco_plugin_path()
+    if path:
+        import importlib.util
+        import os
+        try:
+            spec = importlib.util.spec_from_file_location("dynamic_deco_plugin", os.path.join(path, "deco.py"))
+            if spec and spec.loader:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                if hasattr(module, "DecoPlugin"):
+                    return module.DecoPlugin(None)
+        except Exception as e:
+            print(f"Error cargando plugin de Deco: {e}")
+    
+    from main import speak
+    if m: speak("No se encontró el plugin del decodificador.", m)
+    return None
+
+def turn_on_deco(m, command=""):
+    if not _check_deco_deps(m): return
+    from main import speak
+    plugin = _get_deco_plugin(m)
+    if not plugin: return
+    cmd_text = command if command else "enciende el decodificador"
+    try:
+        response = plugin.handle_intent("deco_on", cmd_text)
+        if response: speak(response, m)
+    except Exception as e:
+        print(f"Error en turn_on_deco con plugin: {e}")
+        speak("Hubo un error al intentar encender el decodificador.", m)
+
+def turn_off_deco(m, command=""):
+    if not _check_deco_deps(m): return
+    from main import speak
+    plugin = _get_deco_plugin(m)
+    if not plugin: return
+    cmd_text = command if command else "apaga el decodificador"
+    try:
+        response = plugin.handle_intent("deco_off", cmd_text)
+        if response: speak(response, m)
+    except Exception as e:
+        print(f"Error en turn_off_deco con plugin: {e}")
+        speak("Hubo un error al intentar apagar el decodificador.", m)
+
+def deco_volume_up_cmd(m, s=5): 
+    if not _check_deco_deps(m): return
+    from main import speak
+    plugin = _get_deco_plugin(m)
+    if plugin:
+        resp = plugin.handle_intent("deco_volume_up", "sube el volumen")
+        if resp: speak(resp, m)
+
+def deco_volume_down_cmd(m, s=5): 
+    if not _check_deco_deps(m): return
+    from main import speak
+    plugin = _get_deco_plugin(m)
+    if plugin:
+        resp = plugin.handle_intent("deco_volume_down", "baja el volumen")
+        if resp: speak(resp, m)
+
+def deco_mute_cmd(m): 
+    if not _check_deco_deps(m): return
+    from main import speak
+    plugin = _get_deco_plugin(m)
+    if plugin:
+        resp = plugin.handle_intent("deco_mute", "silencia")
+        if resp: speak(resp, m)
+
+def deco_channel_up_cmd(m): 
+    if not _check_deco_deps(m): return
+    from main import speak
+    plugin = _get_deco_plugin(m)
+    if plugin:
+        resp = plugin.handle_intent("deco_channel_up", "siguiente canal")
+        if resp: speak(resp, m)
+
+def deco_channel_down_cmd(m): 
+    if not _check_deco_deps(m): return
+    from main import speak
+    plugin = _get_deco_plugin(m)
+    if plugin:
+        resp = plugin.handle_intent("deco_channel_down", "canal anterior")
+        if resp: speak(resp, m)
+
+def deco_set_channel_cmd(c, m): 
+    from main import speak
+    plugin = _get_deco_plugin(m)
+    if plugin:
+        resp = plugin.handle_intent("deco_set_channel", f"pon el canal {c}")
+        if resp: speak(resp, m)
+# --- END DECO PLUGIN FUNCS ---
 
