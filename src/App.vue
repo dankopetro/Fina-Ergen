@@ -51,7 +51,7 @@ const invoke = async (cmd, args = {}) => {
 };
 
 // --- RECURSOS DINÁMICOS ---
-const pythonExecutable = ref("/home/claudio/.venv/bin/python3");
+const pythonExecutable = ref("python3");
 const projectRoot = ref("");
 const configDir = ref("");
 
