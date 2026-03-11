@@ -584,6 +584,28 @@ async def main():
                             cpu_checks = 0
             except Exception as e:
                 pass
+                
+            # 6. Check de Arranque de Android (Waydroid/Weston) para Timbre
+            # Evita que el micrófono se sature mientras Android levanta el entorno de ventanas
+            try:
+                import psutil, subprocess
+                weston_running = any(p.name() == 'weston' for p in psutil.process_iter(['name']))
+                if weston_running:
+                    update_ui_state("idle", "Aguardando virtualización (Waydroid)...")
+                    print("🤖 Weston detectado. Esperando a que el subsistema Android complete su arranque...", flush=True)
+                    waydroid_start = time.time()
+                    while time.time() - waydroid_start < 60:
+                        try:
+                            res = subprocess.run("adb connect 192.168.240.112:5555 >/dev/null 2>&1; adb shell getprop sys.boot_completed", shell=True, capture_output=True, text=True, timeout=2)
+                            if "1" in res.stdout:
+                                time.sleep(2) # Dar margen al launcher para que se dibuje tranquilo
+                                print("✅ Escritorio Android listo.", flush=True)
+                                break
+                        except Exception:
+                            pass
+                        time.sleep(1.5)
+            except Exception:
+                pass
 
             update_ui_state("idle", None)
             
