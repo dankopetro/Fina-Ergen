@@ -1486,22 +1486,9 @@ const updateClock = () => {
 // --- CLIMA LA PLATA (OPENWEATHER - ESTRICTO) ---
 const updateWeather = async () => {
     try {
-        // Obtener credenciales de Ajustes (o usar defaults temporales si está vacío para evitar error al inicio)
-        const apiKey = userSettings.value.apis?.WEATHER_API_KEY || "";
-        const cityId = userSettings.value.apis?.WEATHER_CITY_ID || "";
-
-        if (!apiKey || !cityId) {
-            // Si no hay configuración, no hacemos nada (o mostramos --)
-            weatherTemp.value = "--";
-            return;
-        }
-
-        const pyPath = pythonExecutable.value;
-        const scriptPath = `${projectRoot.value}/iot/clima_api.py`;
-
         const lang = userSettings.value.apis?.FINA_LANGUAGE || 'es';
 
-        // Inyectar estado por defecto (caché visual instantáneo) antes de consultar
+        // Inyectar estado por defecto (caché visual instantáneo y fallo amigable)
         if (weatherTemp.value === null || weatherTemp.value === "--" || weatherTemp.value === 0 || weatherTemp.value === "ERR") {
             const defaults = {
                 es: { city: "Buenos Aires", temp: 20, desc: "Cielo claro" },
@@ -1520,6 +1507,19 @@ const updateWeather = async () => {
             isDay.value = 1;
             weatherHumidity.value = 50;
         }
+
+        // Obtener credenciales de Ajustes
+        const apiKey = userSettings.value.apis?.WEATHER_API_KEY || "";
+        const cityId = userSettings.value.apis?.WEATHER_CITY_ID || "";
+
+        if (!apiKey || !cityId) {
+            return; // Nos quedamos con el default visual sin romper el widget
+        }
+
+        const pyPath = pythonExecutable.value;
+        const scriptPath = `${projectRoot.value}/iot/clima_api.py`;
+
+
         // Ejecutar script con argumentos (incluye idioma para descripciones traducidas)
         const jsonStr = await invoke("execute_shell_command", { command: `timeout 10 ${pyPath} "${scriptPath}" "${apiKey}" "${cityId}" "${lang}"` });
 
@@ -1562,9 +1562,9 @@ const updateWeather = async () => {
                 .catch(e => console.log("Forecast fetch error", e));
         }
     } catch (e) {
-        // En caso de error, mostramos ERR para debug
+        // En caso de error de red, no sobreescribir con "ERR" para mantener
+        // nuestro estado por defecto (o caché anterior) visible sin romper el widget.
         console.error("Clima error:", e);
-        weatherTemp.value = "ERR";
     }
 };
 
@@ -1661,9 +1661,23 @@ const systemStatus = computed(() => {
     };
 });
 
-const getGreeting = () => {
+const getGreeting = async () => {
     const hour = new Date().getHours();
-    const name = userSettings.value.apis.USER_NAME || "Usuario";
+    
+    let sysName = "";
+    try {
+        const out = await invoke("execute_shell_command", { command: "whoami" });
+        if (out) {
+            sysName = out.trim();
+            sysName = sysName.charAt(0).toUpperCase() + sysName.slice(1);
+        }
+    } catch(e) {}
+    
+    let name = userSettings.value.apis?.USER_NAME;
+    if (!name || name.toLowerCase() === "administrador") {
+        name = sysName || "Usuario";
+    }
+
     if (hour >= 6 && hour < 12) return `${t("sys_morning", "Buenos Días")} ${name}`;
     if (hour >= 12 && hour < 20) return `${t("sys_afternoon", "Buenas Tardes")} ${name}`;
     return `${t("sys_evening", "Buenas Noches")} ${name}`; // 20:00 - 05:59
@@ -2251,7 +2265,7 @@ onMounted(async () => {
 
 
         // 3. Saludo
-        const greeting = getGreeting();
+        const greeting = await getGreeting();
         finaState.value.status = "speaking";
         finaState.value.process = t("proc_sys_op", "SISTEMA OPERATIVO");
         addChatMessage(greeting);
