@@ -1732,7 +1732,7 @@ const refreshAcStatus = async (silent = false) => {
     if (!ac_ip) return;
 
     const pyPath = pythonExecutable.value;
-    const findClima = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/AirConditioning" -name "clima.py" | head -n 1`;
+    const findClima = `find "${projectRoot.value || '.'}/.local_lab/Fina-Plugins-Market-Working/AirConditioning" -name "clima.py" | head -n 1`;
 
     try {
         const scriptPath = (await invoke("execute_shell_command", { command: findClima })).trim();
@@ -1744,15 +1744,15 @@ const refreshAcStatus = async (silent = false) => {
         const output = await invoke("execute_shell_command", { command });
         console.log("Sincronizando Aire...", output);
 
-        const tempMatch = output.match(/(?: a | at )([\d.]+)°C/i);
-        const indoorMatch = output.match(/(?:Int|In):\s*([\d.]+)°C/i);
-        const outdoorMatch = output.match(/(?:Ext|Out):\s*([\d.]+|--)/i);
-        const humidityMatch = output.match(/(?:Humedad|Humidity):\s*([\d.]+)/i);
+        const tempMatch = output.match(/ a ([\d.]+)°C/i);
+        const indoorMatch = output.match(/Int:\s*([\d.]+)°C/i) || output.match(/In:\s*([\d.]+)°C/i);
+        const outdoorMatch = output.match(/Ext:\s*([\d.]+|--)/i) || output.match(/Out:\s*([\d.]+|--)/i);
+        const humidityMatch = output.match(/Humedad:\s*([\d.]+)/i) || output.match(/Humidity:\s*([\d.]+)/i);
         const modeMatch = output.match(/modo\s+(\w+)/i) || output.match(/mode\s+(\w+)/i);
         const powerMatch = output.match(/(?:está|esta|is)\s+(?:encendido|on)/i);
-        const wattsMatch = output.match(/(?:Consumo|Power):\s*(\d+)W/i);
-        const kwhMatch = output.match(/(?:Acumulado|Total):\s*([\d.]+)kWh/i);
-        const monthlyMatch = output.match(/(?:Mes|Month):\s*([\d.]+)kWh/i) || output.match(/monthly_kwh":\s*([\d.]+)/i);
+        const wattsMatch = output.match(/Consumo:\s*(\d+)W/i) || output.match(/Power:\s*(\d+)W/i);
+        const kwhMatch = output.match(/Acumulado:\s*([\d.]+)kWh/i) || output.match(/Total:\s*([\d.]+)kWh/i);
+        const monthlyMatch = output.match(/Mes:\s*([\d.]+)kWh/i) || output.match(/Month:\s*([\d.]+)kWh/i) || output.match(/monthly_kwh":\s*([\d.]+)/i);
 
         if (tempMatch) acState.value.temp = Math.round(parseFloat(tempMatch[1]));
         if (indoorMatch) acState.value.indoor = Math.round(parseFloat(indoorMatch[1]));
@@ -1760,60 +1760,28 @@ const refreshAcStatus = async (silent = false) => {
         if (humidityMatch) acState.value.humidity = Math.round(parseFloat(humidityMatch[1]));
         if (modeMatch) acState.value.mode = modeMatch[1].toLowerCase();
         if (wattsMatch) acState.value.watts = parseInt(wattsMatch[1]);
-        if (kwhMatch) acState.value.total_kwh = parseFloat(kwhMatch[1]);
-        if (monthlyMatch) acState.value.monthly_kwh = parseFloat(monthlyMatch[1]);
+        if (kwhMatch) acState.value.total_kwh = parseFloat(parseFloat(kwhMatch[1]).toFixed(2));
+        if (monthlyMatch) acState.value.monthly_kwh = parseFloat(parseFloat(monthlyMatch[1]).toFixed(2));
         
-        // Intentar parsear el JSON o el PARCHE DE DATOS (Prioridad Máxima)
+        // --- PARSEO JSON DE REFUERZO ---
         try {
-            const lines = output.split('\n');
-            let acData = null;
-            
-            for (const line of lines) {
-                const trimmed = line.trim();
-                
-                // Opción 1: Parche de Datos (Más fiable)
-                if (trimmed.startsWith('FINA_AC_DATA|')) {
-                    const parts = trimmed.split('|');
-                    if (parts.length >= 9) {
-                        acData = {
-                            power: parts[1] === 'True',
-                            temp: parseFloat(parts[2]),
-                            mode: parts[3],
-                            indoor: parseFloat(parts[4]),
-                            outdoor: parts[5] === '0.0' ? 0 : parseFloat(parts[5]),
-                            watts: parseFloat(parts[6]),
-                            total_kwh: parseFloat(parts[7]),
-                            monthly_kwh: parseFloat(parts[8])
-                        };
-                        break;
-                    }
-                }
-                
-                // Opción 2: JSON
-                if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
-                    try {
-                        acData = JSON.parse(trimmed);
-                        break; 
-                    } catch(e) {}
-                }
-            }
-
-            if (acData) {
+            const jsonLines = output.split('\n').filter(line => line.trim().startsWith('{') && line.trim().endsWith('}'));
+            if (jsonLines.length > 0) {
+                const acData = JSON.parse(jsonLines[jsonLines.length - 1]);
                 if (acData.power !== undefined) acState.value.power = acData.power;
                 if (acData.temp !== undefined) acState.value.temp = Math.round(acData.temp);
                 if (acData.mode !== undefined) acState.value.mode = acData.mode.toLowerCase();
                 if (acData.indoor !== undefined) acState.value.indoor = Math.round(acData.indoor);
-                if (acData.outdoor !== undefined) acState.value.outdoor = Math.round(acData.outdoor);
+                if (acData.outdoor !== undefined) acState.value.outdoor = acData.outdoor === '--' ? 0 : Math.round(acData.outdoor);
                 if (acData.watts !== undefined) acState.value.watts = Math.round(acData.watts);
                 if (acData.total_kwh !== undefined) acState.value.total_kwh = parseFloat(acData.total_kwh.toFixed(2));
                 if (acData.monthly_kwh !== undefined) acState.value.monthly_kwh = parseFloat(acData.monthly_kwh.toFixed(2));
-                return;
             }
-        } catch(e) {
-            console.warn("Fallo al detectar datos de AC, usando regex fallback");
-        }
+        } catch(e) {}
 
-        acState.value.power = !!powerMatch;
+        if (powerMatch) acState.value.power = true;
+        else if (output.toLowerCase().includes("apagado") || output.toLowerCase().includes("off")) acState.value.power = false;
+
     } catch (e) {
         console.error("Error refreshing AC status:", e);
     }
