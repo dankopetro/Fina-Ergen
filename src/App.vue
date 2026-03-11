@@ -51,7 +51,7 @@ const invoke = async (cmd, args = {}) => {
 };
 
 // --- RECURSOS DINÁMICOS ---
-const pythonExecutable = ref("python3");
+const pythonExecutable = ref("/home/claudio/.venv/bin/python3");
 const projectRoot = ref("");
 const configDir = ref("");
 
@@ -1763,12 +1763,33 @@ const refreshAcStatus = async (silent = false) => {
         if (kwhMatch) acState.value.total_kwh = parseFloat(kwhMatch[1]);
         if (monthlyMatch) acState.value.monthly_kwh = parseFloat(monthlyMatch[1]);
         
-        // Intentar parsear el JSON de la respuesta directamente (Prioridad Máxima)
+        // Intentar parsear el JSON o el PARCHE DE DATOS (Prioridad Máxima)
         try {
             const lines = output.split('\n');
             let acData = null;
+            
             for (const line of lines) {
                 const trimmed = line.trim();
+                
+                // Opción 1: Parche de Datos (Más fiable)
+                if (trimmed.startsWith('FINA_AC_DATA|')) {
+                    const parts = trimmed.split('|');
+                    if (parts.length >= 9) {
+                        acData = {
+                            power: parts[1] === 'True',
+                            temp: parseFloat(parts[2]),
+                            mode: parts[3],
+                            indoor: parseFloat(parts[4]),
+                            outdoor: parts[5] === '0.0' ? 0 : parseFloat(parts[5]),
+                            watts: parseFloat(parts[6]),
+                            total_kwh: parseFloat(parts[7]),
+                            monthly_kwh: parseFloat(parts[8])
+                        };
+                        break;
+                    }
+                }
+                
+                // Opción 2: JSON
                 if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
                     try {
                         acData = JSON.parse(trimmed);
@@ -1782,14 +1803,14 @@ const refreshAcStatus = async (silent = false) => {
                 if (acData.temp !== undefined) acState.value.temp = Math.round(acData.temp);
                 if (acData.mode !== undefined) acState.value.mode = acData.mode.toLowerCase();
                 if (acData.indoor !== undefined) acState.value.indoor = Math.round(acData.indoor);
-                if (acData.outdoor !== undefined) acState.value.outdoor = acData.outdoor === '--' ? 0 : Math.round(acData.outdoor);
+                if (acData.outdoor !== undefined) acState.value.outdoor = Math.round(acData.outdoor);
                 if (acData.watts !== undefined) acState.value.watts = Math.round(acData.watts);
                 if (acData.total_kwh !== undefined) acState.value.total_kwh = parseFloat(acData.total_kwh.toFixed(2));
                 if (acData.monthly_kwh !== undefined) acState.value.monthly_kwh = parseFloat(acData.monthly_kwh.toFixed(2));
                 return;
             }
         } catch(e) {
-            console.warn("Fallo al detectar JSON de AC, usando regex fallback");
+            console.warn("Fallo al detectar datos de AC, usando regex fallback");
         }
 
         acState.value.power = !!powerMatch;
