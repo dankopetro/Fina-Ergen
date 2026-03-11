@@ -1777,8 +1777,8 @@ const refreshAcStatus = async (silent = false) => {
                 if (acData.total_kwh !== undefined) acState.value.total_kwh = acData.total_kwh;
                 if (acData.monthly_kwh !== undefined) acState.value.monthly_kwh = acData.monthly_kwh;
                 
-                // Si parseamos el JSON con éxito, saltamos el resto del procesamiento manual
-                return; 
+                // Priorizar JSON si parseó con éxito
+                return;
             }
         } catch(e) {
             console.warn("Fallo al parsear JSON de AC, usando regex fallback");
