@@ -2253,9 +2253,10 @@ onMounted(async () => {
     setInterval(updateClock, 1000);
     setInterval(getSystemStats, 5000);
     getSystemStats();
+    updateWeather(); // Llenar interfaz visual con caché ANTES de esperar a que la API de Python encienda
+    
     await fetchSettings();
-    updateWeather(); // Se lanza sin await para no trabar NADA en el frontend ni backend al inicio
-
+    
     await fetchContacts(); // Cargar la agenda local
     await fetchUserData(); // Cargar recordatorios y notas
     syncContactsFromMobile(); // Intentar sincronizar desde el móvil de forma asíncrona
