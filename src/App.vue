@@ -1827,7 +1827,10 @@ const fetchSettings = async (maxRetries = 60, delayMs = 1000) => {
             }
 
             console.log("✅ Settings Merged:", userSettings.value);
-            updateWeather();
+            // IMPORTANTE: Aseguramos que Vue haya reactivado 'userSettings' antes de ejecutar el fetch de Clima
+            nextTick(() => {
+                updateWeather();
+            });
             return; // Éxito => salir del loop
         } catch (e) {
             if (attempt < maxRetries) {
