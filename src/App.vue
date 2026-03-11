@@ -1506,6 +1506,22 @@ const updateWeather = async () => {
             weatherCode.value = 800; // Clear
             isDay.value = 1;
             weatherHumidity.value = 50;
+            
+            if (weatherForecast.value.length === 0) {
+                // Generar los próximos 3 días dinámicamente según idioma
+                const localeMap = { es: 'es-AR', en: 'en-US', pt: 'pt-BR', fr: 'fr-FR', de: 'de-DE', ja: 'ja-JP', zh: 'zh-CN' };
+                const loc = localeMap[lang] || localeMap['es'];
+                const getShortDay = (addDays) => {
+                    const dt = new Date();
+                    dt.setDate(dt.getDate() + addDays);
+                    return dt.toLocaleDateString(loc, { weekday: 'short' }).toUpperCase().replace(/\./g, '').substring(0, 3);
+                };
+                weatherForecast.value = [
+                    { day: getShortDay(1), min: 18, max: 25, code: 800 },
+                    { day: getShortDay(2), min: 19, max: 26, code: 800 },
+                    { day: getShortDay(3), min: 19, max: 27, code: 800 }
+                ];
+            }
         }
 
         // Obtener credenciales de Ajustes
