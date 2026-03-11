@@ -1468,35 +1468,18 @@ async def main():
                 turn_off_tv(selected_voice_model, commandFinal)
 
             elif intent == "tv_volume_up":
-                steps = 5
-                # Intentar buscar un número en el comando
-
-                numbers = re.findall(r'\d+', commandFinal)
-                if numbers:
-                    try:
-                        steps = int(numbers[0])
-                        # Limitar a un máximo razonable para no reventar los oídos
-                        steps = min(steps, 20)
-                    except:
-                        pass
+                steps = text_to_number_es(commandFinal) or 5
                 tv_volume_up_cmd(selected_voice_model, steps)
             
             elif intent == "tv_volume_down":
-                steps = 5
-                numbers = re.findall(r'\d+', commandFinal)
-                if numbers:
-                    try:
-                        steps = int(numbers[0])
-                        steps = min(steps, 20)
-                    except:
-                        pass
+                steps = text_to_number_es(commandFinal) or 5
                 tv_volume_down_cmd(selected_voice_model, steps)
 
             elif intent == "tv_mute":
-                tv_mute_cmd(selected_voice_model)
+                tv_mute_cmd(selected_voice_model, action="mute")
             
             elif intent == "tv_unmute":
-                tv_mute_cmd(selected_voice_model)
+                tv_mute_cmd(selected_voice_model, action="unmute")
             
             elif intent == "tv_channel_up":
                 tv_channel_up_cmd(selected_voice_model)

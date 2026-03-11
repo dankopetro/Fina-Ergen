@@ -1303,9 +1303,10 @@ def tv_volume_up_cmd(m, s=5):
     plugin = _get_tv_plugin(m)
     if not plugin: return
     try:
-        response = plugin.handle_intent("tv_volume_up", "sube el volumen")
-        if response:
-             speak(response, m)
+        # Loop for precision steps
+        for _ in range(s):
+            plugin.handle_intent("tv_volume_up", "sube el volumen")
+        speak(f"Subiendo volumen {s} puntos.", m)
     except Exception as e:
         print(f"Error en tv_volume_up_cmd con plugin: {e}")
         speak("Hubo un error al intentar subir el volumen.", m)
@@ -1316,28 +1317,28 @@ def tv_volume_down_cmd(m, s=5):
     plugin = _get_tv_plugin(m)
     if not plugin: return
     try:
-        response = plugin.handle_intent("tv_volume_down", "baja el volumen")
-        if response:
-             speak(response, m)
+        for _ in range(s):
+            plugin.handle_intent("tv_volume_down", "baja el volumen")
+        speak(f"Bajando volumen {s} puntos.", m)
     except Exception as e:
         print(f"Error en tv_volume_down_cmd con plugin: {e}")
         speak("Hubo un error al intentar bajar el volumen.", m)
 
-def tv_mute_cmd(m): 
+def tv_mute_cmd(m, action="mute"): 
     if not _check_tv_deps(m): return
     from main import speak
-    speak("Silenciando televisión...", m)
+    feedback = "Silenciando televisión..." if action == "mute" else "Quitando silencio..."
+    speak(feedback, m)
     plugin = _get_tv_plugin(m)
     if not plugin: return
     
     try:
         # Delegamos al plugin robusto (V888) passing STRING not DICT
         response = plugin.handle_intent("tv_mute", "silencia la televisión")
-        if response:
-             speak(response, m)
+        # No repetimos el response del plugin para no sobrecargar el audio
     except Exception as e:
         print(f"Error en tv_mute_cmd con plugin: {e}")
-        speak("Hubo un error al intentar silenciar.", m)
+        speak("Hubo un error al intentar controlar el silencio.", m)
 
 def tv_channel_up_cmd(m): 
     if not _check_tv_deps(m): return

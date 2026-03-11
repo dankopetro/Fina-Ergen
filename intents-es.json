@@ -2491,24 +2491,45 @@
     "apaga esa tele"
   ],
   "tv_mute": [
-    "quitar sonido tele"
+    "quitar sonido tele",
+    "silencia la televisión",
+    "silenciar el televisor",
+    "poné el silencio",
+    "ponele mute",
+    "silencio en la tele"
   ],
   "tv_unmute": [
     "activar sonido tele",
     "reactivar sonido",
     "quitar el mute",
+    "quita el mute",
+    "quite el mute",
+    "sacar el mute",
     "saca el silencio",
-    "devuelve el sonido"
+    "sacá el silencio",
+    "quite el silencio",
+    "quita el silencio",
+    "devuelve el sonido",
+    "devuelveme el audio",
+    "sacar silencio"
   ],
   "tv_volume_up": [
     "sube el volumen del televisor",
     "subir volumen tv",
-    "subir volumen televisión"
+    "subir volumen televisión",
+    "sube el volumen de la televisión",
+    "subí el volumen",
+    "dale más volumen",
+    "más volumen en la tele"
   ],
   "tv_volume_down": [
     "bajá el volumen del televisor",
     "bajar volumen tv",
-    "bajar volumen televisión"
+    "bajar volumen televisión",
+    "baja el volumen de la televisión",
+    "bajá el volumen",
+    "dale menos volumen",
+    "menos volumen en la tele"
   ],
   "tv_channel_up": [
     "siguiente canal",
