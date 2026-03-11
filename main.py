@@ -534,8 +534,8 @@ async def main():
                 # Forzar actualización inicial
                 def ac_boot_update():
                     if plugin_integration:
-                        # Buscamos por el nombre exacto del intent en el plugin (aire_estado)
-                        plugin_integration.handle_intent("aire_estado", "status")
+                        # Llamamos directo a una acción silenciosa para no hablar durante el arranque
+                        plugin_integration.plugin_manager.execute_plugin_action("Clima", "clima.py --status --silent")
                 threading.Thread(target=ac_boot_update, daemon=True).start()
 
             # 3. Verificar Clima (si hay internet)
@@ -565,7 +565,10 @@ async def main():
             
         if CONFIG_FOUND:
             import getpass
-            username = (get_unified_config("USER_NAME") or getpass.getuser()).capitalize()
+            username_config = get_unified_config("USER_NAME")
+            if not username_config or username_config.lower() == "administrador":
+                username_config = getpass.getuser()
+            username = username_config.capitalize()
             greeting = get_time_based_greeting()
             msg = utils.i18n("systems_ready", "Sistemas listos. Por favor, diga Fina para comenzar.")
             
