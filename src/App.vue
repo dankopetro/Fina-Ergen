@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, onUnmounted, reactive, watch } from "vue";
+import { ref, onMounted, computed, onUnmounted, reactive, watch, nextTick } from "vue";
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
 import { getCurrentWindow as tauriGetWindow } from "@tauri-apps/api/window";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
@@ -1543,7 +1543,7 @@ const updateWeather = async () => {
         const data = await wRes.json();
 
         if (data && data.main && data.weather) {
-            console.log(`[BOOT] CLIMA: Reemplazando caché con dato real: ${data.main.temp}°C`);
+            console.log(`[BOOT] [${Date.now()}] CLIMA: Reemplazando caché con dato real: ${data.main.temp}°C`);
             weatherTemp.value = Math.round(data.main.temp);
             weatherHumidity.value = data.main.humidity;
             weatherCode.value = data.weather[0].id;
@@ -1826,7 +1826,7 @@ const fetchSettings = async (maxRetries = 60, delayMs = 1000) => {
                 if (loaded.linked_apps) userSettings.value.linked_apps = loaded.linked_apps;
             }
 
-            console.log("✅ Settings Merged:", userSettings.value);
+            console.log(`[BOOT] [${Date.now()}] ✅ Settings Merged reactivando clima...`);
             // IMPORTANTE: Aseguramos que Vue haya reactivado 'userSettings' antes de ejecutar el fetch de Clima
             nextTick(() => {
                 updateWeather();
@@ -2253,9 +2253,13 @@ onMounted(async () => {
     setInterval(updateClock, 1000);
     setInterval(getSystemStats, 5000);
     getSystemStats();
+    
+    console.log(`[BOOT] [${Date.now()}] Iniciando Secuencia de Arranque visual UI.`);
     updateWeather(); // Llenar interfaz visual con caché ANTES de esperar a que la API de Python encienda
     
+    console.log(`[BOOT] [${Date.now()}] Solicitando Settings a la API Python...`);
     await fetchSettings();
+    console.log(`[BOOT] [${Date.now()}] Settings recuperadas. Avanzando a Contactos...`);
     
     await fetchContacts(); // Cargar la agenda local
     await fetchUserData(); // Cargar recordatorios y notas
