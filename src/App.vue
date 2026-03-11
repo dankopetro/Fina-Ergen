@@ -1536,51 +1536,42 @@ const updateWeather = async () => {
         const scriptPath = `${projectRoot.value}/iot/clima_api.py`;
 
 
-        // Ejecutar obtención de clima principal sin bloquear (sin await)
-        invoke("execute_shell_command", { command: `timeout 10 ${pyPath} "${scriptPath}" "${apiKey}" "${cityId}" "${lang}"` })
-            .then(jsonStr => {
-                if (!jsonStr || jsonStr.trim() === "") return;
-                try {
-                    const data = JSON.parse(jsonStr);
-                    if (data.cod && parseInt(data.cod) !== 200) return;
+        // Ejecutar obtención de clima principal y esperar (bloquea intencionalmente para no trabar el proceso de voz luego)
+        const jsonStr = await invoke("execute_shell_command", { command: `timeout 10 ${pyPath} "${scriptPath}" "${apiKey}" "${cityId}" "${lang}"` });
+        
+        if (!jsonStr || jsonStr.trim() === "") return;
+        
+        const data = JSON.parse(jsonStr);
+        if (data.cod && parseInt(data.cod) !== 200) return;
 
-                    if (data && data.main && data.weather) {
-                        weatherTemp.value = Math.round(data.main.temp);
-                        weatherHumidity.value = data.main.humidity;
-                        weatherCode.value = data.weather[0].id;
-                        isDay.value = data.weather[0].icon.includes('d') ? 1 : 0;
+        if (data && data.main && data.weather) {
+            weatherTemp.value = Math.round(data.main.temp);
+            weatherHumidity.value = data.main.humidity;
+            weatherCode.value = data.weather[0].id;
+            isDay.value = data.weather[0].icon.includes('d') ? 1 : 0;
 
-                        if (data.wind) weatherWind.value = Math.round(data.wind.speed * 3.6);
-                        if (data.main.feels_like !== undefined) weatherFeelsLike.value = data.main.feels_like;
-                        if (data.weather[0].description) {
-                            const desc = data.weather[0].description;
-                            weatherDesc.value = desc.charAt(0).toUpperCase() + desc.slice(1);
-                        }
-                        if (data.name) weatherCityName.value = data.name;
+            if (data.wind) weatherWind.value = Math.round(data.wind.speed * 3.6);
+            if (data.main.feels_like !== undefined) weatherFeelsLike.value = data.main.feels_like;
+            if (data.weather[0].description) {
+                const desc = data.weather[0].description;
+                weatherDesc.value = desc.charAt(0).toUpperCase() + desc.slice(1);
+            }
+            if (data.name) weatherCityName.value = data.name;
 
-                        // --- FETCH FORECAST (Parallel) ---
-                        const forecastScript = `${projectRoot.value}/iot/clima_forecast.py`;
-                        invoke("execute_shell_command", { command: `timeout 5 ${pyPath} "${forecastScript}" "${apiKey}" "${cityId}"` })
-                            .then(out => {
-                                try {
-                                    const fData = JSON.parse(out);
-                                    if (Array.isArray(fData)) {
-                                        weatherForecast.value = fData;
-                                    }
-                                } catch (e) { console.log("Forecast parse error", e); }
-                            })
-                            .catch(e => console.log("Forecast fetch error", e));
-                    }
-                } catch(e) {
-                    console.error("Clima parse error:", e);
+            // --- FETCH FORECAST (Wait for it too) ---
+            const forecastScript = `${projectRoot.value}/iot/clima_forecast.py`;
+            const out = await invoke("execute_shell_command", { command: `timeout 5 ${pyPath} "${forecastScript}" "${apiKey}" "${cityId}"` });
+            try {
+                const fData = JSON.parse(out);
+                if (Array.isArray(fData)) {
+                    weatherForecast.value = fData;
                 }
-            })
-            .catch(e => {
-                console.error("Clima execute error:", e);
-            });
-
+            } catch (e) {
+                console.log("Forecast parse error", e);
+            }
+        }
     } catch (e) {
-        console.error("Error general en clime:", e);
+        console.error("Error general en clima:", e);
     }
 };
 
@@ -2235,10 +2226,12 @@ onMounted(async () => {
     setInterval(getSystemStats, 5000);
     getSystemStats();
     await fetchSettings();
+    finaState.value.process = t("proc_loading_sys", "Sincronizando clima...");
+    await updateWeather(); // Obligamos a esperar los ~3 segs iniciales y descargamos el pronóstico
+
     await fetchContacts(); // Cargar la agenda local
     await fetchUserData(); // Cargar recordatorios y notas
     syncContactsFromMobile(); // Intentar sincronizar desde el móvil de forma asíncrona
-    updateWeather();
     setInterval(updateWeather, 60000); // Actualizar cada 1 minuto para mayor reactividad
 
     // ACTUALIZACIÓN DE CORREOS (Cada 5 min)
