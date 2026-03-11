@@ -2237,256 +2237,176 @@ const closeWindow = async () => {
 };
 
 onMounted(async () => {
-    try {
-        const i18nResp = await fetch("http://127.0.0.1:18000/api/i18n");
-        if (i18nResp.ok) i18nData.value = await i18nResp.json();
-    } catch (e) { console.error("i18n load error", e); }
-
-    syncSystemInfo(); // Obtener rutas del backend inmediatamente
+    // 1. CONFIGURACIÓN INSTANTÁNEA (Sin Await para renderizado inmediato)
+    syncSystemInfo(); 
     updateClock();
     setInterval(updateClock, 1000);
     setInterval(getSystemStats, 5000);
     getSystemStats();
     
-    console.log(`[BOOT] [${Date.now()}] Iniciando Secuencia de Arranque visual UI.`);
-    updateWeather(); // Llenar interfaz visual con caché ANTES de esperar a que la API de Python encienda
-    
-    console.log(`[BOOT] [${Date.now()}] Solicitando Settings a la API Python...`);
-    await fetchSettings();
-    console.log(`[BOOT] [${Date.now()}] Settings recuperadas. Avanzando a Contactos...`);
-    
-    await fetchContacts(); // Cargar la agenda local
-    await fetchUserData(); // Cargar recordatorios y notas
-    syncContactsFromMobile(); // Intentar sincronizar desde el móvil de forma asíncrona
-    setInterval(updateWeather, 60000); // Actualizar cada 1 minuto para mayor reactividad
+    // Cargar clima inicial (caché) mientras se activa el resto
+    updateWeather();
+    setInterval(updateWeather, 60000); 
 
-    // ACTUALIZACIÓN DE CORREOS (Cada 5 min)
-    fetchRecentEmails();
-    setInterval(fetchRecentEmails, 300000);
+    // 2. TAREAS DE FONDO (ASÍNCRONAS, NO BLOQUEAN LA UI)
+    const loadDataInBackground = async () => {
+        try {
+            const i18nResp = await fetch("http://127.0.0.1:18000/api/i18n");
+            if (i18nResp.ok) i18nData.value = await i18nResp.json();
+        } catch (e) { console.warn("i18n load error (deferred)", e); }
 
-    // SECUENCIA DE ARRANQUE [BALANCEADA PARA MAXIMIZAR]
-    try {
-        finaState.value.process = t("proc_loading_sys", "CARGANDO SISTEMA");
-        addChatMessage(t('ui_sys_online'));
+        await fetchSettings();
+        await fetchContacts(); 
+        await fetchUserData(); 
+        syncContactsFromMobile();
+        fetchRecentEmails();
+        setInterval(fetchRecentEmails, 300000);
+    };
+    loadDataInBackground();
 
-        // --- VERIFICACIÓN DE PRIMERA CONFIGURACIÓN ---
-        // Esperar 12s: permite que fetchSettings complete sus reintentos (hasta 10s)
-        setTimeout(() => {
-            const criticalKeys = ['MISTRAL_API_KEY', 'OPENAI_API_KEY', 'WEATHER_API_KEY'];
-            const isUnconfigured = criticalKeys.every(k => !userSettings.value.apis[k]);
-            if (isUnconfigured) {
-                addChatMessage(t('ui_first_time'), 0);
+    // 3. SECUENCIA DE ARRANQUE VISUAL (CONCURRENTE)
+    const runBootSequence = async () => {
+        try {
+            finaState.value.process = t("proc_loading_sys", "CARGANDO SISTEMA");
+            addChatMessage(t('ui_sys_online'));
+
+            // Esperar el primer segundo de "Cargando"
+            await new Promise(r => setTimeout(r, 1000));
+
+            // Sincronización inicial de dispositivos (Non-blocking)
+            Promise.all([
+                refreshAcStatus().catch(() => { }),
+                refreshDoorbellStatus().catch(() => { })
+            ]);
+
+            await new Promise(r => setTimeout(r, 800));
+
+            // ADB / Móvil (Si existe)
+            const mobileDev = linkedMobileDevice.value;
+            if (mobileDev && mobileDev.ip) {
+                finaState.value.process = t("proc_linking_mobile", "VINCULANDO MÓVIL");
+                invoke("execute_shell_command", { command: `timeout 2 adb connect ${mobileDev.ip}:5555` }).catch(() => { });
             }
-        }, 12000);
 
-        await new Promise(r => setTimeout(r, 1000));
+            await new Promise(r => setTimeout(r, 1200));
 
-        // 1. Estados iniciales en paralelo
-        Promise.all([
-            refreshAcStatus().catch(() => { }),
-            refreshDoorbellStatus().catch(() => { })
-        ]);
+            // Saludo y Finalización
+            const greeting = await getGreeting();
+            finaState.value.status = "speaking";
+            finaState.value.process = t("proc_sys_op", "SISTEMA OPERATIVO");
+            addChatMessage(greeting);
+            await new Promise(r => setTimeout(r, 1500));
+            finaState.value.status = "idle";
+            finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
 
-        await new Promise(r => setTimeout(r, 800));
-
-        // 2. ADB / Móvil
-        const mobileDev = linkedMobileDevice.value;
-        if (mobileDev && mobileDev.ip) {
-            finaState.value.process = t("proc_linking_mobile", "VINCULANDO MÓVIL");
-            invoke("execute_shell_command", { command: `timeout 2 adb connect ${mobileDev.ip}:5555` })
-                .catch(() => { });
+            // Detección de Apps diferida
+            setTimeout(() => {
+                detectMessagingApps();
+            }, 5000);
+        } catch (err) {
+            console.error("Error en secuencia de arranque:", err);
+            finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
         }
+    };
+    runBootSequence();
 
+    // Verificación diferida de configuración
+    setTimeout(() => {
+        const criticalKeys = ['MISTRAL_API_KEY', 'OPENAI_API_KEY', 'WEATHER_API_KEY'];
+        const isUnconfigured = criticalKeys.every(k => !userSettings.value.apis[k]);
+        if (isUnconfigured) {
+            addChatMessage(t('ui_first_time'), 0);
+        }
+    }, 15000);
 
-
-        // 3. Saludo
-        const greeting = await getGreeting();
-        finaState.value.status = "speaking";
-        finaState.value.process = t("proc_sys_op", "SISTEMA OPERATIVO");
-        addChatMessage(greeting);
-        await new Promise(r => setTimeout(r, 1500));
-        finaState.value.status = "idle";
-        finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
-
-        // 4. Detección de Apps 5 segundos después de que el sistema esté listo [STRICT]
-        setTimeout(() => {
-            console.log("⏰ Iniciando detección de apps post-arranque...");
-            detectMessagingApps();
-        }, 5000);
-
-    } catch (err) {
-        console.error("Boot error:", err);
-    }
-
-    // Refresco periódico de Aire y Timbre (cada 5 min)
+    // 4. MANTENIMIENTO PERIÓDICO
     setInterval(() => {
         refreshAcStatus(true);
         refreshDoorbellStatus();
     }, 300000);
 
-    // FIX: Polling API REST para recuperar comunicación visual (Texto y Anillos)
-    // Esto es necesario porque el puente de eventos Tauri se rompió al mover la arquitectura
-    // FIX V2: Polling más rápido (100ms) y simulación de intensidad forzada (Estilo Old
-    // School)
-    // FIX V2: Polling optimizado (1000ms) para ahorro de memoria
+    // 5. POLLING API (Texto, Anillos, Comandos)
     setInterval(async () => {
         try {
             const response = await fetch("http://127.0.0.1:18000/api/state");
             if (!response.ok) throw new Error("API Error");
             const data = await response.json();
 
-            // Normalizar estado
+            // Sincronización de estado
             const newStatus = (data.status || "idle").toLowerCase();
-
-            // Lógica de Mensajes: Evitar que "SISTEMA LISTO" (idle automático) borre una
-            // respuesta valiosa
-            // Si el backend manda algo difente a lo que tenemos, lo procesamos
-            if (newStatus !== finaState.value.status || data.process !==
-                finaState.value.process) {
-
-                // Si la nueva info es "SISTEMA LISTO", solo la aplicamos si ya pasó el tiempo de
-                // lectura
+            if (newStatus !== finaState.value.status || data.process !== finaState.value.process) {
                 if (data.process === t("sys_ready_short", "SISTEMA LISTO")) {
                     if (!window.lockTextUntil || Date.now() > window.lockTextUntil) {
                         finaState.value.status = newStatus;
                     }
-                }
-                else {
-                    // Si es un mensaje RELEVANTE (no sistema listo), lo mostramos y bloqueamos el borrado por 3s
+                } else {
                     finaState.value.status = newStatus;
                     finaState.value.process = data.process;
-
-                    // Manejo de flag de contraseña
-                    if (data.show_password_field !== undefined) {
-                        finaState.value.showPasswordField = data.show_password_field;
-                        if (!data.show_password_field) authPassword.value = ""; // Limpiar si se oculta
-                    }
-                    if (data.auth_error !== undefined) {
-                        finaState.value.authError = data.auth_error;
-                    }
-
+                    if (data.show_password_field !== undefined) finaState.value.showPasswordField = data.show_password_field;
                     if (newStatus === 'speaking' || (data.process && data.process.length > 3)) {
                         window.lockTextUntil = Date.now() + 3000;
                     }
                 }
             }
-
-            // Intensidad siempre se actualiza
             finaState.value.intensity = data.intensity || 0.0;
 
-            // --- PROCESAR COMANDOS PENDIENTES (Puente Brain->UI) ---
+            // Procesar comandos
             if (data.pending_command) {
                 const cmd = data.pending_command;
-                console.log("📥 Comando recibido vía Polling:", cmd.name);
-
                 if (cmd.name === 'fina-send-message') {
                     sendMobileSMS(cmd.payload.number, cmd.payload.message, cmd.payload.app);
                 } else if (cmd.name === 'doorbell-ring') {
                     showDoorbell.value = true;
                     finaState.value.process = t("proc_answering_door", "Atendiendo Timbre");
-                    
-                    const pyPath = pythonExecutable.value;
-                    const shCmdStr = `
-                    MARKET="${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/Doorbells/Tuya/M8/streamer.py"
-                    CONFIG="$HOME/.config/Fina/plugins/doorbell/streamer.py"
-                    if [ -f "$CONFIG" ]; then
-                        "${pyPath}" "$CONFIG" &
-                    elif [ -f "$MARKET" ]; then
-                        "${pyPath}" "$MARKET" &
-                    fi
-                    `;
-                    invoke("spawn_shell_command", { command: shCmdStr }).catch(() => {});
-
                     invoke('start_streamer').catch(() => { });
-                    setTimeout(() => {
-                        // Forzamos actualización de URL de video (SIEMPRE MJPG)
-                        streamUrl.value = "http://127.0.0.1:8555/stream.mjpg?t=" + Date.now();
-                        streamKey.value = Date.now();
-                    }, 4000); // 4 seg para asegurar que Waydroid despertó
-                } else if (cmd.name === 'doorbell-hangup') {
-                    showDoorbell.value = false;
-                    finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
                 }
             }
 
-            // --- SYNC AC STATUS (Sincronización Profunda y Persistente) ---
+            // AC Status Auto-Sync de Refuerzo
             if (data.ac_status) {
-                console.log("❄️ AC Status Data:", data.ac_status);
-                // Mapeo uno a uno para asegurar reactividad en todos los sub-objetos
                 if (data.ac_status.power !== undefined) acState.value.power = data.ac_status.power;
                 if (data.ac_status.temp) acState.value.temp = data.ac_status.temp;
                 if (data.ac_status.indoor) acState.value.indoor = data.ac_status.indoor;
                 if (data.ac_status.outdoor) acState.value.outdoor = data.ac_status.outdoor;
                 if (data.ac_status.mode) acState.value.mode = data.ac_status.mode.toLowerCase();
-                
-                // Valores de Energía (Críticos para Claudio)
                 if (data.ac_status.watts !== undefined) acState.value.watts = data.ac_status.watts;
                 if (data.ac_status.total_kwh !== undefined) acState.value.total_kwh = data.ac_status.total_kwh;
                 if (data.ac_status.monthly_kwh !== undefined) acState.value.monthly_kwh = data.ac_status.monthly_kwh;
             }
 
-            // --- SYNC TIMER VISUAL (ROBUSTO CON ID) ---
+            // Timer Visual Sync
             if (data.timer && data.timer.duration) {
-                // Verificar ID único para evitar loops de reinicio
-                // Si data.timer.id no existe (versión vieja), usamos duration como proxy débil
                 const incId = data.timer.id || data.timer.duration;
-                const isNew = incId !== timerState.lastId;
-
-                // Solo iniciamos si es NUEVO. Si es el mismo, confiamos en el conteo local.
-                if (isNew) {
-                    console.log("⏰ Nuevo Timer detectado:", data.timer);
+                if (incId !== timerState.lastId) {
                     startVisualTimer(data.timer.duration, data.timer.label || "TEMPORIZADOR");
                     timerState.lastId = incId;
                 }
-                // Si el ID es el mismo, NO hacemos nada. Dejamos que el intervalo local (setInterval) maneje la cuenta.
-                // Si el local llega a 0 y para, y el backend sigue mandando el estado, al ser el mismo ID, no re-entramos aquí.
-            } else {
-                // Si el backend limpió a null, paramos todo.
-                if (timerState.active) {
-                    stopVisualTimer();
-                    timerState.lastId = null;
-                }
+            } else if (timerState.active) {
+                stopVisualTimer();
+                timerState.lastId = null;
             }
 
-            // Reset contador de errores si todo salió bien
             window.pollErrors = 0;
-
         } catch (e) {
-            // Diagnóstico visual de errores de conexión (DETALLADO PARA USUARIO)
             if (!window.pollErrors) window.pollErrors = 0;
             window.pollErrors++;
-
-            // Mostrar error solo si persiste (tras 15 fallos = 15 seg de espera durante arranque)
             if (window.pollErrors > 15) {
-                const errDetail = `${e.name}: ${e.message}`;
-                console.error("API Error Poll:", e);
                 finaState.value.process = t("proc_wait_api", "ESPERANDO API...");
                 finaState.value.status = "offline";
-            } else {
-                // Durante los primeros segundos, simplemente notificamos el inicio
-                if (finaState.value.process === t("sys_ready_short", "SISTEMA LISTO") || !finaState.value.process) {
-                    finaState.value.process = t("proc_config_backend", "CONFIGURANDO BACKEND...");
-                }
             }
         }
     }, 1000);
 
-    // Watch ya no es tan crítico si simulamos arriba, pero sirve para triggers puntuales
-    watch(() => finaState.value.status, (newS) => {
-        // Mantener lógica extra si hace falta
-    });
-    setInterval(() => syncAllDevices(false, true), 60000 * 10); // Sync silencioso cada 10 min
-
-    // EVENTOS DE RETORNO
+    watch(() => finaState.value.status, () => {});
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-            syncAllDevices(false, true);
-        }
+        if (document.visibilityState === 'visible') syncAllDevices(false, true);
     });
-
     setInterval(() => {
         heartbeatSeconds.value = new Date().getSeconds();
     }, 1000);
+
+    // Sync silencioso cada 10 min
+    setInterval(() => syncAllDevices(false, true), 60000 * 10);
 
     await listen('brain-event', (event) => {
         try {
