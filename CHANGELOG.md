@@ -10,6 +10,18 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
+## [v3.5.8-23] - 2026-03-11 (Hotfix: UI Rendering & AC Sync)
+
+### 🖥️ UI / UX
+- **🚀 Optimización de Arranque**: Eliminada la pantalla en blanco inicial mediante carga asíncrona de recursos pesados. La interfaz ahora es instantánea.
+- **🎨 Visualización Fluida**: El reloj y el fondo se dibujan antes que cualquier conexión al backend.
+
+### 🩹 Arreglado
+- **🌡️ Sincronización de Aire AC**: Corregido bug que impedía mostrar Watts y Consumo Mensual en tiempo real.
+- **🧹 Limpieza de Sintaxis**: Removidos fragmentos de código corruptos en `App.vue` que causaban fallas críticas de ejecución.
+
+
+
 ## [v3.5.8-22] - 2026-03-09 (Edición "M8 Visionary" & Air-Pulse)
 
 ### Añadido

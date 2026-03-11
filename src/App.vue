@@ -149,7 +149,7 @@ const t = (key, fallback = "") => {
 
 const finaState = ref({
     status: "idle",
-    process: t('systems_ready', 'SISTEMA LISTO'),
+    process: "INICIALIZANDO ERGEN...",
     intensity: 0.0,
     showPasswordField: false,
     authError: false
@@ -195,8 +195,8 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.8-22 (09/03/2026 22:50)";
-const buildDate = "Lun 09 Mar 2026 22:50";
+const version = "Fina Ergen v 3.5.8-23 (11/03/2026 04:05)";
+const buildDate = "Mié 11 Mar 2026 04:05";
 
 const showOptInModal = ref(false);
 const newDetectedApps = ref([]);
@@ -361,32 +361,26 @@ const updateNeuralState = () => {
     }, 4000);
 };
 
-onMounted(() => {
-    startSentinelDemo();
-    updateNeuralState();
-    syncAllDevices(true);
-    syncSystemInfo();
+// Eventos de Plugins y Pins (Globales)
+listen("plugin-request-pin", (event) => {
+    console.log("📥 Recibida petición de PIN de plugin:", event.payload);
+    universalPinData.value = {
+        title: event.payload.title || "Vincular Dispositivo",
+        device: event.payload.device || "Android TV",
+        plugin_id: event.payload.plugin_id,
+        ip: event.payload.ip
+    };
+    universalPinInput.value = "";
+    showUniversalPinModal.value = true;
+});
 
-    listen("plugin-request-pin", (event) => {
-        console.log("📥 Recibida petición de PIN de plugin:", event.payload);
-        universalPinData.value = {
-            title: event.payload.title || "Vincular Dispositivo",
-            device: event.payload.device || "Android TV",
-            plugin_id: event.payload.plugin_id,
-            ip: event.payload.ip
-        };
-        universalPinInput.value = "";
-        showUniversalPinModal.value = true;
-    });
-
-    listen("plugin-pin-response-status", (event) => {
-        if (event.payload.status === "success") {
-            addChatMessage("✅ Dispositivo vinculado con éxito.");
-            showUniversalPinModal.value = false;
-        } else {
-            addChatMessage("❌ Error en vinculación: " + event.payload.message);
-        }
-    });
+listen("plugin-pin-response-status", (event) => {
+    if (event.payload.status === "success") {
+        addChatMessage("✅ Dispositivo vinculado con éxito.");
+        showUniversalPinModal.value = false;
+    } else {
+        addChatMessage("❌ Error en vinculación: " + event.payload.message);
+    }
 });
 
 const handleSentinelCommand = async () => {
@@ -2236,160 +2230,134 @@ const closeWindow = async () => {
     if (appWindow) await appWindow.close();
 };
 
-onMounted(async () => {
-    // 1. CONFIGURACIÓN INSTANTÁNEA (Sin Await para renderizado inmediato)
-    syncSystemInfo(); 
+onMounted(() => {
+    // 1. UI INMEDIATA (Todo lo visual síncrono primero)
     updateClock();
     setInterval(updateClock, 1000);
-    setInterval(getSystemStats, 5000);
-    getSystemStats();
     
-    // Cargar clima inicial (caché) mientras se activa el resto
-    updateWeather();
-    setInterval(updateWeather, 60000); 
+    // Iniciar Demos Visuales
+    startSentinelDemo();
+    updateNeuralState();
 
-    // 2. TAREAS DE FONDO (ASÍNCRONAS, NO BLOQUEAN LA UI)
-    const loadDataInBackground = async () => {
-        try {
-            const i18nResp = await fetch("http://127.0.0.1:18000/api/i18n");
-            if (i18nResp.ok) i18nData.value = await i18nResp.json();
-        } catch (e) { console.warn("i18n load error (deferred)", e); }
+    // 2. TAREAS DE SEGUNDO PLANO (Async, sin Await en onMounted)
+    const initApp = async () => {
+        // Cargar información base del sistema
+        await syncSystemInfo();
+        
+        // Cargar clima inicial basado en caché si existe
+        updateWeather();
+        setInterval(updateWeather, 60000);
 
-        await fetchSettings();
-        await fetchContacts(); 
-        await fetchUserData(); 
-        syncContactsFromMobile();
-        fetchRecentEmails();
-        setInterval(fetchRecentEmails, 300000);
-    };
-    loadDataInBackground();
+        // Polling de estadísticas de sistema
+        setInterval(getSystemStats, 5000);
+        getSystemStats();
 
-    // 3. SECUENCIA DE ARRANQUE VISUAL (CONCURRENTE)
-    const runBootSequence = async () => {
-        try {
-            finaState.value.process = t("proc_loading_sys", "CARGANDO SISTEMA");
-            addChatMessage(t('ui_sys_online'));
+        // Cargar Datos (Settings, I18n, etc)
+        const loadData = async () => {
+            try {
+                const i18nResp = await fetch("http://127.0.0.1:18000/api/i18n");
+                if (i18nResp.ok) i18nData.value = await i18nResp.json();
+            } catch (e) { console.warn("i18n fail", e); }
 
-            // Esperar el primer segundo de "Cargando"
-            await new Promise(r => setTimeout(r, 1000));
+            await fetchSettings();
+            await fetchContacts(); 
+            await fetchUserData(); 
+            syncContactsFromMobile();
+            fetchRecentEmails();
+            setInterval(fetchRecentEmails, 300000);
+        };
+        loadData();
 
-            // Sincronización inicial de dispositivos (Non-blocking)
-            Promise.all([
-                refreshAcStatus().catch(() => { }),
-                refreshDoorbellStatus().catch(() => { })
-            ]);
+        // Secuencia de Arranque Visual
+        const runBootPlan = async () => {
+            try {
+                finaState.value.process = t("proc_loading_sys", "CARGANDO SISTEMA");
+                addChatMessage(t('ui_sys_online'));
+                
+                await new Promise(r => setTimeout(r, 1000));
+                
+                // Sincronización Inicial de Hardware (Background)
+                refreshAcStatus(true).catch(() => {});
+                refreshDoorbellStatus().catch(() => {});
 
-            await new Promise(r => setTimeout(r, 800));
+                const mobileDev = linkedMobileDevice.value;
+                if (mobileDev?.ip) {
+                    finaState.value.process = t("proc_linking_mobile", "VINCULANDO MÓVIL");
+                    invoke("execute_shell_command", { command: `timeout 2 adb connect ${mobileDev.ip}:5555` }).catch(() => { });
+                    await new Promise(r => setTimeout(r, 800));
+                }
 
-            // ADB / Móvil (Si existe)
-            const mobileDev = linkedMobileDevice.value;
-            if (mobileDev && mobileDev.ip) {
-                finaState.value.process = t("proc_linking_mobile", "VINCULANDO MÓVIL");
-                invoke("execute_shell_command", { command: `timeout 2 adb connect ${mobileDev.ip}:5555` }).catch(() => { });
+                const greeting = await getGreeting();
+                finaState.value.status = "speaking";
+                finaState.value.process = t("proc_sys_op", "SISTEMA OPERATIVO");
+                addChatMessage(greeting);
+                
+                await new Promise(r => setTimeout(r, 1500));
+                finaState.value.status = "idle";
+                finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
+                
+                setTimeout(detectMessagingApps, 5000);
+            } catch (bootErr) {
+                console.error("Boot error:", bootErr);
+                finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
             }
-
-            await new Promise(r => setTimeout(r, 1200));
-
-            // Saludo y Finalización
-            const greeting = await getGreeting();
-            finaState.value.status = "speaking";
-            finaState.value.process = t("proc_sys_op", "SISTEMA OPERATIVO");
-            addChatMessage(greeting);
-            await new Promise(r => setTimeout(r, 1500));
-            finaState.value.status = "idle";
-            finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
-
-            // Detección de Apps diferida
-            setTimeout(() => {
-                detectMessagingApps();
-            }, 5000);
-        } catch (err) {
-            console.error("Error en secuencia de arranque:", err);
-            finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
-        }
+        };
+        runBootPlan();
     };
-    runBootSequence();
+    initApp();
 
-    // Verificación diferida de configuración
-    setTimeout(() => {
-        const criticalKeys = ['MISTRAL_API_KEY', 'OPENAI_API_KEY', 'WEATHER_API_KEY'];
-        const isUnconfigured = criticalKeys.every(k => !userSettings.value.apis[k]);
-        if (isUnconfigured) {
-            addChatMessage(t('ui_first_time'), 0);
-        }
-    }, 15000);
-
-    // 4. MANTENIMIENTO PERIÓDICO
+    // 3. LISTENERS Y MONITORIZACIÓN
     setInterval(() => {
         refreshAcStatus(true);
         refreshDoorbellStatus();
     }, 300000);
 
-    // 5. POLLING API (Texto, Anillos, Comandos)
+    // API POLLING
     setInterval(async () => {
         try {
-            const response = await fetch("http://127.0.0.1:18000/api/state");
-            if (!response.ok) throw new Error("API Error");
-            const data = await response.json();
+            const resp = await fetch("http://127.0.0.1:18000/api/state");
+            if (!resp.ok) return;
+            const data = await resp.json();
 
-            // Sincronización de estado
-            const newStatus = (data.status || "idle").toLowerCase();
-            if (newStatus !== finaState.value.status || data.process !== finaState.value.process) {
+            // Status Sync
+            const newS = (data.status || "idle").toLowerCase();
+            if (newS !== finaState.value.status || data.process !== finaState.value.process) {
                 if (data.process === t("sys_ready_short", "SISTEMA LISTO")) {
-                    if (!window.lockTextUntil || Date.now() > window.lockTextUntil) {
-                        finaState.value.status = newStatus;
-                    }
+                   if (!window.lockTextUntil || Date.now() > window.lockTextUntil) finaState.value.status = newS;
                 } else {
-                    finaState.value.status = newStatus;
-                    finaState.value.process = data.process;
-                    if (data.show_password_field !== undefined) finaState.value.showPasswordField = data.show_password_field;
-                    if (newStatus === 'speaking' || (data.process && data.process.length > 3)) {
-                        window.lockTextUntil = Date.now() + 3000;
-                    }
+                   finaState.value.status = newS;
+                   finaState.value.process = data.process;
+                   if (newS === 'speaking' || (data.process && data.process.length > 3)) window.lockTextUntil = Date.now() + 3000;
                 }
             }
             finaState.value.intensity = data.intensity || 0.0;
 
-            // Procesar comandos
+            // AC Status Reinforcement
+            if (data.ac_status) {
+                const ac = data.ac_status;
+                if (ac.power !== undefined) acState.value.power = ac.power;
+                if (ac.temp) acState.value.temp = ac.temp;
+                if (ac.indoor) acState.value.indoor = ac.indoor;
+                if (ac.outdoor) acState.value.outdoor = ac.outdoor;
+                if (ac.mode) acState.value.mode = ac.mode.toLowerCase();
+                if (ac.watts !== undefined) acState.value.watts = ac.watts;
+                if (ac.total_kwh !== undefined) acState.value.total_kwh = ac.total_kwh;
+                if (ac.monthly_kwh !== undefined) acState.value.monthly_kwh = ac.monthly_kwh;
+            }
+
+            // Command Bridge
             if (data.pending_command) {
                 const cmd = data.pending_command;
-                if (cmd.name === 'fina-send-message') {
-                    sendMobileSMS(cmd.payload.number, cmd.payload.message, cmd.payload.app);
-                } else if (cmd.name === 'doorbell-ring') {
+                if (cmd.name === 'fina-send-message') sendMobileSMS(cmd.payload.number, cmd.payload.message, cmd.payload.app);
+                if (cmd.name === 'doorbell-ring') {
                     showDoorbell.value = true;
                     finaState.value.process = t("proc_answering_door", "Atendiendo Timbre");
-                    invoke('start_streamer').catch(() => { });
+                    invoke('start_streamer').catch(() => {});
                 }
             }
-
-            // AC Status Auto-Sync de Refuerzo
-            if (data.ac_status) {
-                if (data.ac_status.power !== undefined) acState.value.power = data.ac_status.power;
-                if (data.ac_status.temp) acState.value.temp = data.ac_status.temp;
-                if (data.ac_status.indoor) acState.value.indoor = data.ac_status.indoor;
-                if (data.ac_status.outdoor) acState.value.outdoor = data.ac_status.outdoor;
-                if (data.ac_status.mode) acState.value.mode = data.ac_status.mode.toLowerCase();
-                if (data.ac_status.watts !== undefined) acState.value.watts = data.ac_status.watts;
-                if (data.ac_status.total_kwh !== undefined) acState.value.total_kwh = data.ac_status.total_kwh;
-                if (data.ac_status.monthly_kwh !== undefined) acState.value.monthly_kwh = data.ac_status.monthly_kwh;
-            }
-
-            // Timer Visual Sync
-            if (data.timer && data.timer.duration) {
-                const incId = data.timer.id || data.timer.duration;
-                if (incId !== timerState.lastId) {
-                    startVisualTimer(data.timer.duration, data.timer.label || "TEMPORIZADOR");
-                    timerState.lastId = incId;
-                }
-            } else if (timerState.active) {
-                stopVisualTimer();
-                timerState.lastId = null;
-            }
-
             window.pollErrors = 0;
         } catch (e) {
-            if (!window.pollErrors) window.pollErrors = 0;
-            window.pollErrors++;
+            window.pollErrors = (window.pollErrors || 0) + 1;
             if (window.pollErrors > 15) {
                 finaState.value.process = t("proc_wait_api", "ESPERANDO API...");
                 finaState.value.status = "offline";
@@ -2397,121 +2365,50 @@ onMounted(async () => {
         }
     }, 1000);
 
-    watch(() => finaState.value.status, () => {});
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') syncAllDevices(false, true);
-    });
-    setInterval(() => {
-        heartbeatSeconds.value = new Date().getSeconds();
-    }, 1000);
-
-    // Sync silencioso cada 10 min
-    setInterval(() => syncAllDevices(false, true), 60000 * 10);
-
-    await listen('brain-event', (event) => {
+    // BRAIN EVENTS
+    tauriListen('brain-event', (event) => {
         try {
             let data = event.payload;
             if (typeof data === 'string') data = JSON.parse(data.trim());
-            if (data.type === 'event' && data.name === 'doorbell-ring') {
-                showDoorbell.value = true;
-                finaState.value.process = t("proc_answering_door", "Atendiendo Timbre");
-                invoke('start_streamer').catch(() => { });
-                setTimeout(() => {
-                    streamUrl.value = "http://127.0.0.1:8555/view?t=" + Date.now();
-                    streamKey.value = Date.now();
-                }, 2000);
-            } else if (data.name === 'fina-state') {
-                // SI RECIBIMOS DATOS DEL CEREBRO, LA API VIVE
-                window.pollErrors = 0;
-
-                // Limpiar mensaje de error si existe
-                if (finaState.value.process && (finaState.value.process.startsWith("ERR") ||
-                    finaState.value.process.startsWith("ERROR"))) {
-                    finaState.value.process = "";
-                }
-
+            
+            if (data.name === 'fina-state') {
                 const p = data.payload;
-                // Actualizar estado visual
-                if (p.status) finaState.value.status = p.status;
-                if (p.process) finaState.value.process = p.process;
-                if (p.intensity !== undefined) finaState.value.intensity = p.intensity;
-                
-                // --- AC STATUS AUTO-SYNC ---
                 if (p.ac_status) {
                     const ac = p.ac_status;
                     acState.value.power = ac.power;
                     acState.value.temp = ac.temp;
-                    acState.value.mode = ac.mode.toLowerCase();
+                    acState.value.mode = ac.mode?.toLowerCase() || acState.value.mode;
                     acState.value.indoor = ac.indoor;
                     acState.value.outdoor = ac.outdoor;
                     acState.value.watts = ac.watts;
                     acState.value.total_kwh = ac.total_kwh;
                     if (ac.monthly_kwh !== undefined) acState.value.monthly_kwh = ac.monthly_kwh;
                 }
-
-                // LÓGICA DE PERSISTENCIA DE MENSAJES
-                // Si hay un mensaje importante mostrándose, no dejar que "SISTEMA LISTO" lo pise al instante
-                if (window.lockTextUntil && Date.now() < window.lockTextUntil &&
-                    (p.process === t("sys_ready_short", "SISTEMA LISTO") || p.process === "ESCUCHANDO...")) {
-                    // Ignoramos actualización banal para dejar leer al usuario
-                } else {
-                    finaState.value.status = p.status || "idle";
-                    if (p.process && p.process !== t("sys_ready_short", "SISTEMA LISTO")) {
-                        finaState.value.process = p.process;
-                    }
-                    finaState.value.intensity = p.intensity || 0.0;
-
-                    // --- TIMER SYNC ---
-                    if (p.timer !== undefined) {
-                        if (p.timer && p.timer.duration) {
-                            startVisualTimer(p.timer.duration, p.timer.label);
-                        } else {
-                            stopVisualTimer();
-                        }
-                    }
-
-                    if (finaState.value.process !== t("sys_ready_short", "SISTEMA LISTO") && finaState.value.process !== "ESCUCHANDO..." && finaState.value.process !== "Diga 'Fina' para empezar") {
-                        window.lockTextUntil = Date.now() + 3000;
-                    }
+                if (!window.lockTextUntil || Date.now() > window.lockTextUntil) {
+                    if (p.status) finaState.value.status = p.status;
+                    if (p.process) finaState.value.process = p.process;
+                    if (p.intensity !== undefined) finaState.value.intensity = p.intensity;
                 }
-                if (finaState.value.process.length > 5 && finaState.value.status === 'speaking') {
-                    addChatMessage(finaState.value.process);
-                }
-            } else if (data.name === 'fina-send-message') {
-                const p = data.payload;
-                console.log("📨 Orden de envío recibida del cerebro:", p);
-                sendMobileSMS(p.number, p.message, p.app);
-            } else if (data.name === 'fina-speak') {
-                const speechMsg = data.payload.text || data.payload || "Hablando...";
-                finaState.value.status = "speaking";
-                finaState.value.process = speechMsg.toUpperCase();
-                addChatMessage(speechMsg);
-
-                setTimeout(() => {
-                    if (finaState.value.status === 'speaking') finaState.value.status = "idle";
-                    if (finaState.value.process === speechMsg.toUpperCase()) {
-                        finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
-                    }
-                }, 8000);
-            } else if (data.name === 'ac-status-update') {
-                const p = data.payload;
-                acState.value.power = p.power;
-                acState.value.temp = p.temp;
-                acState.value.mode = p.mode.toLowerCase();
-                acState.value.indoor = p.indoor;
-                acState.value.outdoor = p.outdoor;
-                acState.value.watts = p.watts;
-                acState.value.total_kwh = p.total_kwh;
-                acState.value.monthly_kwh = p.monthly_kwh;
-            } else if (data.type === 'event' && (data.name === 'doorbell-hangup' ||
-                data.event === 'doorbell-hangup')) {
+            } else if (data.name === 'doorbell-ring' || (data.type === 'event' && data.name === 'doorbell-ring')) {
+                showDoorbell.value = true;
+                finaState.value.process = t("proc_answering_door", "Atendiendo Timbre");
+                invoke('start_streamer').catch(() => {});
+            } else if (data.name === 'doorbell-hangup' || (data.type === 'event' && data.name === 'doorbell-hangup')) {
                 showDoorbell.value = false;
                 finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
             }
-        } catch (e) {
-            console.error("Error cerebro:", e);
-        }
+        } catch (e) { console.error("Event error:", e); }
     });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') syncAllDevices(false, true);
+    });
+
+    setInterval(() => {
+        heartbeatSeconds.value = new Date().getSeconds();
+    }, 1000);
+
+    setInterval(() => syncAllDevices(false, true), 600000);
 });
 
 const tvChannels = ref({});
