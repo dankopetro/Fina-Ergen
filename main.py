@@ -598,7 +598,9 @@ async def main():
                 
                 weston_running = any(p.name() == 'weston' for p in psutil.process_iter(['name']))
                 
-                if m8_active or weston_running:
+                if m8_active:
+                    # Si el plugin M8 está cargado, entonces sí nos importa el estado de Weston
+                    # Si no está cargado, seguimos de largo aunque Weston exista (puede ser para otra cosa)
                     update_ui_state("idle", "Aguardando virtualización (Waydroid)...")
                     print("🤖 Sistema de Timbre detectado. Esperando estabilidad de Android...", flush=True)
                     
