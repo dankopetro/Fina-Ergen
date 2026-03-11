@@ -2978,8 +2978,8 @@ const selectFolder = async (settingKey) => {
                 <div v-if="activeTab === 'dashboard'"
                     class="absolute top-24 z-50 pointer-events-auto animate-in fade-in slide-in-from-left-8 duration-700 transition-all"
                     :class="isSidebarCollapsed ? 'left-24' : 'left-[265px]'">
-                    <WeatherModule :temperature="typeof weatherTemp === 'number' ? weatherTemp : 0"
-                        :humidity="weatherHumidity" :windSpeed="weatherWind" :feelsLike="weatherFeelsLike"
+                    <WeatherModule :temperature="Number(weatherTemp) || 0"
+                        :humidity="Number(weatherHumidity) || 0" :windSpeed="Number(weatherWind) || 0" :feelsLike="Number(weatherFeelsLike) || 0"
                         :description="weatherDesc" :cityName="weatherCityName" :weatherCode="weatherCode" :isDay="isDay"
                         :currentDate="currentDate" :forecast="weatherForecast" :t="t" />
                 </div>
