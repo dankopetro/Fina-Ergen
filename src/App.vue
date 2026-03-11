@@ -1506,6 +1506,8 @@ const updateWeather = async () => {
             isDay.value = 1;
             weatherHumidity.value = 50;
             
+            console.log(`[BOOT] Cargando Clima Caché: ${d.city} - ${d.temp}°C`);
+            
             if (weatherForecast.value.length === 0) {
                 // Generar los próximos 3 días dinámicamente según idioma
                 const localeMap = { es: 'es-AR', en: 'en-US', pt: 'pt-BR', fr: 'fr-FR', de: 'de-DE', ja: 'ja-JP', zh: 'zh-CN' };
@@ -1528,8 +1530,11 @@ const updateWeather = async () => {
         const cityId = userSettings.value.apis?.WEATHER_CITY_ID || "";
 
         if (!apiKey || !cityId) {
-            return; // Nos quedamos con el default visual sin romper el widget
+            console.log("[BOOT] CLIMA: Saltando fetch real (Falta API Key o City ID). Mantenemos caché visual.");
+            return; 
         }
+
+        console.log(`[BOOT] CLIMA: Obteniendo clima real para ID ${cityId}...`);
 
         // Ejecutar obtención de clima principal vía Fetch JS (No-bloqueante y no satura el CPU de Fina)
         const weatherUrl = `http://api.openweathermap.org/data/2.5/weather?id=${cityId}&appid=${apiKey}&units=metric&lang=${lang}`;
@@ -1538,6 +1543,7 @@ const updateWeather = async () => {
         const data = await wRes.json();
 
         if (data && data.main && data.weather) {
+            console.log(`[BOOT] CLIMA: Reemplazando caché con dato real: ${data.main.temp}°C`);
             weatherTemp.value = Math.round(data.main.temp);
             weatherHumidity.value = data.main.humidity;
             weatherCode.value = data.weather[0].id;
