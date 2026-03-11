@@ -1744,33 +1744,45 @@ const refreshAcStatus = async (silent = false) => {
         const output = await invoke("execute_shell_command", { command });
         console.log("Sincronizando Aire...", output);
 
-        const tempMatch = output.match(/ a ([\d.]+)°C/i);
-        const indoorMatch = output.match(/Int: ([\d.]+)°C/i);
-        const outdoorMatch = output.match(/Ext: ([\d.]+|--)/i);
-        const humidityMatch = output.match(/Humedad: ([\d.]+)/i);
-        const modeMatch = output.match(/modo (\w+)/i);
-        const powerMatch = output.match(/(está|esta) encendido/i);
-        const wattsMatch = output.match(/Consumo:\s*(\d+)W/i);
-        const kwhMatch = output.match(/Acumulado:\s*([\d.]+)kWh/i);
-        const monthlyMatch = output.match(/monthly_kwh":\s*([\d.]+)/i); // Extraemos del JSON payload en el log si es necesario, o añadimos al msg
+        const tempMatch = output.match(/(?: a | at )([\d.]+)°C/i);
+        const indoorMatch = output.match(/(?:Int|In):\s*([\d.]+)°C/i);
+        const outdoorMatch = output.match(/(?:Ext|Out):\s*([\d.]+|--)/i);
+        const humidityMatch = output.match(/(?:Humedad|Humidity):\s*([\d.]+)/i);
+        const modeMatch = output.match(/modo\s+(\w+)/i) || output.match(/mode\s+(\w+)/i);
+        const powerMatch = output.match(/(?:está|esta|is)\s+(?:encendido|on)/i);
+        const wattsMatch = output.match(/(?:Consumo|Power):\s*(\d+)W/i);
+        const kwhMatch = output.match(/(?:Acumulado|Total):\s*([\d.]+)kWh/i);
+        const monthlyMatch = output.match(/(?:Mes|Month):\s*([\d.]+)kWh/i) || output.match(/monthly_kwh":\s*([\d.]+)/i);
 
         if (tempMatch) acState.value.temp = Math.round(parseFloat(tempMatch[1]));
         if (indoorMatch) acState.value.indoor = Math.round(parseFloat(indoorMatch[1]));
-        if (outdoorMatch) acState.value.outdoor = Math.round(parseFloat(outdoorMatch[1]));
+        if (outdoorMatch) acState.value.outdoor = outdoorMatch[1] === '--' ? 0 : Math.round(parseFloat(outdoorMatch[1]));
         if (humidityMatch) acState.value.humidity = Math.round(parseFloat(humidityMatch[1]));
         if (modeMatch) acState.value.mode = modeMatch[1].toLowerCase();
         if (wattsMatch) acState.value.watts = parseInt(wattsMatch[1]);
         if (kwhMatch) acState.value.total_kwh = parseFloat(kwhMatch[1]);
+        if (monthlyMatch) acState.value.monthly_kwh = parseFloat(monthlyMatch[1]);
         
-        // Intentar parsear el JSON de la respuesta directamente si está presente para mayor exactitud
+        // Intentar parsear el JSON de la respuesta directamente si está presente para mayor exactitud (Prioridad Máxima)
         try {
-            const jsonMatch = output.match(/\{"power":.*\}/);
-            if (jsonMatch) {
-                const acData = JSON.parse(jsonMatch[0]);
-                if (acData.monthly_kwh !== undefined) acState.value.monthly_kwh = acData.monthly_kwh;
+            const jsonLines = output.split('\n').filter(line => line.trim().startsWith('{') && line.trim().endsWith('}'));
+            if (jsonLines.length > 0) {
+                const acData = JSON.parse(jsonLines[jsonLines.length - 1]);
+                if (acData.power !== undefined) acState.value.power = acData.power;
+                if (acData.temp !== undefined) acState.value.temp = acData.temp;
+                if (acData.mode !== undefined) acState.value.mode = acData.mode.toLowerCase();
+                if (acData.indoor !== undefined) acState.value.indoor = acData.indoor;
+                if (acData.outdoor !== undefined) acState.value.outdoor = acData.outdoor;
+                if (acData.watts !== undefined) acState.value.watts = acData.watts;
                 if (acData.total_kwh !== undefined) acState.value.total_kwh = acData.total_kwh;
+                if (acData.monthly_kwh !== undefined) acState.value.monthly_kwh = acData.monthly_kwh;
+                
+                // Si parseamos el JSON con éxito, saltamos el resto del procesamiento manual
+                return; 
             }
-        } catch(e) {}
+        } catch(e) {
+            console.warn("Fallo al parsear JSON de AC, usando regex fallback");
+        }
 
         acState.value.power = !!powerMatch;
     } catch (e) {
@@ -2204,6 +2216,9 @@ const syncAllDevices = async (force = false, silent = false) => {
 
 const setTab = (tab) => {
     activeTab.value = tab;
+    if (tab === 'dashboard' || tab === 'clima') {
+        refreshAcStatus(true);
+    }
     showDoorbell.value = false;
     // Reset sub-vistas para siempre empezar desde el inicio
     activeCasaView.value = "main";
@@ -2324,11 +2339,11 @@ onMounted(async () => {
         console.error("Boot error:", err);
     }
 
-    // Refresco periódico de Aire y Timbre (cada 30 min)
+    // Refresco periódico de Aire y Timbre (cada 5 min)
     setInterval(() => {
         refreshAcStatus(true);
         refreshDoorbellStatus();
-    }, 1800000);
+    }, 300000);
 
     // FIX: Polling API REST para recuperar comunicación visual (Texto y Anillos)
     // Esto es necesario porque el puente de eventos Tauri se rompió al mover la arquitectura

@@ -2471,44 +2471,48 @@
     "matar proceso"
   ],
   "turn_on_tv": [
-    "prendé el televisor",
-    "prende el televisor",
-    "encendé el televisor",
-    "enciende el televisor",
-    "encender el televisor",
-    "prender el televisor",
-    "enciende el tele",
-    "prende el tele",
-    "quiero ver televisión"
+    "ligar a televisão",
+    "liga a tv",
+    "ativar televisor",
+    "ligar o televisor",
+    "ligar a tv",
+    "quero ver televisão"
   ],
   "turn_off_tv": [
-    "apagá el televisor",
-    "apaga el televisor",
-    "apagar el televisor",
-    "apaga el tele",
-    "apagá el tele",
-    "apagá esa tele",
-    "apaga esa tele"
+    "desligar a televisão",
+    "desliga a tv",
+    "desligar o televisor",
+    "apaga a tv",
+    "apagar a televisão"
   ],
   "tv_mute": [
-    "quitar sonido tele"
+    "silenciar a televisão",
+    "mudo na tv",
+    "tirar o som da tv",
+    "silêncio na tv",
+    "coloque no mudo"
   ],
   "tv_unmute": [
-    "activar sonido tele",
-    "reactivar sonido",
-    "quitar el mute",
-    "saca el silencio",
-    "devuelve el sonido"
+    "ativar som da tv",
+    "tirar o mudo",
+    "voltar o som",
+    "tirar o silêncio",
+    "reativar som",
+    "quero ouvir a tv"
   ],
   "tv_volume_up": [
-    "sube el volumen del televisor",
-    "subir volumen tv",
-    "subir volumen televisión"
+    "aumentar o volume da televisão",
+    "aumentar volume tv",
+    "subir o volume",
+    "mais volume na tv",
+    "aumenta o som"
   ],
   "tv_volume_down": [
-    "bajá el volumen del televisor",
-    "bajar volumen tv",
-    "bajar volumen televisión"
+    "baixar o volume da televisão",
+    "diminuir volume tv",
+    "baixar o volume",
+    "menos volume na tv",
+    "abaixa o som"
   ],
   "tv_channel_up": [
     "siguiente canal",
