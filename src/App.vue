@@ -1500,6 +1500,26 @@ const updateWeather = async () => {
         const scriptPath = `${projectRoot.value}/iot/clima_api.py`;
 
         const lang = userSettings.value.apis?.FINA_LANGUAGE || 'es';
+
+        // Inyectar estado por defecto (caché visual instantáneo) antes de consultar
+        if (weatherTemp.value === null || weatherTemp.value === "--" || weatherTemp.value === 0 || weatherTemp.value === "ERR") {
+            const defaults = {
+                es: { city: "Buenos Aires", temp: 20, desc: "Cielo claro" },
+                en: { city: "London", temp: 20, desc: "Clear sky" },
+                pt: { city: "Lisboa", temp: 20, desc: "Céu limpo" },
+                fr: { city: "Paris", temp: 20, desc: "Ciel dégagé" },
+                de: { city: "Berlin", temp: 20, desc: "Klarer Himmel" },
+                ja: { city: "Tokyo", temp: 20, desc: "快晴" },
+                zh: { city: "Beijing", temp: 20, desc: "晴空" }
+            };
+            const d = defaults[lang] || defaults['es'];
+            weatherCityName.value = d.city;
+            weatherTemp.value = d.temp;
+            weatherDesc.value = d.desc;
+            weatherCode.value = 800; // Clear
+            isDay.value = 1;
+            weatherHumidity.value = 50;
+        }
         // Ejecutar script con argumentos (incluye idioma para descripciones traducidas)
         const jsonStr = await invoke("execute_shell_command", { command: `timeout 10 ${pyPath} "${scriptPath}" "${apiKey}" "${cityId}" "${lang}"` });
 
