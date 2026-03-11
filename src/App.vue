@@ -1763,25 +1763,33 @@ const refreshAcStatus = async (silent = false) => {
         if (kwhMatch) acState.value.total_kwh = parseFloat(kwhMatch[1]);
         if (monthlyMatch) acState.value.monthly_kwh = parseFloat(monthlyMatch[1]);
         
-        // Intentar parsear el JSON de la respuesta directamente si está presente para mayor exactitud (Prioridad Máxima)
+        // Intentar parsear el JSON de la respuesta directamente (Prioridad Máxima)
         try {
-            const jsonLines = output.split('\n').filter(line => line.trim().startsWith('{') && line.trim().endsWith('}'));
-            if (jsonLines.length > 0) {
-                const acData = JSON.parse(jsonLines[jsonLines.length - 1]);
+            const lines = output.split('\n');
+            let acData = null;
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+                    try {
+                        acData = JSON.parse(trimmed);
+                        break; 
+                    } catch(e) {}
+                }
+            }
+
+            if (acData) {
                 if (acData.power !== undefined) acState.value.power = acData.power;
-                if (acData.temp !== undefined) acState.value.temp = acData.temp;
+                if (acData.temp !== undefined) acState.value.temp = Math.round(acData.temp);
                 if (acData.mode !== undefined) acState.value.mode = acData.mode.toLowerCase();
-                if (acData.indoor !== undefined) acState.value.indoor = acData.indoor;
-                if (acData.outdoor !== undefined) acState.value.outdoor = acData.outdoor;
-                if (acData.watts !== undefined) acState.value.watts = acData.watts;
-                if (acData.total_kwh !== undefined) acState.value.total_kwh = acData.total_kwh;
-                if (acData.monthly_kwh !== undefined) acState.value.monthly_kwh = acData.monthly_kwh;
-                
-                // Priorizar JSON si parseó con éxito
+                if (acData.indoor !== undefined) acState.value.indoor = Math.round(acData.indoor);
+                if (acData.outdoor !== undefined) acState.value.outdoor = acData.outdoor === '--' ? 0 : Math.round(acData.outdoor);
+                if (acData.watts !== undefined) acState.value.watts = Math.round(acData.watts);
+                if (acData.total_kwh !== undefined) acState.value.total_kwh = parseFloat(acData.total_kwh.toFixed(2));
+                if (acData.monthly_kwh !== undefined) acState.value.monthly_kwh = parseFloat(acData.monthly_kwh.toFixed(2));
                 return;
             }
         } catch(e) {
-            console.warn("Fallo al parsear JSON de AC, usando regex fallback");
+            console.warn("Fallo al detectar JSON de AC, usando regex fallback");
         }
 
         acState.value.power = !!powerMatch;
