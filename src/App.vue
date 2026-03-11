@@ -323,8 +323,7 @@ const getSystemStats = async () => {
         const output = await invoke("execute_shell_command", { command: `timeout 3 ${pyPath} "${scriptPath}"` });
         systemStats.value = JSON.parse(output);
     } catch (e) {
-        // console.error("Stats error", e); // Silent fail
-        logError(`Stats Error: ${e}`);
+        // Silent fail: es normal que 'get_stats_py' de timeout durante el alto uso de CPU al inicio
     }
 };
 const sentinelLogs = ref([]);
@@ -1532,17 +1531,11 @@ const updateWeather = async () => {
             return; // Nos quedamos con el default visual sin romper el widget
         }
 
-        const pyPath = pythonExecutable.value;
-        const scriptPath = `${projectRoot.value}/iot/clima_api.py`;
-
-
-        // Ejecutar obtención de clima principal y esperar (bloquea intencionalmente para no trabar el proceso de voz luego)
-        const jsonStr = await invoke("execute_shell_command", { command: `timeout 10 ${pyPath} "${scriptPath}" "${apiKey}" "${cityId}" "${lang}"` });
-        
-        if (!jsonStr || jsonStr.trim() === "") return;
-        
-        const data = JSON.parse(jsonStr);
-        if (data.cod && parseInt(data.cod) !== 200) return;
+        // Ejecutar obtención de clima principal vía Fetch JS (No-bloqueante y no satura el CPU de Fina)
+        const weatherUrl = `http://api.openweathermap.org/data/2.5/weather?id=${cityId}&appid=${apiKey}&units=metric&lang=${lang}`;
+        const wRes = await fetch(weatherUrl);
+        if (!wRes.ok) return;
+        const data = await wRes.json();
 
         if (data && data.main && data.weather) {
             weatherTemp.value = Math.round(data.main.temp);
@@ -1558,16 +1551,42 @@ const updateWeather = async () => {
             }
             if (data.name) weatherCityName.value = data.name;
 
-            // --- FETCH FORECAST (Wait for it too) ---
-            const forecastScript = `${projectRoot.value}/iot/clima_forecast.py`;
-            const out = await invoke("execute_shell_command", { command: `timeout 5 ${pyPath} "${forecastScript}" "${apiKey}" "${cityId}"` });
+            // --- FETCH FORECAST (JS Nativo) ---
             try {
-                const fData = JSON.parse(out);
-                if (Array.isArray(fData)) {
-                    weatherForecast.value = fData;
+                const forecastUrl = `http://api.openweathermap.org/data/2.5/forecast?id=${cityId}&appid=${apiKey}&units=metric&lang=${lang}`;
+                const fRes = await fetch(forecastUrl);
+                if (fRes.ok) {
+                    const fDataObj = await fRes.json();
+                    const forecastByDay = {};
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    
+                    fDataObj.list.forEach(item => {
+                        const dateStr = item.dt_txt.split(' ')[0];
+                        if (dateStr === todayStr) return;
+                        if (!forecastByDay[dateStr]) forecastByDay[dateStr] = { temps: [], icons: [] };
+                        forecastByDay[dateStr].temps.push(item.main.temp);
+                        const hour = parseInt(item.dt_txt.split(' ')[1].split(':')[0]);
+                        if (hour >= 11 && hour <= 14) forecastByDay[dateStr].noon_icon = item.weather[0].id;
+                        forecastByDay[dateStr].icons.push(item.weather[0].id);
+                    });
+                    
+                    const finalForecast = [];
+                    const localeMap = { es: 'es-AR', en: 'en-US', pt: 'pt-BR', fr: 'fr-FR', de: 'de-DE', ja: 'ja-JP', zh: 'zh-CN' };
+                    const loc = localeMap[lang] || localeMap['es'];
+                    
+                    Object.keys(forecastByDay).slice(0, 3).forEach(dateK => {
+                        const vals = forecastByDay[dateK];
+                        const code = vals.noon_icon || vals.icons[0];
+                        const dtObj = new Date(dateK);
+                        dtObj.setMinutes(dtObj.getMinutes() + dtObj.getTimezoneOffset());
+                        const dayName = dtObj.toLocaleDateString(loc, { weekday: 'short' }).toUpperCase().replace(/\./g, '').substring(0, 3);
+                        finalForecast.push({ day: dayName, min: Math.round(Math.min(...vals.temps)), max: Math.round(Math.max(...vals.temps)), code });
+                    });
+                    
+                    if (finalForecast.length > 0) weatherForecast.value = finalForecast;
                 }
             } catch (e) {
-                console.log("Forecast parse error", e);
+                console.log("Forecast fetch error", e);
             }
         }
     } catch (e) {
@@ -2226,8 +2245,7 @@ onMounted(async () => {
     setInterval(getSystemStats, 5000);
     getSystemStats();
     await fetchSettings();
-    finaState.value.process = t("proc_loading_sys", "Sincronizando clima...");
-    await updateWeather(); // Obligamos a esperar los ~3 segs iniciales y descargamos el pronóstico
+    updateWeather(); // Se lanza sin await para no trabar NADA en el frontend ni backend al inicio
 
     await fetchContacts(); // Cargar la agenda local
     await fetchUserData(); // Cargar recordatorios y notas
