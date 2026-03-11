@@ -553,7 +553,7 @@ async def main():
             except:
                 ready_weather.set()
 
-            # 4. Loop de espera funcional
+            # 4. Loop de espera funcional (Clima/AC)
             wait_start = time.time()
             print("⏳ Verificando funciones críticas...", flush=True)
             while time.time() - wait_start < 8:
@@ -561,6 +561,30 @@ async def main():
                     break
                 time.sleep(0.5)
             
+            # 5. Estabilización Universal de CPU 
+            # (Garantiza que Weston/Waydroid/Modelos pesados no ahoguen el micrófono dejándolo sordo)
+            try:
+                import psutil
+                cpu_checks = 0
+                max_cpu_wait = 25
+                cpu_start_time = time.time()
+                
+                # Check inicial, si el CPU está prendido fuego, esperamos.
+                if psutil.cpu_percent(interval=0.5) > 70:
+                    update_ui_state("idle", "Estabilizando recursos antes de iniciar...")
+                    print("⚙️ Alerta Alta Carga de CPU: Esperando estabilización para no dejar sordo al micrófono...", flush=True)
+                    while time.time() - cpu_start_time < max_cpu_wait:
+                        current_cpu = psutil.cpu_percent(interval=1.0)
+                        if current_cpu < 55:
+                            cpu_checks += 1
+                            if cpu_checks >= 2:  # CPU relajada 2 lecturas consecutivas
+                                print("✅ CPU Estabilizada.", flush=True)
+                                break
+                        else:
+                            cpu_checks = 0
+            except Exception as e:
+                pass
+
             update_ui_state("idle", None)
             
         if CONFIG_FOUND:
