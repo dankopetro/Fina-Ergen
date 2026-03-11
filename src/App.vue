@@ -1727,27 +1727,18 @@ const notifyFina = (msg, duration = 4000) => {
 
 // --- REFRESH SYSTEMS ---
 const refreshAcStatus = async (silent = false) => {
-    // REFRESH AIR CONDITIONER (UNIVERSAL JSON LOGIC)
-    const ac_ip = userSettings.value.apis.AC_IP || "";
-    if (!ac_ip) return;
-
+    // REFRESH AIR CONDITIONER (FINAL PRODUCTION SYNC)
+    const ac_ip = userSettings.value.apis.AC_IP || "192.168.0.213";
     const pyPath = pythonExecutable.value;
     
-    // Búsqueda inteligente del script en rutas estándar y locales
-    const searchCmd = `find "${projectRoot.value || '.'}" ~/.config/Fina/plugins -name "clima.py" 2>/dev/null | head -n 1`;
+    // Prioridad absoluta a la ruta de producción en .config/Fina
+    const scriptPath = `/home/claudio/.config/Fina/plugins/AirConditioning/Midea-Surrey/clima.py`;
 
     try {
-        const scriptPath = (await invoke("execute_shell_command", { command: searchCmd })).trim();
-        if (!scriptPath) {
-            console.warn("Script de Clima no encontrado en rutas conocidas.");
-            return;
-        }
-
         let command = `${pyPath} "${scriptPath}" --status --ip ${ac_ip} --silent`;
         const output = await invoke("execute_shell_command", { command });
         
-        // --- PARSEO JSON (Lógica Meteorológica) ---
-        // Buscamos la línea que sea un JSON válido en la salida
+        // --- PARSEO JSON UNIFICADO ---
         const lines = output.split('\n');
         for (const line of lines) {
             const trimmed = line.trim();
@@ -1761,11 +1752,10 @@ const refreshAcStatus = async (silent = false) => {
                         acState.value.indoor = Math.round(data.indoor || 25);
                         acState.value.outdoor = data.outdoor === "--" ? 0 : Math.round(data.outdoor || 0);
                         acState.value.watts = data.watts !== undefined ? Math.round(data.watts) : null;
-                        acState.value.total_kwh = data.total_kwh !== undefined ? parseFloat(data.total_kwh.toFixed(2)) : null;
-                        acState.value.monthly_kwh = data.monthly_kwh !== undefined ? parseFloat(data.monthly_kwh.toFixed(2)) : null;
+                        acState.value.total_kwh = (data.total_kwh !== undefined && data.total_kwh !== null) ? parseFloat(data.total_kwh.toFixed(2)) : null;
+                        acState.value.monthly_kwh = (data.monthly_kwh !== undefined && data.monthly_kwh !== null) ? parseFloat(data.monthly_kwh.toFixed(2)) : null;
                         
-                        // Sincronización exitosa, salimos
-                        console.log("✓ AC Sync OK (JSON)");
+                        console.log(`[AC] Sincronización exitosa: ${acState.value.total_kwh} kWh`);
                         return;
                     }
                 } catch (e) {
@@ -1774,19 +1764,8 @@ const refreshAcStatus = async (silent = false) => {
             }
         }
         
-        // Fallback Regex (Solo si falla el JSON)
-        console.log("Fallback a Regex para Clima...");
-        const tempMatch = output.match(/ a ([\d.]+)°C/i);
-        const wattsMatch = output.match(/Consumo:\s*([\d.]+)W/i);
-        const kwhMatch = output.match(/Acumulado:\s*([\d.]+)kWh/i);
-        
-        if (tempMatch) acState.value.temp = Math.round(parseFloat(tempMatch[1]));
-        if (wattsMatch) acState.value.watts = Math.round(parseFloat(wattsMatch[1]));
-        if (kwhMatch) acState.value.total_kwh = parseFloat(parseFloat(kwhMatch[1]).toFixed(2));
-        else if (output.toLowerCase().includes("apagado") || output.toLowerCase().includes("off")) acState.value.power = false;
-
     } catch (e) {
-        console.error("Error refreshing AC status:", e);
+        console.error("Error crítico actualizando Aire (Script Externo):", e);
     }
 };
 
