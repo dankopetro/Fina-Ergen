@@ -564,12 +564,17 @@ async def main():
             update_ui_state("idle", None)
             
         if CONFIG_FOUND:
+            import getpass
+            username = (get_unified_config("USER_NAME") or getpass.getuser()).capitalize()
             greeting = get_time_based_greeting()
-            msg = "Sistemas listos. Por favor, diga Fina para comenzar."
-            update_ui_state("idle", msg)
-            speak(f"{greeting}. {msg}", DEFAULT_VOICE)
+            msg = utils.i18n("systems_ready", "Sistemas listos. Por favor, diga Fina para comenzar.")
+            
+            full_msg = f"{greeting} {username}. {msg}"
+            update_ui_state("idle", utils.i18n("sys_ready_short", "SISTEMA LISTO"))
+            speak(full_msg, DEFAULT_VOICE)
         else:
-            msg = utils.i18n("systems_ready", "Bienvenido. Por favor, consulta el manual para configurarme.")
+            msg = utils.i18n("systems_ready_no_conf", "Bienvenido. Por favor, consulta el manual para configurarme.")
+            update_ui_state("idle", utils.i18n("sys_ready_short", "SISTEMA LISTO"))
             speak(msg, DEFAULT_VOICE)
             
     except Exception as e:

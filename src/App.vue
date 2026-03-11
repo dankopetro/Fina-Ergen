@@ -2016,10 +2016,7 @@ const getBarStyle = (n) => {
     };
 };
 
-// FUNCIÓN DE DETECCIÓN DE TV INTELIGENTE
 const detectTvIp = async (silent = false) => {
-    if (!silent) finaState.value.process = t("proc_looking_tv", "BUSCANDO TV...");
-
     // 1. Intentar conectar preventivamente a las TVs conocidas (SOLO SI NO ESTAMOS EN MODO SILENCIOSO)
     // Para evitar saturar ADB al inicio si ya hay conexiones vivas
     if (!silent && userSettings.value.tvs && Array.isArray(userSettings.value.tvs)) {
@@ -2057,7 +2054,6 @@ const detectTvIp = async (silent = false) => {
                     const connectedTv = userSettings.value.tvs?.find(t => t.ip === ipToTest);
                     const displayName = connectedTv ? connectedTv.name.toUpperCase() : ipToTest;
                     if (!silent) finaState.value.process = `TV CONECTADA: ${displayName}`;
-                    if (!silent) setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
                     return;
                 } catch {
                     console.log("Cache o IP de habitación no responde.");
@@ -2121,16 +2117,15 @@ const detectTvIp = async (silent = false) => {
             command: `echo ${activeTvIp.value} > /tmp/fina_last_tv_ip`
         }).catch(() => { });
     }
-
-    if (!silent) setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 2000);
 };
 
 // FUNCIÓN MAESTRA DE SINCRONIZACIÓN DE DISPOSITIVOS (Optimizada)
 let lastSync = 0;
 const syncAllDevices = async (force = false, silent = false) => {
     const now = Date.now();
-    if (!force && now - lastSync < 30000) return; // if (!silent)
-    finaState.value.process = t("proc_checking_states", "CORROBORANDO ESTADOS"); lastSync = now;
+    if (!force && now - lastSync < 30000) return;
+    if (!silent) finaState.value.process = t("proc_checking_states", "CORROBORANDO ESTADOS"); 
+    lastSync = now;
     await Promise.all([
         refreshAcStatus(silent),
         refreshDoorbellStatus(),
