@@ -10,7 +10,15 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
-## [v3.5.9] - 2026-03-12 (Edición de Fluidez y Energía)
+## [v3.5.9-1] - 2026-03-12 (Edición de Fluidez y Regionalismo)
+
+### 🌍 Regionalismo Global (I18N)
+- **🚀 Expansión Masiva**: Implementación de más de 200 frases regionales para más de 20 locales, incluyendo España, México, Argentina, Uruguay, Paraguay, Chile, Perú, Colombia, Venezuela, Centroamérica, Caribe, Brasil, Portugal, Francia, Quebec, Bélgica, Alemania, Suiza, Austria, Japón y China (Mandarín y Cantonés).
+- **🗣️ Detección Automática**: El sistema ahora detecta el locale y el idioma del sistema operativo para saludar y despedirse de forma natural.
+
+### 💤 Sleep Mode Inteligente
+- **🛡️ Acceso Simplificado**: El comando "dormir" ya no requiere autenticación biométrica (voz o huella), permitiendo un descanso inmediato.
+- **👁️ Despertar por Intenciones**: Separada la lógica de sueño de la de salida del sistema. Fina ahora despierta reconociendo intenciones de activación en lugar de simples palabras clave.
 
 ### 🌡️ Aire Acondicionado (IoT)
 - **🚀 Refresco Asíncrono (No-blocking)**: Implementado sistema de ejecución en segundo plano (`spawn`) que elimina completamente el congelamiento de las animaciones y el habla de Fina durante la consulta al equipo.

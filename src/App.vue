@@ -196,7 +196,7 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.9 (12/03/2026 00:05)";
+const version = "Fina Ergen v 3.5.9-1 (12/03/2026 13:20)";
 const buildDate = "Mié 11 Mar 2026 21:30";
 
 const showOptInModal = ref(false);

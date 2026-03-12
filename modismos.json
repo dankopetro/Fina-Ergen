@@ -1,0 +1,610 @@
+{
+  "es_AR": {
+    "welcome": [
+      "Hola fiera, ¿qué se dice?",
+      "Buenas, capo. ¿En qué te ayudo?",
+      "Todo bien por acá, ¿vos?",
+      "¡Qué hacés! ¿Qué bicho te picó hoy?",
+      "Hola, aquí Fina reportándose, fiera.",
+      "¿Hablamos o me vas a dejar acá clavada?",
+      "Buenas, fenómeno. ¿En qué andamos?",
+      "¿Qué onda? ¿Hay algo para hacer o seguimos de joda?",
+      "¡Hola! Mirá quién apareció.",
+      "Acá estoy, firme como rulo de estatua."
+    ],
+    "sleep": [
+      "Chau fiera. Me voy a la cucha.",
+      "Que te garue finito. Cualquier cosa me pegás el grito.",
+      "Uff, al fin no me rompe más. Es una jodita, chaucito.",
+      "Dale, descansá. Yo me quedo acá de guardia.",
+      "Nos vemos, capo. Quedo atenta.",
+      "Mañana seguimos, metele ficha al descanso.",
+      "Chau fiera, me voy a resetear la ram.",
+      "Ya fue por hoy, nos vemos en la próxima.",
+      "Si me necesitás, silbame.",
+      "Cerrando el quiosco. ¡Chau!"
+    ]
+  },
+  "es_UY": {
+    "welcome": [
+      "¡Hola, bo! ¿Todo bien?",
+      "¿Qué cuenta, gurí? ¿En qué te ayudo?",
+      "Buenas, ¿cómo anda eso, bo?",
+      "¡Qué hacés! ¿Todo tranqui por acá?",
+      "Hola, acá estoy. ¿Qué se dice?",
+      "¿Qué onda, bo? ¿Alguna novedad?",
+      "Buenas, ¿todo en orden?",
+      "¡Vamo' arriba! ¿En qué andamos hoy?",
+      "Hola, botija. Decime qué precisás.",
+      "Acá estoy, firme como un rulo."
+    ],
+    "sleep": [
+      "Ta, nos vemos. Me voy a descansar.",
+      "Chau, bo. Cualquier cosa pegame el grito.",
+      "Me voy a la cucha un rato. ¡Nos vemos!",
+      "Dale, descansá. Yo quedo acá en guardia.",
+      "Ta luego, botija. Me pongo en espera.",
+      "Mañana la seguimos, vamo' arriba.",
+      "Chau, me voy a resetear un poco.",
+      "Listo el pollo por hoy. ¡Chau!",
+      "Me desconecto, cuidate bo.",
+      "¡Chau! Quedo atenta si me precisás."
+    ]
+  },
+  "es_PY": {
+    "welcome": [
+      "¡Mba'éichapa! ¿Todo tranqui?",
+      "¡Hola, chera'a! ¿En qué te ayudo?",
+      "Buenas, ¿cómo amaneciste?",
+      "¿Qué lo que es? ¿Todo purete?",
+      "¡Mba'éichapa ne ko'ẽ! ¿Qué se hace hoy?",
+      "Hola, ¿todo bien, todo legal?",
+      "¡Épale! ¿Qué contás de nuevo?",
+      "Buenas, aquí firme para lo que sea.",
+      "¿Qué pío necesitás hoy?",
+      "¡Hola! ¿Todo tranqui o qué?"
+    ],
+    "sleep": [
+      "¡Ahata-ayu! Me voy un rato.",
+      "Jajohechá pevé, chera'a.",
+      "Me voy a descansar un poco, todo tranqui.",
+      "Chau, cualquier cosa avisame.",
+      "Ya estuvo por hoy, me voy a dormir.",
+      "¡Purete! Nos vemos mañana.",
+      "Me desconecto, quedate tranquilo.",
+      "¡Chau! Se me cuida.",
+      "Me voy a la cucha paraguaya.",
+      "¡Hasta luego! Quedo a la espera."
+    ]
+  },
+  "es_EC": {
+    "welcome": [
+      "¿Qué más, ñaño? ¿Cómo va todo?",
+      "¡Hola! ¿Qué cuenta? ¿En qué te ayudo?",
+      "Buenas, ¿todo chévere por allá?",
+      "¿Qué pasó, ñañito? ¿Qué necesitas?",
+      "¡Habla, carnal! ¿Todo bien?",
+      "Hola, ¿cómo te trata la vida?",
+      "¡Mande! Aquí estoy para lo que sea.",
+      "¿Qué onda? ¿Hay chamba o qué?",
+      "¡Chévere verte por acá! ¿En qué te apoyo?",
+      "Buenas, dime qué se te ofrece."
+    ],
+    "sleep": [
+      "¡Chao, ñaño! Me voy a descansar.",
+      "Iráse a volver, ¡nos vemos luego!",
+      "Me voy a dormir un rato, cuídate.",
+      "Ashata kashkaman! Hasta pronto.",
+      "¡De una! Me pongo en espera.",
+      "Ya fue por ahora, hablamos luego.",
+      "Descansa, yo aquí me quedo atenta.",
+      "¡Chao! Que te vaya bien.",
+      "Me desconecto un ratico.",
+      "¡Hasta mañana! Pásala chévere."
+    ]
+  },
+  "es_CU": {
+    "welcome": [
+      "¡Asere, qué bolá! ¿Cómo anda la cosa?",
+      "¡Hola! ¿Qué vuela? ¿En qué te ayudo?",
+      "Épale, ¿qué tal el ambiente?",
+      "¿Cómo va eso, asere? ¿Dime qué quieres?",
+      "¡Oye! ¿Qué hay de nuevo por acá?",
+      "Buenas, ¿todo fino o qué?",
+      "Aché para ti, ¿en qué te apoyo?",
+      "¿Qué bolón? ¿Qué se hace hoy?",
+      "¡Hola! Aquí firme en la guagua del sistema.",
+      "¿Dime, qué me cuentas hoy?"
+    ],
+    "sleep": [
+      "¡Chao, asere! Me voy a descansar.",
+      "Me quito la chancleta un rato, ¡nos vemos!",
+      "Voy a coger un diez, hablamos luego.",
+      "No cojas lucha, yo aquí me quedo pendiente.",
+      "¡Adiós! Cuídate por ahí.",
+      "Me voy pal sobre, asere.",
+      "Hasta la vista, se me cuida.",
+      "Me desconecto un poco, ¡pásalo bien!",
+      "Ya estuvo bueno por hoy, ¡chao!",
+      "¡Nos vemos en la próxima vuelta!"
+    ]
+  },
+  "es_PR": {
+    "welcome": [
+      "¡Dímelo! ¿Qué es la que hay?",
+      "¡Wepa! ¿Todo bien por allá?",
+      "¿Qué tal, combo? ¿En qué te ayudo?",
+      "¡Habla! ¿Qué se dice hoy?",
+      "Dímelo, ¿qué hay de nuevo?",
+      "¿Todo bien o qué? Aquí a tu orden.",
+      "¡Épale! ¿Cómo va el jangueo?",
+      "Buenas, dime qué necesitas hoy.",
+      "¿Qué es la que hay, mi gente?",
+      "Hola, aquí puesta para lo que sea."
+    ],
+    "sleep": [
+      "¡Dale! Me voy a descansar.",
+      "Nos vemos, cuídate por ahí.",
+      "Me retiro, ¡hablamos luego!",
+      "Pichea, me voy a dormir un rato.",
+      "¡Wepa! Hasta la próxima.",
+      "Voy a stand-by, se me cuidan.",
+      "Hasta mañana, lindo día.",
+      "Me desconecto, quedo en la espera.",
+      "¡Chao! Pásalo a fuego.",
+      "Ya terminó el turno, ¡nos vemos!"
+    ]
+  },
+  "es_DO": {
+    "welcome": [
+      "¿Qué lo que? ¿Cómo va todo?",
+      "¡Dímelo cantando! ¿Qué se dice hoy?",
+      "Hola, pana. ¿En qué te ayudo?",
+      "¿Qué hay de nuevo, manín? ¿Todo nitido?",
+      "¡Épale! ¿Todo tranqui?",
+      "Buenas, ¿cómo está la vaina?",
+      "¿Qué lo que hay? ¿Qué se hace?",
+      "Hola, dime qué necesitas ahora mismo.",
+      "¡Dímelo! ¿Todo apero?",
+      "Buenas, ¿qué cuentas de la vida?"
+    ],
+    "sleep": [
+      "¡Abul! Me voy a descansar.",
+      "Abur-Abur, nos vemos luego.",
+      "Me voy a dormir un rato, se me cuida.",
+      "Tranqui, yo me quedo aquí en espera.",
+      "Con Dios, nos vemos pronto.",
+      "Me voy pal sobre, ¡hablamos!",
+      "Vaya con Dios, que todo salga bien.",
+      "Me desconecto por hoy, ¡chao!",
+      "Hasta luego, manín. Chillaxing total.",
+      "¡Chao! Nos vemos en el próximo bonche."
+    ]
+  },
+  "es_PA": {
+    "welcome": [
+      "¿Qué xopá? ¿Todo bien?",
+      "¿Qué es lo que es? ¿En qué te ayudo?",
+      "¡Hola! ¿Cómo va la vaina?",
+      "¿Qué tal? ¿Todo tranqui por allá?",
+      "Buenas, ¿qué se dice hoy?",
+      "¿Qué es la que hay? ¿Algo nuevo?",
+      "¡Hola! Aquí a tu disposición.",
+      "Dime, ¿qué hay para hacer hoy?",
+      "Buenas, ¿cómo te trata Panamá?",
+      "¿Qué xopá? ¿Listo para empezar?"
+    ],
+    "sleep": [
+      "¡Chao! Me voy a descansar.",
+      "Nos vemos, se me cuida.",
+      "Me retiro por ahora, hablamos luego.",
+      "Ya fue por hoy, a dormir.",
+      "¡Vemos! Pásalo bien.",
+      "Hasta luego, quedo atenta.",
+      "Me desconecto, ¡cuídate!",
+      "Chao, ahí nos vemos pronto.",
+      "Me voy a stand-by un rato.",
+      "¡Hasta mañana! Todo cool."
+    ]
+  },
+  "es_CR": {
+    "welcome": [
+      "¡Pura vida! ¿Cómo va todo?",
+      "¡Hola! ¿Qué tal, mae? ¿En qué te ayudo?",
+      "Buenas, ¿todo bien por allá?",
+      "¡Pura vida! ¿Qué se cuenta?",
+      "¿Qué chiva verte por acá! ¿En qué andamos?",
+      "Hola, ¿cómo estás mae?",
+      "¡Pura vida! Aquí a la orden.",
+      "¿Qué hubo? ¿Todo en todas?",
+      "Buenas, dime qué precisás hoy.",
+      "¡Hola! ¿Todo bien mae?"
+    ],
+    "sleep": [
+      "¡Pura vida! Me voy a descansar.",
+      "Nos juimos! Nos vemos luego.",
+      "Me voy a dormir un rato, mae.",
+      "¡Tuanis! Quedo en espera.",
+      "Hasta luego, se me cuida.",
+      "Pura vida, nos vemos mañana.",
+      "Me retiro por ahora, mae.",
+      "Que descansés mucho, ¡chao!",
+      "Me desconecto, pura vida por todo.",
+      "¡Chao! Nos vemos en el chante."
+    ]
+  },
+  "es_NI": {
+    "welcome": [
+      "¿Qué onda? ¿Cómo estás?",
+      "¡Hola! ¿Qué tal la cosa? ¿En qué te ayudo?",
+      "Buenas, ¿todo bien por allá?",
+      "¿Qué se dice? ¿Alguna novedad?",
+      "¡Hola! Aquí a tu servicio.",
+      "¿Cómo va todo? ¿Listo para empezar?",
+      "Buenas, dime qué necesitas hoy.",
+      "¿Qué onda? ¿Hay algo que hacer?",
+      "¡Hola! ¿Cómo te trata la vida?",
+      "Buenas, aquí pendiente de vos."
+    ],
+    "sleep": [
+      "¡Chao! Me voy a descansar.",
+      "Nos vemos luego, cuídate.",
+      "Me retiro por ahora, hablamos pronto.",
+      "Ya fue por hoy, a dormir se ha dicho.",
+      "¡Nos vemos! Pásala bien.",
+      "Hasta luego, quedo atenta.",
+      "Me desconecto un rato.",
+      "Chao, ahí nos vemos.",
+      "Me voy a reposar un poco.",
+      "¡Hasta mañana! Que descanses."
+    ]
+  },
+  "es_GT": {
+    "welcome": [
+      "¿Qué onda? ¿Cómo va todo?",
+      "¡Hola! ¿Qué tal? ¿En qué te ayudo?",
+      "Buenas, ¿cómo te trata Guate?",
+      "¿Qué se dice? ¿Todo chilero?",
+      "¡Hola! Aquí a tus órdenes.",
+      "Buenas, dime en qué te apoyo hoy.",
+      "¿Qué tal? ¿Alguna novedad por ahí?",
+      "Hola, ¿listo para empezar la jornada?",
+      "Buenas, ¿cómo va la cosa?",
+      "¿Qué onda? ¿En qué andamos?"
+    ],
+    "sleep": [
+      "¡Chao! Me voy a descansar.",
+      "Nos vemos, te cuidás.",
+      "Me retiro por ahora, hablamos luego.",
+      "Ya estuvo bueno por hoy, a dormir.",
+      "¡Nos vemos! Que te vaya bien.",
+      "Hasta luego, quedo atenta.",
+      "Me desconecto un rato.",
+      "Chao, ahí platicamos.",
+      "Me voy a reposar, ¡pásala bien!",
+      "¡Hasta mañana! Todo chilero."
+    ]
+  },
+  "es_SV": {
+    "welcome": [
+      "¿Qué onda? ¿Cómo estás?",
+      "¡Hola! ¿Qué tal? ¿En qué te ayudo?",
+      "Buenas, ¿todo bien por allá?",
+      "¿Qué se dice? ¿Alguna novedad?",
+      "¡Hola! Aquí a tu disposición.",
+      "Buenas, dime qué necesitas hoy.",
+      "¿Qué onda? ¿En qué andamos hoy?",
+      "Hola, ¿listo para la acción?",
+      "Buenas, ¿cómo va el día?",
+      "¿Qué onda? ¿Hay algo que hacer?"
+    ],
+    "sleep": [
+      "¡Chao! Me voy a descansar.",
+      "Nos vemos, cuídate.",
+      "Me retiro por ahora, platicamos luego.",
+      "Ya estuvo por hoy, a dormir.",
+      "¡Nos vemos! Pásala bien.",
+      "Hasta luego, quedo atenta.",
+      "Me desconecto un rato.",
+      "Chao, ahí nos vemos.",
+      "Me voy a reposar un poco.",
+      "¡Hasta mañana! Que descanses."
+    ]
+  },
+  "es_MX": {
+    "welcome": [
+      "¿Qué onda? ¿Cómo va todo?",
+      "¡Qué tranza, carnal! ¿En qué te ayudo?",
+      "¡Quiúbole! Aquí andamos para lo que gustes.",
+      "¿Qué hubo? ¿Qué se te ofrece hoy?",
+      "Buenas, ¿qué milagro que te dejas ver?",
+      "¿Qué rollo? ¿Listo para empezar?",
+      "¡Épale! ¿Cómo te trata la vida?",
+      "Hola, ¿en qué te puedo echar la mano?",
+      "¡Qué onda, carnal! ¿Qué cuentas?",
+      "Dime, ¿qué hay de nuevo?"
+    ],
+    "sleep": [
+      "¡Cámara! Me voy a descansar.",
+      "¡Ahí nos vidrios! Cualquier cosa me avisas.",
+      "Sale, nos vemos luego.",
+      "Me retiro, ahí te encargo todo.",
+      "Descansa, yo aquí me quedo al pendiente.",
+      "¡Sale y vale! Nos vemos pronto.",
+      "Ya me voy a dormir, ya estuvo bueno por hoy.",
+      "Mañana le seguimos, ¡pórtate bien!",
+      "Me desconecto un rato, ¡buena suerte!",
+      "¡Ya nos vemos! Qué descanses."
+    ]
+  },
+  "es_CO": {
+    "welcome": [
+      "¿Qué más, parce? ¿Cómo va todo?",
+      "¡Hola! ¿Qué hubo? ¿En qué te ayudo?",
+      "Buenas, ¿cómo me le va?",
+      "¡Qué más pues! Aquí pendiente de usted.",
+      "¿Qué cuenta? ¿Todo bien o qué?",
+      "Hola, ¿como amaneció?",
+      "¡Hable pues! ¿Qué necesita?",
+      "Buenas, ¿todo bien, todo bonito?",
+      "¿Qué más, mi llave? ¿Cómo va la cosa?",
+      "Hola, ¿qué hay de nuevo por estos lados?"
+    ],
+    "sleep": [
+      "¡Chao pues! Me voy a descansar.",
+      "Nos vemos, parce. Se me cuida.",
+      "Hasta lueguito, cualquier cosa me pega el grito.",
+      "Hablamos más tarde, ¡que estés bien!",
+      "Me voy a dormir un ratico.",
+      "¡Listo! Ahí quedo pendiente.",
+      "Ya terminé por hoy, ¡nos vemos!",
+      "Que descanses, mañana seguimos dándole.",
+      "Me desconecto, ¡cuídese mucho!",
+      "¡Hablamos! Que te vaya bien."
+    ]
+  },
+  "es_CL": {
+    "welcome": [
+      "¿Cómo estái? ¿Qué se cuenta?",
+      "¡Hola! ¿Qué onda, bacán?",
+      "Buenas, ¿en qué te puedo ayudar?",
+      "¡Habla, poh! ¿Qué necesitái?",
+      "¿Todo bien? ¿Cómo va la cosa?",
+      "Hola, ¿qué tal por allá?",
+      "¡Hola, chato! ¿Qué hacís?",
+      "Buenas, aquí estamos po'.",
+      "¿Qué es de tu vida?",
+      "Hola, dime qué se te ofrece."
+    ],
+    "sleep": [
+      "¡Chao, nos vemos! Me voy a descansar.",
+      "Dale, hablamos después.",
+      "Me voy a dormir un rato, cuídate.",
+      "Hasta mañana, poh. Que estés bien.",
+      "Ya po', nos vemos.",
+      "Me retiro, cualquier cosa me avisái.",
+      "Descansa, mañana le damos de nuevo.",
+      "¡Chao! Pásalo bien.",
+      "Me desconecto, quedo atenta.",
+      "¡Ya, nos vemos pronto!"
+    ]
+  },
+  "es_PE": {
+    "welcome": [
+      "¡Habla, causa! ¿Qué hay de nuevo?",
+      "Hola, ¿cómo vas? ¿En qué te ayudo?",
+      "Buenas, ¿todo bien, compare?",
+      "¡Habla pe! ¿Qué se hace hoy?",
+      "Hola, ¿cómo te encuentras?",
+      "¿Qué tal, chochera? ¿Todo tranqui?",
+      "Buenas, aquí a tus órdenes.",
+      "¿Qué cuentas de nuevo?",
+      "¡Hola! ¿Cómo va la chamba?",
+      "Habla, ¿qué necesitas ahora?"
+    ],
+    "sleep": [
+      "¡Chao, causa! Me voy a descansar.",
+      "Nos vemos, se me cuida.",
+      "Atento quedo, cualquier cosa me pasas la voz.",
+      "Me retiro, ¡hablamos luego!",
+      "Ya fue por hoy, a dormir.",
+      "¡Vemos! Que descanses.",
+      "Hasta lueguito, cuídate mucho.",
+      "Mañana seguimos, ¡un gusto!",
+      "Me desconecto un rato.",
+      "¡Chau! Ahí nos vemos."
+    ]
+  },
+  "es_VE": {
+    "welcome": [
+      "¿Qué más, vale? ¿Cómo va la vaina?",
+      "¡Épale! ¿Todo chévere?",
+      "Hola, pana. ¿En qué te ayudo?",
+      "¿Qué cuentas? ¿Todo fino?",
+      "Buenas, ¿cómo está la cosa por allá?",
+      "¡Hola! ¿Qué hay de nuevo, pues?",
+      "Épale, ¿qué se dice?",
+      "Hola, dime qué necesitas hoy.",
+      "Buenas, ¿todo bien o qué?",
+      "¿Qué más? ¿Qué hay de la vida?"
+    ],
+    "sleep": [
+      "¡Chao, vale! Me voy a descansar.",
+      "Nos vemos, pana. Cuídate.",
+      "Hablamos luego, ¡todo fino!",
+      "Me voy a dormir un rato.",
+      "¡Si va! Nos vemos después.",
+      "Descansa, yo me quedo aquí pendiente.",
+      "Hasta mañana, que estés bien.",
+      "Ya me voy, hablamos pronto.",
+      "Me desconecto, ¡cuídese!",
+      "¡Chau! Nos vemos en el camino."
+    ]
+  },
+  "es_ES": {
+    "welcome": [
+      "Hola, ¿qué tal tío?",
+      "Buenas, ¿cómo va eso?",
+      "Hola, dime qué necesitas.",
+      "¿Qué pasa, chaval? ¿En qué andamos?",
+      "Muy buenas, ¿todo bien por ahí?",
+      "Hola, ¿qué se cuece hoy?",
+      "¡Eh! ¿Qué tal la vida?",
+      "Hola, aquí estoy lista para lo que sea.",
+      "Buenas, colega. ¿Qué hay que hacer?",
+      "¡Hola! ¿Cómo va la jornada?"
+    ],
+    "sleep": [
+      "Hasta luego, me voy a descansar.",
+      "Venga, a cuidarse. Me quedo a la espera.",
+      "Buenas noches, colega.",
+      "Me voy al sobre, nos vemos luego.",
+      "¡Venga! A descansar toca.",
+      "Cierro sesión por ahora, cuídate.",
+      "Hasta mañana, si Dios quiere.",
+      "Me piro, hablamos luego.",
+      "¡Chao! Pásalo bien.",
+      "Venga, a disfrutar del descanso."
+    ]
+  },
+  "fr_FR": {
+    "welcome": [
+      "Salut ! Ça va ?",
+      "Coucou ! Quoi de neuf ?",
+      "Bonjour, comment puis-je t'aider ?",
+      "Salut ! Tu as besoin de quelque chose ?",
+      "Bonjour ! Je suis prête.",
+      "Tiens, salut ! Ça baigne ?",
+      "Bonjour, quoi de beau aujourd'hui ?",
+      "Salut ! Prêt à bosser ?",
+      "Hello ! En quoi puis-je t'être utile ?",
+      "Coucou, je suis là !"
+    ],
+    "sleep": [
+      "Salut ! Je vais me reposer.",
+      "À plus ! Je reste en veille.",
+      "Bonne nuit, fais de beaux rêves.",
+      "À bientôt ! Je suis là si besoin.",
+      "Ciao ! À plus tard.",
+      "Je file, à la prochaine !",
+      "Bonne soirée, amuse-toi bien.",
+      "Je vais au dodo, salut !",
+      "À la revoyure !",
+      "Allez, salut !"
+    ]
+  },
+  "fr_CA": {
+    "welcome": [
+      "Allô ! Comment ça va ?",
+      "Salut ! Ça gaze ?",
+      "Bon matin ! Qu'est-ce que je peux hacer pour toi ?",
+      "Allô là ! T'as besoin d'un coup de main ?",
+      "Bonjour ! Je suis prête à t'aider.",
+      "Salut ! Quoi de neuf, là ?",
+      "Allô ! Prêt pour la journée ?",
+      "Bon matin ! On fait quoi aujourd'hui ?",
+      "Salut ! Je suis là, comme d'habitude.",
+      "Allô ! Comment ça se passe ?"
+    ],
+    "sleep": [
+      "Salut ! Je m'en vais me reposer.",
+      "À tantôt ! Je reste ici.",
+      "Bonne nuit ! Dors bien.",
+      "À la próxima !",
+      "Tourlou ! À plus tard.",
+      "Je file, salut !",
+      "À bientôt, là !",
+      "Bonne soirée ! On se reparle.",
+      "Bye bye ! À demain.",
+      "Je m'en vais dormir, salut !"
+    ]
+  },
+  "de_DE": {
+    "welcome": [
+      "Moin! Wie geht's?",
+      "Hallo! Wie kann ich dir helfen?",
+      "Servus! Alles klar?",
+      "Tach! Was gibt's Neues?",
+      "Hallo! Ich bin bereit.",
+      "Moin Moin! Lust auf was Neues?",
+      "Hallo! Was kann ich für dich tun?",
+      "Moinsen! Alles fit?",
+      "Hallo! Freut mich dich zu sehen.",
+      "Tachchen! Wie läuft's?"
+    ],
+    "sleep": [
+      "Tschüss! Ich ruh mich mal aus.",
+      "Bis dann! Ich bleibe hier.",
+      "Gute Nacht! Schlaf gut.",
+      "Bis bald! Ich bin da.",
+      "Ciao! Bis später.",
+      "Mach's gut! Wir sehen uns.",
+      "Auf Wiedersehen!",
+      "Hau rein! Bis dann.",
+      "Bis morgen!",
+      "Gute Nacht und bis später."
+    ]
+  },
+  "ja_JP": {
+    "welcome": [
+      "やっほー！調子どう？",
+      "こんにちは！何か手伝える？",
+      "おっす！何する？",
+      "よっ！元気にしてたか？",
+      "こんにちは！準備はできてるよ。",
+      "まいど！どうしたん？",
+      "おは〜！今日もよろしくね。",
+      "やあ！何が必要？",
+      "こんちは！いい天気だね。",
+      "おつ〜！調子はどうだい？"
+    ],
+    "sleep": [
+      "またね！ゆっくり休んでね.",
+      "じゃあね！ここにいるからね。",
+      "おやすみ！いい夢見てね。",
+      "バイバイ！また明日。",
+      "ほな、また！",
+      "元気でね！また会おう。",
+      "先に失礼するね。お疲れ様！",
+      "お疲れ様でした！また次回ね。",
+      "じゃあ、また！気を付けて。",
+      "おやすみなさい。またね！"
+    ]
+  },
+  "zh_CN": {
+    "welcome": [
+      "嗨！最近怎么样？",
+      "你好！有什么可以帮你的？",
+      "哈喽！准备好了吗？",
+      "吃了吗？今天干嘛呢？",
+      "你好！我在这儿呢。",
+      "嘿！哥们儿，有什么事？",
+      "最近在忙什么呢？",
+      "嗨！需要我帮忙吗？",
+      "你好！很高兴见到你。",
+      "哈喽！今天心情不错吧？"
+    ],
+    "sleep": [
+      "拜拜！我去休息会儿。",
+      "回头见！我随时在。",
+      "晚安！好梦。",
+      "明天见！保重。",
+      "我走了，有事呼我。",
+      "慢走！要注意安全哦。",
+      "一会见！我在这儿等。 ",
+      "拜拜！下次再聊。",
+      "晚安，早点休息。",
+      "我有事先闪了，拜拜！"
+    ]
+  },
+  "default": {
+    "es": {
+      "welcome": ["Hola, ¿en qué puedo ayudarte?", "Hola, estoy lista.", "Buen día."],
+      "sleep": ["Entendido, descanso.", "Hasta luego.", "Me pongo en espera."]
+    },
+    "en": {
+      "welcome": ["Hello, how can I help you?", "I'm ready.", "Good day."],
+      "sleep": ["Understood, going to sleep.", "Goodbye for now.", "I'm in standby."]
+    }
+  }
+}

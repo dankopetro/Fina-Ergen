@@ -51,24 +51,25 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: 1
         with:
           tagName: v__VERSION__
-          releaseName: "Fina Ergen v3.5.9"
+          releaseName: "Fina Ergen v3.5.9-1"
           releaseBody: |
-            ### 🚀 Fina Ergen v3.5.9 - Edición de Fluidez y Energía
+            ### 🚀 Fina Ergen v3.5.9-1 - Edición de Fluidez y Regionalismo
             
-            Esta actualización introduce mejoras críticas en la fluidez del asistente y la gestión de energía:
+            Esta actualización introduce la mayor expansión de regionalismos hasta la fecha y mejoras en el modo sueño:
             
+            - **🌍 Regionalismo Global (I18N):**
+                - Implementación masiva de modismos para más de 20 locales (España, México, Argentina, Uruguay, Paraguay, Chile, Perú, Colombia, Venezuela, Centroamérica, Caribe, Brasil, Portugal, Francia, Quebec, Alemania, Suiza, Austria, Japón y China).
+                - Saludos y despedidas dinámicas adaptadas al sistema operativo.
+            - **💤 Sleep Mode Inteligente:**
+                - El comando "dormir" ya no requiere autenticación biométrica (voz/huella).
+                - Fina puede despertar mediante detección de intenciones ("Dormir" y "Despertar" ahora son intenciones separadas).
             - **🌟 Fluidez Total (Non-blocking):**
-                - Implementado sistema de ejecución asíncrono (`spawn`) para el refresco del Aire AC.
-                - Se eliminaron los congelamientos de las animaciones y el habla durante las consultas de hardware.
-            - **🌡️ Aire Acondicionado (Energía y Sync):**
-                - Visualización real de kWh (Total y Mensual) en Dashboard y Panel.
-                - Sincronización robusta con Regex para limpiar ruidos de red en la terminal.
-                - Intervalo de refresco optimizado a 5 minutos.
+                - Sistema de ejecución asíncrono para el refresco del Aire AC.
+                - Se eliminaron los congelamientos durante consultas de hardware.
             - **🕒 Gestión de Tiempo:**
-                - Clima (Weather) ahora se sincroniza cada 15 minutos alineado con el reloj (:00, :15, :30, :45).
-            - **🧼 Core y Estabilidad:**
-                - Reorganización de importaciones en `main.py` para mayor velocidad.
-                - Protección en la UI para evitar sobreescritura de datos reales por el backend.
+                - Clima sincronizado cada 15 minutos alineado con el reloj (:00, :15, :30, :45).
+            - **🧼 Core:**
+                - Mejora en la velocidad de carga inicial de `main.py`.
 
             ---
             *Desarrollado con ❤️ por Dankopetro.*

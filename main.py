@@ -143,7 +143,7 @@ config, CONFIG_FOUND = load_config()
 
 # --- DIAGNÓSTICO INICIAL ---
 import getpass
-print(f"🧠 Cerebro de Fina Iniciado... (V3.5.9 (12/03/2026 00:05))", flush=True)
+print(f"🧠 Cerebro de Fina Iniciado... (V3.5.9-1 ({time.strftime('%d/%m/%Y %H:%M')}))", flush=True)
 print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
 if os.getuid() == 0:
     print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)
@@ -914,7 +914,11 @@ async def main():
                 update_ui_state("speaking", FINA_VERSION)
                 speak(info_text, selected_voice_model)
                 continue
-            elif intent == "exit" or intent == "sleep":
+            elif intent == "sleep":
+                # Dormir ahora no requiere autenticación según pedido del usuario
+                sleep_now(selected_voice_model, detect_intent_func=detect_intent)
+                continue
+            elif intent == "exit":
                 # SEGURIDAD DE HIERRO PARA SALIDA (Multifactor)
                 authenticated = False
                 attempts = 0

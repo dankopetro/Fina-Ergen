@@ -185,97 +185,93 @@ try:
         with open(lang_path, 'r', encoding='utf-8') as f:
             I18N_DATA = json.load(f)
             logger.info(f"🌍 Idiomas cargados: {list(I18N_DATA.keys())}")
-    else:
-        logger.warning("⚠️ lang.json no encontrado en ERGEN_ROOT. Buscando en working directory...")
-        fallback_lang = os.path.join(os.getcwd(), "lang.json")
-        if os.path.exists(fallback_lang):
-             with open(fallback_lang, 'r', encoding='utf-8') as f:
-                I18N_DATA = json.load(f)
-                logger.info("🌍 lang.json cargado desde el directorio de trabajo.")
 except Exception as e:
     logger.error(f"❌ Error cargando lang.json: {e}")
 
-def get_sys_lang():
-    """Detecta el idioma del sistema con múltiples métodos de respaldo.
-    Funciona tanto en terminal como cuando se lanza desde el escritorio (ej: .deb instalado).
-    """
-    # 1. Preferencia guardada explícitamente por el usuario en la UI
-    lang = get_unified_config("FINA_LANGUAGE")
-    if lang and lang in I18N_DATA:
-        return lang
+# --- MODISMOS SUPPORT ---
+IDIO_DATA = {}
+try:
+    idio_path = os.path.join(ERGEN_ROOT, "modismos.json")
+    if os.path.exists(idio_path):
+        with open(idio_path, 'r', encoding='utf-8') as f:
+            IDIO_DATA = json.load(f)
+            logger.info(f"🌍 Modismos regionales cargados.")
+except Exception as e:
+    logger.error(f"❌ Error cargando modismos.json: {e}")
 
-    # 2. Variables de entorno del proceso actual (funciona en terminal)
-    for env_var in ['LANG', 'LC_ALL', 'LC_CTYPE', 'LANGUAGE']:
+def get_sys_locale():
+    """Detecta el locale completo (ej: es_AR) para modismos."""
+    # 1. Preferencia guardada (ej: es_AR)
+    config_lang = get_unified_config("FINA_LANGUAGE")
+    if config_lang and len(config_lang) >= 5: # ej: es_AR
+        return config_lang
+
+    # 2. Variables de entorno (LANG=es_AR.UTF-8)
+    for env_var in ['LANG', 'LC_ALL', 'LANGUAGE']:
         env_val = os.environ.get(env_var, '').strip()
         if env_val and env_val not in ('C', 'POSIX', 'C.UTF-8'):
-            detected = env_val.split('_')[0].split('.')[0].split(':')[0].lower()
-            if detected and detected in I18N_DATA:
-                logger.info(f"🌍 Idioma detectado por variable {env_var}={env_val} → '{detected}'")
-                return detected
-
-    # 3. Leer /etc/default/locale (persistente en sistemas Debian/Ubuntu)
-    try:
-        with open('/etc/default/locale', 'r') as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith('LANG=') or line.startswith('LANGUAGE='):
-                    val = line.split('=', 1)[1].strip().strip('"').strip("'")
-                    detected = val.split('_')[0].split('.')[0].lower()
-                    if detected and detected in I18N_DATA:
-                        logger.info(f"🌍 Idioma detectado por /etc/default/locale → '{detected}'")
-                        return detected
-    except Exception:
-        pass
-
-    # 4. Leer ~/.config/locale.conf o ~/.pam_environment (específico del usuario)
-    try:
-        home = os.path.expanduser('~')
-        for path in [os.path.join(home, '.config', 'locale.conf'),
-                     os.path.join(home, '.pam_environment'),
-                     '/etc/locale.conf']:
-            if os.path.exists(path):
-                with open(path, 'r') as f:
-                    for line in f:
-                        line = line.strip()
-                        if line.startswith('LANG=') or line.startswith('LANGUAGE='):
-                            val = line.split('=', 1)[1].strip().strip('"').strip("'")
-                            detected = val.split('_')[0].split('.')[0].lower()
-                            if detected and detected in I18N_DATA:
-                                logger.info(f"🌍 Idioma detectado por {path} → '{detected}'")
-                                return detected
-    except Exception:
-        pass
-
-    # 5. Ejecutar 'locale' como comando externo (último recurso en Linux/macOS)
+            return env_val.split('.')[0]
+    
+    # 3. Fallback a locale del sistema vía comando
     try:
         import subprocess as _sp
-        result = _sp.run(['locale'], capture_output=True, text=True, timeout=2)
+        result = _sp.run(['locale'], capture_output=True, text=True, timeout=1)
         for line in result.stdout.splitlines():
-            if line.startswith('LANG=') or line.startswith('LC_MESSAGES='):
-                val = line.split('=', 1)[1].strip().strip('"').strip("'")
-                if val and val not in ('C', 'POSIX'):
-                    detected = val.split('_')[0].split('.')[0].lower()
-                    if detected and detected in I18N_DATA:
-                        logger.info(f"🌍 Idioma detectado por comando 'locale' → '{detected}'")
-                        return detected
-    except Exception:
-        pass
+            if line.startswith('LANG='):
+                val = line.split('=')[1].strip('"').strip("'")
+                if val: return val.split('.')[0]
+    except: pass
+    
+    return "es_AR" # Fallback conservador
 
-    # 6. Módulo locale de Python
+def get_sys_lang():
+    """Detecta el idioma base (es, en, etc)."""
+    loc = get_sys_locale()
+    return loc.split('_')[0].lower()
+
+def get_idiom(category):
+    """Obtiene un modismo aleatorio para la categoría ('welcome' o 'sleep')."""
+    import random
+    locale = get_sys_locale()
+    lang = get_sys_lang()
+    
+    # 1. Por locale exacto (es_AR)
+    if locale in IDIO_DATA:
+        phrases = IDIO_DATA[locale].get(category)
+        if phrases: return random.choice(phrases)
+        
+    # 2. Por idioma base en default
+    if "default" in IDIO_DATA and lang in IDIO_DATA["default"]:
+        phrases = IDIO_DATA["default"][lang].get(category)
+        if phrases: return random.choice(phrases)
+        
+    # 3. Fallback hardcoded
+    if category == "welcome":
+        return random.choice(["Hola, ¿en qué puedo ayudarte?", "Hola.", "Buen día."])
+    return random.choice(["Entendido, descanso.", "Hasta luego.", "Me pongo en espera."])
+
+def update_ui_state(status, process=None, intensity=0.0, extra_payload=None):
     try:
-        import locale as _locale
-        sys_locale, _ = _locale.getdefaultlocale()
-        if sys_locale:
-            detected = sys_locale.split('_')[0].lower()
-            if detected and detected in I18N_DATA:
-                logger.info(f"🌍 Idioma detectado por locale.getdefaultlocale() → '{detected}'")
-                return detected
-    except Exception:
-        pass
+        if process:
+            process = auto_translate(process)
 
-    # 7. Fallback final
-    logger.warning("⚠️ No se pudo detectar el idioma del sistema. Usando 'es' por defecto para Argentina/España.")
-    return "es"
+        payload = {"status": status, "process": process, "intensity": intensity}
+        if extra_payload: payload.update(extra_payload)
+        
+        data = {"type": "event", "name": "fina-state", "payload": payload}
+        # LOG CRÍTICO PARA EL USUARIO: Ver lo que se envía a la UI en la terminal
+        if process:
+            # Clean print for terminal visibility
+            print(f"🖥️ UI UPDATE -> {process}", flush=True)
+        print(json.dumps(data), flush=True)
+
+        # Intento de redundancia HTTP por si el evento de consola falla
+        try:
+             import requests
+             requests.post("http://127.0.0.1:18000/api/state", json=payload, timeout=0.05)
+        except: pass
+
+    except: pass
 
 def i18n(key, fallback=""):
     lang = get_sys_lang()
@@ -952,15 +948,23 @@ def trim_response(t, m=300):
 
 def clean_input(t): return t.strip().lower() if t else ""
 
-def sleep_now(model):
-    import random
-    speak(random.choice(["Entendido, descanso.", "Hasta luego.", "Me pongo en espera."]), model)
+def sleep_now(model, detect_intent_func=None):
+    speak(get_idiom("sleep"), model)
     update_ui_state("sleeping")
     while True:
-        audio = listen(language="es")
-        if audio and "fina" in audio.lower():
-            speak("¡Hola! Aquí estoy.", model)
-            return
+        # Escuchamos usando el idioma base detectado
+        audio = listen(language=get_sys_lang())
+        if audio:
+            if detect_intent_func:
+                intent, conf = detect_intent_func(audio)
+                if intent == "wake_up":
+                    speak(get_idiom("welcome"), model)
+                    return
+            
+            # Fallback por palabra clave si falla el clasificador o no se provee
+            if "fina" in audio.lower():
+                speak(get_idiom("welcome"), model)
+                return
 
 # --- EMAIL ---
 def get_date_n_days_ago(n=7): 
