@@ -89,7 +89,7 @@ def sandbox_v2(ip, number, message):
         return False
 
 if __name__ == "__main__":
-    ip = "192.168.0.6"
+    ip = "0.0.0.0"
     if len(sys.argv) > 1:
         ip = sys.argv[1]
     

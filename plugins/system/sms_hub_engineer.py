@@ -7,7 +7,7 @@ import time
 # SubID Confirmado: 0
 # Estado: Funciona con pantalla apagada
 
-def send_sms_final(number, message, ip="192.168.0.6"):
+def send_sms_final(number, message, ip="127.0.0.1"):
     target = f"{ip}:5555"
     pkg = "com.android.shell"
     
@@ -42,7 +42,7 @@ def send_sms_final(number, message, ip="192.168.0.6"):
 
 if __name__ == "__main__":
     # Prueba final con el mensaje solicitado
-    TARGET_IP = "192.168.0.6"
+    TARGET_IP = "127.0.0.1"
     DESTINO = "2213999606"
     MENSAJE = "Como estas?" # <--- El mensaje que querías probar
     

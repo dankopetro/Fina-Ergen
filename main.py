@@ -54,7 +54,8 @@ if not in_venv:
         import getpass
         print(f"👤 Ejecutado por: {getpass.getuser()}")
         # Aseguramos que pasamos la ruta absoluta
-        os.execl(best_py, best_py, *sys.argv)
+        # Usamos execv con una lista de argumentos para evitar errores de firma
+        os.execv(best_py, [best_py] + sys.argv)
 # --------------------------------------------------
 
 # FORZAR VISIBILIDAD DE LIBRERÍAS DEL USUARIO (Para aislamientos de AppImage)
@@ -131,10 +132,11 @@ from utils import (
     tv_open_app_cmd, tv_exit_app_cmd, tv_set_channel_cmd, tv_mute_cmd, is_tv_on, 
     turn_on_deco, turn_off_deco, deco_volume_up_cmd, deco_volume_down_cmd, 
     deco_channel_up_cmd, deco_channel_down_cmd, deco_set_channel_cmd, deco_mute_cmd,
-    ensure_tv_is_on,    tv_set_input_cmd, get_doorbell_status_cmd, show_doorbell_image, 
+    ensure_tv_is_on, tv_set_input_cmd, get_doorbell_status_cmd, show_doorbell_image, 
     show_doorbell_stream, send_ui_command, check_system_dependencies, is_code_worthy,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config,
-    get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine, i18n
+    get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine, i18n,
+    get_unified_config, get_sys_lang
 )
 # --- DEFERRED IMPORTS (Lazy Loading to prevent startup crash) ---
 # Moveremos biometría y plugins dentro de main() para que la ventana se abra primero
@@ -173,23 +175,7 @@ def speak(text, model=None, sink=None):
     except Exception as e:
         print(f"Error en voz: {e}")
 
-# --- CONFIGURATION UNIFICATION (UI Priority) ---
-def get_unified_config(key, default=None):
-    """Prioriza settings.json (UI) sobre config.py (Código)"""
-    # 1. Intentar desde settings.json
-    try:
-        if os.path.exists(SETTINGS_PATH):
-            with open(SETTINGS_PATH, 'r') as f:
-                data = json.load(f)
-                val = data.get("apis", {}).get(key)
-                if val: return val
-                # Fallback para claves de primer nivel en versiones viejas
-                val = data.get(key)
-                if val: return val
-    except: pass
-
-    # 2. Fallback al config.py tradicional
-    return getattr(config, key, default)
+# Las variables EMAIL, MISTRAL, etc. ya usan el get_unified_config importado de utils
 
 # Credenciales de Email (Prioridad UI)
 EMAIL_USER = get_unified_config("EMAIL_USER")
@@ -464,10 +450,42 @@ async def main():
             if plugin_integration:
                 try:
                     def ac_update_worker():
-                        if plugin_integration:
-                            plugin_integration.handle_intent("ac_control", "status")
+                        while True:
+                            try:
+                                if plugin_integration:
+                                    plugin_integration.handle_intent("ac_control", "status")
+                            except: pass
+                            time.sleep(300) # Cada 5 min (background polling)
                     threading.Thread(target=ac_update_worker, daemon=True).start()
                 except: pass
+
+            # Background System Stats Worker
+            def system_stats_worker():
+                import psutil
+                while True:
+                    try:
+                        # CPU
+                        cpu_p = psutil.cpu_percent(interval=1.0)
+                        # RAM
+                        mem = psutil.virtual_memory()
+                        # DISK
+                        disk = psutil.disk_usage('/')
+                        # UPTIME
+                        with open('/proc/uptime', 'r') as f:
+                            uptime_seconds = float(f.readline().split()[0])
+                        uptime_h = int(uptime_seconds // 3600)
+                        uptime_m = int((uptime_seconds % 3600) // 60)
+                        
+                        stats = {
+                            "cpu": {"percent": cpu_p},
+                            "ram": {"percent": mem.percent, "used": round(mem.used / (1024**3), 2), "total": round(mem.total / (1024**3), 2)},
+                            "disk": {"percent": disk.percent, "free": round(disk.free / (1024**3), 2)},
+                            "uptime": f"{uptime_h}h {uptime_m}m"
+                        }
+                        update_ui_state("idle", extra_payload={"system_stats": stats})
+                    except: pass
+                    time.sleep(10) # Frecuencia moderada para no saturar
+            threading.Thread(target=system_stats_worker, daemon=True).start()
 
             # Inicializar biometría
             try:
@@ -618,7 +636,8 @@ async def main():
                         while time.time() - waydroid_start < 60:
                             try:
                                 # Chequeo ADB real
-                                res = subprocess.run("adb connect 192.168.240.112:5555 >/dev/null 2>&1; adb shell getprop sys.boot_completed", shell=True, capture_output=True, text=True, timeout=2)
+                                waydroid_ip = get_unified_config("WAYDROID_IP") or "127.0.0.1"
+                                res = subprocess.run(f"adb connect {waydroid_ip}:5555 >/dev/null 2>&1; adb shell getprop sys.boot_completed", shell=True, capture_output=True, text=True, timeout=2)
                                 if "1" in res.stdout:
                                     time.sleep(3) # Respiro final para que el launcher cargue los recursos pesados
                                     print("✅ Escritorio Android listo.", flush=True)
@@ -636,7 +655,7 @@ async def main():
             username_config = get_unified_config("USER_NAME")
             if not username_config or username_config.lower() == "administrador":
                 username_config = getpass.getuser()
-            username = username_config.capitalize()
+            username = (username_config or "Usuario").capitalize()
             greeting = get_time_based_greeting()
             msg = utils.i18n("systems_ready", "Sistemas listos. Por favor, diga Fina para comenzar.")
             
@@ -685,8 +704,9 @@ async def main():
                         continue
                 
                 # Si ya está autenticado o acaba de autenticarse con éxito
-                update_ui_state("speaking", i18n("ui_waiting_command", "Esperando Comando..."))
-                speak("Esperando Comando...", temp_voice_model if 'temp_voice_model' in locals() else selected_voice_model)
+                wait_msg = i18n("ui_waiting_command", "Esperando Comando...")
+                update_ui_state("speaking", wait_msg)
+                speak(wait_msg, selected_voice_model)
                 break 
             else:
                 # Si se detectó ruido pero no fue la palabra clave con confianza
@@ -782,8 +802,8 @@ async def main():
                     print(f"🔌 Plugin Intent Detectado: {plugin_intent}")
                     try:
                         plugin_integration.handle_intent(plugin_intent, commandFinal)
-                    except Exception as e:
-                         pass
+                    except Exception:
+                        pass
                     continue # Saltar detección normal
             # -------------------------
 

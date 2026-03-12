@@ -12,6 +12,10 @@ MAC_VENDORS = {
     "B0:92:4A": "TPLink",
     "F4:F2:6D": "TPLink",
     "18:D6:C7": "TPLink",
+    "00:03:AC": "Fronius (Solar Inverter)",
+    "00:27:02": "SolarEdge",
+    "00:1C:C6": "Enphase Energy",
+    "00:E0:FC": "Huawei (Solar/Network)",
     "C0:C9:E3": "D-Link",
     "00:18:E7": "Cameo (D-Link)",
     "B0:C5:54": "D-Link",
@@ -39,8 +43,16 @@ MAC_VENDORS = {
     "C8:3A:6B": "Skyworth (Noblex/General)",
     "10:AE:60": "Google Chromecast",
     "D0:E0:55": "Google Nest Mini",
+    "18:B4:30": "Google Nest",
+    "64:16:66": "Nest Labs",
     "D8:31:34": "Roku",
     "F0:D2:F1": "Amazon Fire TV",
+    "AC:9F:C3": "Ring Video Doorbell",
+    "18:7F:88": "Ring LLC",
+    "44:61:32": "Ecobee Smart Thermostat",
+    "50:71:2C": "Tado Smart Heating",
+    "00:0E:58": "Sonos Audio",
+    "00:0C:8A": "Bose Corporation",
 
     # --- Climatización (Aires/Calefacción) ---
     "AC:C3:F2": "Midea (Aire Acond)",
@@ -51,6 +63,12 @@ MAC_VENDORS = {
     "D8:9C:67": "Daikin",
     "34:EA:34": "Broadlink IR Blaster",
     "B4:43:0D": "Broadlink",
+    "4C:C2:06": "Somfy (Smart Blinds)",
+    "00:0F:E7": "Lutron Electronics",
+    "00:26:74": "Hunter Douglas (Blinds)",
+    "C8:CC:B5": "Hunter Douglas",
+    "4C:A1:61": "Rain Bird (Irrigation)",
+    "00:04:4B": "Rachio (Irrigation)",
 
     # --- Cámaras de Seguridad (CCTV) ---
     "10:12:FB": "Hikvision",
@@ -72,9 +90,18 @@ MAC_VENDORS = {
     "50:11:F2": "Ecovacs",
     "D8:29:10": "August Smart Lock",
     "58:9C:FC": "Nuki Smart Lock",
-    "E8:7D:66": "Samsung Smart Appliance (Heladera)",
-    "20:3C:AE": "LG Smart Appliance",
+    "E8:7D:66": "Samsung Smart Refrigerator",
+    "20:3C:AE": "LG Smart Refrigerator",
+    "00:25:8D": "Haier Smart Appliance",
+    "2C:37:C5": "Haier Intelligent Home",
+    "C0:E4:34": "Whirlpool Smart Device",
+    "00:24:E4": "Withings (Health)",
+    "00:10:C6": "Fitbit Device",
+    "44:FB:42": "Tesla Connector",
+    "D0:CF:5E": "Wallbox EV Charger",
     "34:94:54": "Shelly Relay",
+    "40:F5:20": "Shelly Cloud",
+    "48:3D:33": "Shelly Device",
     
     # --- IoT Genérico / Chips WiFi ---
     "64:BB:1E": "Philips Hue Bridge",
@@ -85,7 +112,17 @@ MAC_VENDORS = {
     "24:6F:28": "Espressif (Tuya/SmartLife)",
     "84:F3:EB": "Espressif (NodeMCU)",
     "DC:4F:22": "Espressif",
+    "70:89:76": "Tuya Smart",
+    "1C:90:FF": "Tuya Smart",
+    "FC:67:1F": "Tuya Smart",
     "B0:C0:90": "Tuya Smart",
+    "00:0B:44": "ITEAD / Sonoff",
+    "34:29:8F": "Meross Smart",
+    "48:E1:E9": "Meross",
+    "00:55:DA": "Nanoleaf Lighting",
+    "D0:73:D5": "LIFX Smart Bulb",
+    "00:22:75": "Belkin Wemo",
+    "34:02:86": "Chamberlain / MyQ",
     "B8:27:EB": "Raspberry Pi",
     "DC:A6:32": "Raspberry Pi",
 
@@ -99,39 +136,45 @@ MAC_VENDORS = {
 }
 
 def get_local_ip():
+    """Detecta la IP local de la interfaz activa de forma robusta."""
     # Intento 1: Socket UDP (Muy rápido)
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0.5)
+        # No necesita conectar realmente, solo para obtener la interfaz de salida
         s.connect(("8.8.8.8", 80))
         local_ip = s.getsockname()[0]
         s.close()
-        return local_ip
+        if local_ip and not local_ip.startswith("127."):
+            return local_ip
     except:
         pass
     
     # Intento 2: Comando ip (Linux estándar)
     try:
-        res = subprocess.run(["ip", "route", "get", "1"], capture_output=True, text=True)
-        # Formato: 1.0.0.0 via 192.168.0.1 dev wlan0 src 192.168.0.100 uid 1000
+        res = subprocess.run(["ip", "route", "get", "1"], capture_output=True, text=True, timeout=1)
+        # Formato: 1.0.0.0 via X.X.X.X dev wlan0 src Y.Y.Y.Y uid 1000
         match = re.search(r"src\s+([\d\.]+)", res.stdout)
         if match:
             return match.group(1)
     except:
         pass
         
-    return "192.168.0.100"
+    return None
 
 def get_subnet(ip):
     # Assumes /24
     return ".".join(ip.split(".")[:3])
 
 def ping_host(ip):
+    """Intenta hacer ping a un host para poblar la tabla ARP."""
     try:
-        # Fast ping: -c 1 count, -W 1 timeout (1 second is reliable enough)
-        res = subprocess.run(["ping", "-c", "1", "-W", "1", ip], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return ip if res.returncode == 0 else None
+        # Fast ping: -c 1 count, -W 1 timeout
+        res = subprocess.run(["ping", "-c", "1", "-W", "1", str(ip)], 
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return str(ip) if res.returncode == 0 else ""
     except:
-        return None
+        return ""
 
 def get_arp_table():
     devices = {}
@@ -141,7 +184,7 @@ def get_arp_table():
         lines = res.stdout.splitlines()
         for line in lines:
             parts = line.split()
-            # Example: 192.168.0.100 dev wlan0 lladdr aa:bb:cc:dd:ee:ff REACTABLE
+            # Example: 192.168.X.X dev wlan0 lladdr aa:bb:cc:dd:ee:ff REACHABLE
             
             if len(parts) >= 5:
                 ip = parts[0]
@@ -172,17 +215,18 @@ def resolve_vendor(mac):
 
 def scan_network():
     local_ip = get_local_ip()
+    if not local_ip:
+        print("⚠️ No se detectó interfaz de red activa.")
+        return []
+        
     subnet = get_subnet(local_ip)
     
     # 1. Ping Sweep to populate ARP cache
     # We scan .1 to .254
     active_ips = []
     with ThreadPoolExecutor(max_workers=50) as executor:
-        futures = {executor.submit(ping_host, f"{subnet}.{i}"): i for i in range(1, 255)}
-        for future in futures:
-            res = future.result()
-            if res:
-                active_ips.append(res)
+        ips_to_scan = [f"{subnet}.{i}" for i in range(1, 255)]
+        active_ips = [res for res in executor.map(ping_host, ips_to_scan) if res]
     
     # 2. Get ARP table (MACs)
     arp_table = get_arp_table()

@@ -5,14 +5,11 @@ import datetime
 import time
 
 def get_config_dir():
+    """Retorna el directorio de configuración universal ~/.config/Fina."""
     xdg_config = os.environ.get("XDG_CONFIG_HOME")
     if xdg_config:
         return os.path.join(xdg_config, "Fina")
-    try:
-        from pathlib import Path
-        return os.path.join(str(Path.home()), ".config", "Fina")
-    except:
-        return os.path.expanduser("~/.config/Fina")
+    return os.path.expanduser("~/.config/Fina")
 
 # Logs paths - RUTA UNIVERSAL: ~/.config/Fina/Logs/plugins
 LOGS_DIR = os.path.join(get_config_dir(), "Logs", "plugins")
@@ -53,27 +50,52 @@ def log_error(msg):
         f.write(f"[{timestamp}] [ERR] {msg}\n")
     print(f"Logged error: {msg}")
 
+def tail_file(filename, lines=50):
+    """Lee las últimas N líneas de un archivo de forma eficiente sin cargar todo en memoria."""
+    if not os.path.exists(filename):
+        return []
+    try:
+        with open(filename, 'rb') as f:
+            f.seek(0, 2)
+            file_size = f.tell()
+            buffer_size = 1024 * 4
+            data = b""
+            pos = file_size
+            
+            while len(data.split(b'\n')) <= lines + 1 and pos > 0:
+                seek_pos = max(0, pos - buffer_size)
+                f.seek(seek_pos)
+                chunk = f.read(pos - seek_pos)
+                data = chunk + data
+                pos = seek_pos
+                
+            decoded_lines = data.decode('utf-8', errors='ignore').splitlines()
+            if not decoded_lines:
+                return []
+            return decoded_lines[-lines:] if len(decoded_lines) > lines else decoded_lines
+    except (OSError, IOError):
+        # Fallback para archivos especiales o errores de acceso
+        try:
+            with open(filename, 'r', encoding='utf-8', errors='ignore') as f:
+                lines_list = f.readlines()
+                if not lines_list:
+                    return []
+                return lines_list[-lines:] if len(lines_list) > lines else lines_list
+        except Exception:
+            return []
+
 def get_recent_logs(lines=50):
     ensure_logs_dir()
-    all_logs = []
+    # Read end of files
+    cmd_logs = tail_file(COMMANDS_LOG, lines)
+    err_logs = tail_file(ERRORS_LOG, lines)
     
-    # Read commands
-    if os.path.exists(COMMANDS_LOG):
-        with open(COMMANDS_LOG, 'r') as f:
-            all_logs.extend(f.readlines())
-            
-    # Read errors
-    if os.path.exists(ERRORS_LOG):
-        with open(ERRORS_LOG, 'r') as f:
-            all_logs.extend(f.readlines())
-            
-    # Sort by timestamp (approximate string sort works for ISO-ish format)
-    # Filter out empty lines
+    # Merge, sort and clip again to be sure
+    all_logs = cmd_logs + err_logs
     all_logs = [l.strip() for l in all_logs if l.strip()]
     all_logs.sort()
     
-    # Return last N lines
-    return all_logs[-lines:]
+    return all_logs[-lines:] if len(all_logs) > lines else all_logs
 
 if __name__ == "__main__":
     import argparse

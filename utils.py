@@ -373,7 +373,9 @@ def auto_translate(text):
     if lang == "es" or len(text) > 300:
         return text
         
-    cache_key = f"{lang}:{text[:50]}"
+    # Slice seguro para caché
+    text_prefix = text[:50] if len(text) > 50 else text
+    cache_key = f"{lang}:{text_prefix}"
     if cache_key in _translation_cache:
         return _translation_cache[cache_key]
         
@@ -575,6 +577,7 @@ def _voice_engine_worker():
                 break
             
             try: # Inner try ensures task_done is called
+                # Unpacking seguro
                 text, model_path = item
                 
                 if not model_path:
@@ -743,10 +746,15 @@ def speak(text, selected_model=None, sink=None, wait=True):
         from elevenlabs.client import ElevenLabs
         from elevenlabs.play import play
         try:
-            client = ElevenLabs(api_key=config.ELEVENLABS_API_KEY)
-            audio = client.text_to_speech.convert(text=text, voice_id=config.FINA_VOICE_ID, model_id="eleven_multilingual_v2")
+            api_key = get_unified_config("ELEVENLABS_API_KEY")
+            voice_id = get_unified_config("FINA_VOICE_ID", "21m00Tcm4TlvDq8ikWAM") # Fallback ID
+            if not api_key:
+                 raise ValueError("No ElevenLabs API Key")
+            client = ElevenLabs(api_key=api_key)
+            audio = client.text_to_speech.convert(text=text, voice_id=voice_id, model_id="eleven_multilingual_v2")
             play(audio)
-        except: 
+        except Exception as e: 
+            logger.warning(f"ElevenLabs falló, usando Piper: {e}")
             voice_queue.put((text, None)) 
             if wait: voice_queue.join()
     else:
@@ -1255,18 +1263,17 @@ def _check_tv_deps(m=None):
         import pychromecast
         return True
     except ImportError:
-        from main import speak
         if m: speak("Para controlar la televisión, debes instalar las dependencias de su módulo desde la carpeta plugins.", m)
         return False
 
 def _send_adb_key(k):
     if not _check_tv_deps(): return
-    ip = "192.168.0.11"
+    ip = get_unified_config("TV_IP", "0.0.0.0")
+    if ip == "0.0.0.0": return
     subprocess.run(['adb', '-s', f'{ip}:5555', 'shell', 'input', 'keyevent', str(k)], timeout=2)
 
 def turn_on_tv(m, command=""):
     if not _check_tv_deps(m): return
-    from main import speak
     plugin = _get_tv_plugin(m)
     if not plugin: return
     
@@ -1283,7 +1290,6 @@ def turn_on_tv(m, command=""):
 
 def turn_off_tv(m, command=""):
     if not _check_tv_deps(m): return
-    from main import speak
     plugin = _get_tv_plugin(m)
     if not plugin: return
     
@@ -1299,7 +1305,6 @@ def turn_off_tv(m, command=""):
 
 def tv_volume_up_cmd(m, s=5): 
     if not _check_tv_deps(m): return
-    from main import speak
     plugin = _get_tv_plugin(m)
     if not plugin: return
     try:
@@ -1313,7 +1318,6 @@ def tv_volume_up_cmd(m, s=5):
 
 def tv_volume_down_cmd(m, s=5): 
     if not _check_tv_deps(m): return
-    from main import speak
     plugin = _get_tv_plugin(m)
     if not plugin: return
     try:
@@ -1326,7 +1330,6 @@ def tv_volume_down_cmd(m, s=5):
 
 def tv_mute_cmd(m, action="mute"): 
     if not _check_tv_deps(m): return
-    from main import speak
     feedback = "Silenciando televisión..." if action == "mute" else "Quitando silencio..."
     speak(feedback, m)
     plugin = _get_tv_plugin(m)
@@ -1342,7 +1345,6 @@ def tv_mute_cmd(m, action="mute"):
 
 def tv_channel_up_cmd(m): 
     if not _check_tv_deps(m): return
-    from main import speak
     plugin = _get_tv_plugin(m)
     if not plugin: return
     try:
@@ -1355,7 +1357,6 @@ def tv_channel_up_cmd(m):
 
 def tv_channel_down_cmd(m): 
     if not _check_tv_deps(m): return
-    from main import speak
     plugin = _get_tv_plugin(m)
     if not plugin: return
     try:
@@ -1397,26 +1398,22 @@ def _get_tv_plugin(m=None):
         except Exception as e:
             print(f"Error cargando plugin de TV: {e}")
     
-    from main import speak
     if m: speak("No se encontró el plugin de televisión.", m)
     return None
 
 def tv_set_channel_cmd(c, m): 
-    from main import speak
     plugin = _get_tv_plugin(m)
     if not plugin: return
     response = plugin.handle_intent("tv_set_channel", f"pon el canal {c}")
     if response: speak(response, m)
 
 def tv_set_input_cmd(i, m): 
-    from main import speak
     plugin = _get_tv_plugin(m)
     if not plugin: return
     response = plugin.handle_intent("tv_set_input", f"pon la entrada {i}")
     if response: speak(response, m)
 
 def tv_open_app_cmd(a, m): 
-    from main import speak
     plugin = _get_tv_plugin(m)
     if not plugin: return
     response = plugin.handle_intent("tv_open_app", f"abre {a}")
@@ -1426,7 +1423,8 @@ def tv_exit_app_cmd(m):
     _send_adb_key(3)
 def is_tv_on(): 
     """Verifica si la TV principal está conectada via ADB"""
-    ip = "192.168.0.11"
+    ip = get_unified_config("TV_IP")
+    if not ip or ip == "0.0.0.0": return False
     try:
         # Usamos timeout muy corto para no bloquear el inicio
         result = subprocess.run(['adb', 'devices'], capture_output=True, text=True, timeout=1.5)
@@ -1473,7 +1471,8 @@ def wiki_summary(q, s=2):
     wikipedia.set_lang("es")
     try: 
         return wikipedia.summary(q, sentences=s)
-    except: 
+    except Exception as e: 
+        logger.debug(f"Wiki no encontró {q}: {e}")
         return "No encontrado."
 
 def tell_joke(): 
@@ -1630,7 +1629,6 @@ def get_clipboard():
 # --- REAL IMPLEMENTATIONS OF TOOLS (part 2) ---
 
 def start_timer(minutes, message="¡Tiempo cumplido!", m=None):
-    from main import speak
     import threading
     
     val = float(minutes)
@@ -1667,6 +1665,7 @@ def start_timer(minutes, message="¡Tiempo cumplido!", m=None):
     return f"Temporizador iniciado en {display_text.split(': ')[1]}."
 
 async def convert_currency(amount, from_curr, to_curr):
+    import aiohttp
     try:
         # Usamos una API gratuita sin key (exchangerate-api base)
         url = f"https://api.exchangerate-api.com/v4/latest/{from_curr.upper()}"
@@ -1753,12 +1752,14 @@ def get_proactive_briefing(m=None):
         # Tomar 3 titulares limpios
         count = 0
         for item in items:
-            title = item.find("title").text
-            # Limpiar nombre del medio (ej: " - Clarín")
-            if " - " in title:
-                title = title.rsplit(" - ", 1)[0]
-            headlines.append(title)
-            count += 1
+            title_el = item.find("title")
+            if title_el is not None and title_el.text:
+                title = title_el.text
+                # Limpiar nombre del medio (ej: " - Clarín")
+                if " - " in title:
+                    title = title.rsplit(" - ", 1)[0]
+                headlines.append(title)
+                count += 1
             if count >= 3: break
             
         if not headlines:
@@ -1811,7 +1812,6 @@ def self_destruct(*args, **kwargs):
 # --- MOBILE ASSISTANT UTILS ---
 def run_mobile_message(number, msg, app="whatsapp", voice_model=None):
     # Importar speak aquí para evitar dependencia circular al inicio
-    from main import speak
     import urllib.parse
     
     logger.info(f"📱 MOBILE RUN: {app} -> {number}: {msg}")
@@ -1898,7 +1898,6 @@ def _check_deco_deps(m=None):
         import urllib.request
         return True
     except ImportError:
-        from main import speak
         if m: speak("Faltan dependencias para el decodificador.", m)
         return False
 
@@ -1934,13 +1933,11 @@ def _get_deco_plugin(m=None):
         except Exception as e:
             print(f"Error cargando plugin de Deco: {e}")
     
-    from main import speak
     if m: speak("No se encontró el plugin del decodificador.", m)
     return None
 
 def turn_on_deco(m, command=""):
     if not _check_deco_deps(m): return
-    from main import speak
     plugin = _get_deco_plugin(m)
     if not plugin: return
     cmd_text = command if command else "enciende el decodificador"
@@ -1953,7 +1950,6 @@ def turn_on_deco(m, command=""):
 
 def turn_off_deco(m, command=""):
     if not _check_deco_deps(m): return
-    from main import speak
     plugin = _get_deco_plugin(m)
     if not plugin: return
     cmd_text = command if command else "apaga el decodificador"
@@ -1966,7 +1962,6 @@ def turn_off_deco(m, command=""):
 
 def deco_volume_up_cmd(m, s=5): 
     if not _check_deco_deps(m): return
-    from main import speak
     plugin = _get_deco_plugin(m)
     if plugin:
         resp = plugin.handle_intent("deco_volume_up", "sube el volumen")
@@ -1974,7 +1969,6 @@ def deco_volume_up_cmd(m, s=5):
 
 def deco_volume_down_cmd(m, s=5): 
     if not _check_deco_deps(m): return
-    from main import speak
     plugin = _get_deco_plugin(m)
     if plugin:
         resp = plugin.handle_intent("deco_volume_down", "baja el volumen")
@@ -1982,7 +1976,6 @@ def deco_volume_down_cmd(m, s=5):
 
 def deco_mute_cmd(m): 
     if not _check_deco_deps(m): return
-    from main import speak
     plugin = _get_deco_plugin(m)
     if plugin:
         resp = plugin.handle_intent("deco_mute", "silencia")
@@ -1990,7 +1983,6 @@ def deco_mute_cmd(m):
 
 def deco_channel_up_cmd(m): 
     if not _check_deco_deps(m): return
-    from main import speak
     plugin = _get_deco_plugin(m)
     if plugin:
         resp = plugin.handle_intent("deco_channel_up", "siguiente canal")
@@ -1998,14 +1990,12 @@ def deco_channel_up_cmd(m):
 
 def deco_channel_down_cmd(m): 
     if not _check_deco_deps(m): return
-    from main import speak
     plugin = _get_deco_plugin(m)
     if plugin:
         resp = plugin.handle_intent("deco_channel_down", "canal anterior")
         if resp: speak(resp, m)
 
 def deco_set_channel_cmd(c, m): 
-    from main import speak
     plugin = _get_deco_plugin(m)
     if plugin:
         resp = plugin.handle_intent("deco_set_channel", f"pon el canal {c}")

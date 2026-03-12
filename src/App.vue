@@ -54,6 +54,7 @@ const invoke = async (cmd, args = {}) => {
 const pythonExecutable = ref("python3");
 const projectRoot = ref("");
 const configDir = ref("");
+const cachedClimaPath = ref("");
 
 const syncSystemInfo = async () => {
     if (!isTauri) return;
@@ -195,8 +196,8 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.8-23 (11/03/2026 04:05)";
-const buildDate = "Mié 11 Mar 2026 04:05";
+const version = "Fina Ergen v 3.5.8-24 (11/03/2026 21:30)";
+const buildDate = "Mié 11 Mar 2026 21:30";
 
 const showOptInModal = ref(false);
 const newDetectedApps = ref([]);
@@ -492,7 +493,7 @@ const startSentinelDemo = () => {
             return Math.max(10, Math.min(100, v + delta));
         });
 
-        const ips = ["127.0.0.1", "192.168.0.1"]; // Placeholder, should be loaded from settings if needed
+        const ips = ["127.0.0.1", "10.0.0.1"]; // Placeholder genérico
         const threats = ["ESCANEO PUERTOS", "INTENTO SSH", "PING FLOOD", "PAQUETE DESCARTADO", "FALLO AUTH"];
         const randIp = ips[Math.floor(Math.random() * ips.length)];
         const randThreat = threats[Math.floor(Math.random() * threats.length)];
@@ -1722,11 +1723,14 @@ const notifyFina = (msg, duration = 4000) => {
 // --- REFRESH SYSTEMS ---
 const refreshAcStatus = async (silent = false) => {
     // REFRESH AIR CONDITIONER (FINAL PRODUCTION SYNC)
-    const ac_ip = userSettings.value.apis.AC_IP || "192.168.0.213";
+    const ac_ip = userSettings.value.apis.AC_IP || "0.0.0.0";
     const pyPath = pythonExecutable.value;
     
-    // Prioridad absoluta a la ruta de producción en .config/Fina
-    const scriptPath = `/home/claudio/.config/Fina/plugins/AirConditioning/Midea-Surrey/clima.py`;
+    // Ruta dinámica basada en el directorio de configuración del sistema
+    if (!cachedClimaPath.value) {
+        cachedClimaPath.value = `${configDir.value}/plugins/AirConditioning/Midea-Surrey/clima.py`;
+    }
+    const scriptPath = cachedClimaPath.value;
 
     try {
         let command = `${pyPath} "${scriptPath}" --status --ip ${ac_ip} --silent`;
@@ -2077,12 +2081,12 @@ const detectTvIp = async (silent = false) => {
         // Asegurar que ADB esté corriendo
         await invoke("spawn_shell_command", { command: `adb start-server` }).catch(() => { });
 
-        for (const tv of userSettings.value.tvs) {
-            if (tv.ip) {
-                // Timeout MUY corto para no colgar UI
-                await invoke("spawn_shell_command", { command: `timeout 2 adb connect ${tv.ip}` }).catch(() => { });
-            }
-        }
+        // Conectar en paralelo para no bloquear la UI
+        const connectPromises = userSettings.value.tvs
+            .filter(tv => tv.ip)
+            .map(tv => invoke("spawn_shell_command", { command: `timeout 2 adb connect ${tv.ip}` }).catch(() => { }));
+        
+        await Promise.all(connectPromises);
     }
 
     // 2. Intentar leer cache del sistema (generado por python scripts)
@@ -2189,9 +2193,7 @@ const syncAllDevices = async (force = false, silent = false) => {
 
 const setTab = (tab) => {
     activeTab.value = tab;
-    if (tab === 'dashboard' || tab === 'clima') {
-        refreshAcStatus(true);
-    }
+    // Eliminado refreshAcStatus(true) para evitar bloqueo de UI al cambiar pestaña
     showDoorbell.value = false;
     // Reset sub-vistas para siempre empezar desde el inicio
     activeCasaView.value = "main";
@@ -2248,9 +2250,9 @@ onMounted(() => {
         updateWeather();
         setInterval(updateWeather, 60000);
 
-        // Polling de estadísticas de sistema
-        setInterval(getSystemStats, 5000);
-        getSystemStats();
+        // Polling de estadísticas de sistema (Ahora lo hace el backend)
+        // setInterval(getSystemStats, 5000);
+        // getSystemStats();
 
         // Cargar Datos (Settings, I18n, etc)
         const loadData = async () => {
@@ -2345,6 +2347,15 @@ onMounted(() => {
                 if (ac.monthly_kwh !== undefined) acState.value.monthly_kwh = ac.monthly_kwh;
             }
 
+            // System Stats Sync (From Backend Worker)
+            if (data.system_stats) {
+                const s = data.system_stats;
+                if (s.cpu) systemStats.value.cpu = s.cpu;
+                if (s.ram) systemStats.value.ram = s.ram;
+                if (s.disk) systemStats.value.disk = s.disk;
+                if (s.uptime) systemStats.value.uptime = s.uptime;
+            }
+
             // Command Bridge
             if (data.pending_command) {
                 const cmd = data.pending_command;
@@ -2383,6 +2394,14 @@ onMounted(() => {
                     acState.value.watts = ac.watts;
                     acState.value.total_kwh = ac.total_kwh;
                     if (ac.monthly_kwh !== undefined) acState.value.monthly_kwh = ac.monthly_kwh;
+                }
+                
+                if (p.system_stats) {
+                    const s = p.system_stats;
+                    if (s.cpu !== undefined) systemStats.value.cpu = s.cpu;
+                    if (s.ram) systemStats.value.ram = s.ram;
+                    if (s.disk) systemStats.value.disk = s.disk;
+                    if (s.uptime) systemStats.value.uptime = s.uptime;
                 }
                 if (!window.lockTextUntil || Date.now() > window.lockTextUntil) {
                     if (p.status) finaState.value.status = p.status;
@@ -2567,10 +2586,21 @@ const sendAcCommand = async (args, msg) => {
     if (!ac_ip) return;
 
     const pyPath = pythonExecutable.value;
-    const findClima = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/AirConditioning" -name "clima.py" | head -n 1`;
-
     try {
-        const scriptPath = (await invoke("execute_shell_command", { command: findClima })).trim();
+        if (!cachedClimaPath.value) {
+            // Prioridad 1: Producción (.config)
+            const prodPath = `${configDir.value}/plugins/AirConditioning/Midea-Surrey/clima.py`;
+            const check = await invoke("execute_shell_command", { command: `ls "${prodPath}"` }).catch(() => "");
+            if (check.trim()) {
+                cachedClimaPath.value = prodPath;
+            } else {
+                // Prioridad 2: Local Lab
+                const findCmd = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/AirConditioning" -name "clima.py" | head -n 1`;
+                cachedClimaPath.value = (await invoke("execute_shell_command", { command: findCmd })).trim();
+            }
+        }
+
+        const scriptPath = cachedClimaPath.value;
         if (!scriptPath) return;
 
         const command = `${pyPath} "${scriptPath}" ${args} --ip ${ac_ip}`;
@@ -3289,7 +3319,7 @@ const selectFolder = async (settingKey) => {
                             </div>
                         </div>
                         <div v-else-if="activeTab === 'seguridad'"
-                            class="w-full max-w-4xl grid grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                             class="w-full max-w-4xl grid grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <!-- ESTADO DEL SISTEMA -->
                             <div
                                 class="bg-indigo-900/10 p-8 rounded-[35px] border border-indigo-500/20 shadow-[0_0_30px_rgba(79,70,229,0.1)] flex flex-col gap-6 relative overflow-hidden group">
@@ -4069,7 +4099,7 @@ const selectFolder = async (settingKey) => {
 
                                                     <div class="space-y-2">
                                                         <label
-                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{ t('ui_universal_language', `Idioma Universal (Voz y Escucha)`) }}</label>
+                                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2">{{ t('ui_universal_language', 'Idioma Universal (Voz y Escucha)') }}</label>
 
                                                         <select v-model="userSettings.apis.FINA_LANGUAGE"
                                                             @change="() => notifyFina(t('ui_restart_for_lang', 'REQUIERE REINICIO PARA APLICAR IDIOMA'))"
@@ -4083,7 +4113,7 @@ const selectFolder = async (settingKey) => {
                                                             <option value="ja">Japonés (日本語)</option>
                                                             <option value="zh">Chino (中文)</option>
                                                         </select>
-                                                        <p class="text-[9px] text-slate-500 italic px-2">{{ t('ui_language_download_hint', `Fina descargará automáticamente los modelos en el próximo inicio.`) }}</p>
+                                                        <p class="text-[9px] text-slate-500 italic px-2">{{ t('ui_language_download_hint', 'Fina descargará automáticamente los modelos en el próximo inicio.') }}</p>
                                                     </div>
 
                                                     <div v-for="(label, key) in { VOICE_MODELS_PATH: t('ui_custom_voices_folder_opt', 'Carpeta de Voces Custom (Opcional)'), VOSK_MODEL_PATH: t('ui_custom_vosk_model_opt', 'Modelo Vosk Custom (Opcional)') }"
@@ -4430,7 +4460,7 @@ const selectFolder = async (settingKey) => {
                                                     <i
                                                         class="fa-solid fa-plug-circle-xmark text-3xl text-slate-600"></i>
                                                     <span
-                                                        class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{{ t('ui_connect_device_for_apps', `Conecte el dispositivo para ver apps`) }}</span>
+                                                        class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{{ t('ui_connect_device_for_apps', 'Conecte el dispositivo para ver apps') }}</span>
 
                                                 </div>
                                             </div>

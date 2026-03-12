@@ -6,18 +6,27 @@ import sys
 import re
 
 def get_local_ip():
+    """Detecta la IP local de forma robusta para definir la subred de escaneo."""
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0.5)
         s.connect(("8.8.8.8", 80))
         ip = s.getsockname()[0]
         s.close()
-        return ip
+        # Evitamos devolver el loopback si queremos escanear la red real
+        if ip and not ip.startswith("127."):
+            return ip
     except:
-        return "192.168.0.1"
+        pass
+    return None
 
 def scan_network():
     local_ip = get_local_ip()
-    subnet = ".".join(local_ip.split('.')[:-1]) + ".0/24"
+    if not local_ip:
+        return {"status": "error", "message": "No se detectó una red activa."}
+
+    parts = local_ip.split('.')
+    subnet = f"{parts[0]}.{parts[1]}.{parts[2]}.0/24"
     
     print(f"Buscando intrusos en {subnet}...")
     
@@ -27,7 +36,7 @@ def scan_network():
         result = subprocess.run(["nmap", "-sn", subnet], capture_output=True, text=True, timeout=30)
         
         # Parse nmap output
-        # Example: "Nmap scan report for 192.168.0.1"
+        # Example: "Nmap scan report for X.X.X.X"
         hosts = re.findall(r"Nmap scan report for ([\d\.]+)", result.stdout)
         
         # Also find MAC addresses if available (requires sudo usually, but let's try)

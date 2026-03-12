@@ -6,7 +6,7 @@ import sys
 # --- FINA ERGEN: MOTOR DE INYECCIÓN UNIFICADO ---
 
 class UniversalMobileHub:
-    def __init__(self, ip="192.168.0.6", silent=False):
+    def __init__(self, ip="127.0.0.1", silent=False):
         self.ip = ip
         self.silent = silent
         self.target = f"{ip}:5555" if "." in ip and ":" not in ip else ip
@@ -20,7 +20,9 @@ class UniversalMobileHub:
         # ESTRATEGIA DE INGENIERÍA: 
         # Enviamos el comando completo como una sola cadena para que las comillas internas (\") 
         # lleguen vivas al kernel de Android y protejan los espacios del mensaje.
-        adb_call = f'service call isms {code} i32 {sub_id} s16 {pkg} s16 null s16 {number} s16 null s16 \"{message}\" s16 null s16 null'
+        # Escapamos comillas dobles en el mensaje para no romper la inyección de shell
+        safe_message = message.replace('"', '\\"')
+        adb_call = f'service call isms {code} i32 {sub_id} s16 {pkg} s16 null s16 {number} s16 null s16 \"{safe_message}\" s16 null s16 null'
         
         adb_cmd = ["adb", "-s", self.target, "shell", adb_call]
         
@@ -37,7 +39,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("pos_num", nargs="?", default=None)
     parser.add_argument("pos_msg", nargs="*", default=None)
-    parser.add_argument("--ip", default="192.168.0.6")
+    parser.add_argument("--ip", default="127.0.0.1")
     parser.add_argument("--number")
     parser.add_argument("--msg")
     parser.add_argument("command", nargs="?", default=None)
@@ -53,7 +55,7 @@ if __name__ == "__main__":
     # Si viene de posicionarles de terminal y el primer arg era "send_sms"
     if args.command == "send_sms" and not target_num and unknown:
         target_num = unknown[0]
-        target_msg = " ".join(unknown[1:])
+        target_msg = " ".join(unknown[1:]) if len(unknown) > 1 else (unknown[0] if unknown else "")
 
     hub = UniversalMobileHub(ip=args.ip, silent=is_ui_call)
     

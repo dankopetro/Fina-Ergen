@@ -2,7 +2,7 @@ import subprocess
 import sys
 
 def test_transaction(code, params):
-    cmd = f"adb -s 192.168.0.6:5555 shell service call isms {code} {params}"
+    cmd = f"adb -s 127.0.0.1:5555 shell service call isms {code} {params}"
     print(f"Testing {code} with {params}")
     res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     print(f"Stdout: {res.stdout}")
