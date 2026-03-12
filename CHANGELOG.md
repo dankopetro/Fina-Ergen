@@ -10,6 +10,25 @@ A partir de las versiones `v3.5.x`, en la página de **Releases** encontrarás d
 
 ---
 
+## [v3.5.9] - 2026-03-12 (Edición de Fluidez y Energía)
+
+### 🌡️ Aire Acondicionado (IoT)
+- **🚀 Refresco Asíncrono (No-blocking)**: Implementado sistema de ejecución en segundo plano (`spawn`) que elimina completamente el congelamiento de las animaciones y el habla de Fina durante la consulta al equipo.
+- **📊 Datos de Energía Reales**: Corregido el puente de datos para visualizar kWh totales y mensuales correctamente en el Dashboard y Panel de Control.
+- **📡 Parseo Robusto**: Nueva lógica basada en Regex para extraer datos JSON, haciendo la interfaz inmune a advertencias de red o ruidos en la terminal.
+- **⚙️ Optimización de Arranque**: Reordenada la secuencia de inicio para garantizar que los ajustes (IP) se carguen antes del primer refresco de hardware.
+
+### 🕒 Sincronización y Tiempos
+- **🔄 Intervalos Inteligentes**: 
+    - Aire Acondicionado: Refresco cada **5 minutos** (balance óptimo de datos y red).
+    - Clima/Weather: Sincronización cada **15 minutos** alineada con el reloj del sistema (minutos :00, :15, :30, :45).
+
+### 🧼 Estabilidad de Core
+- **📦 Limpieza de Importaciones**: Reorganización de `main.py` para mejorar la velocidad de carga y eliminar errores visuales de análisis en el editor.
+- **🛡️ Protección de Datos**: Implementada capa de seguridad en la UI para evitar que el polling del backend borre valores de energía obtenidos por los plugins.
+
+
+
 ## [v3.5.8-23] - 2026-03-11 (Hotfix: UI Rendering & AC Sync)
 
 ### 🖥️ UI / UX

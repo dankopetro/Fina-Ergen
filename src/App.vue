@@ -196,7 +196,7 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.8-24 (11/03/2026 21:30)";
+const version = "Fina Ergen v 3.5.9 (12/03/2026 00:05)";
 const buildDate = "Mié 11 Mar 2026 21:30";
 
 const showOptInModal = ref(false);
@@ -1726,44 +1726,38 @@ const refreshAcStatus = async (silent = false) => {
     const ac_ip = userSettings.value.apis.AC_IP || "0.0.0.0";
     const pyPath = pythonExecutable.value;
     
-    // Ruta dinámica basada en el directorio de configuración del sistema
+    // BÚSQUEDA DINÁMICA DEL SCRIPT (Robustez total)
     if (!cachedClimaPath.value) {
-        cachedClimaPath.value = `${configDir.value}/plugins/AirConditioning/Midea-Surrey/clima.py`;
+        try {
+            // Prioridad 1: Carpeta de Usuario (Plugins instalados)
+            const prodPath = `${configDir.value}/plugins/AirConditioning/Midea-Surrey/clima.py`;
+            const check = await invoke("execute_shell_command", { command: `ls "${prodPath}"` }).catch(() => "");
+            
+            if (check.trim()) {
+                cachedClimaPath.value = prodPath;
+            } else {
+                // Prioridad 2: Local Lab (Desarrollo)
+                const findCmd = `find "${projectRoot.value}/.local_lab/Fina-Plugins-Market-Working/AirConditioning" -name "clima.py" | head -n 1`;
+                const labPath = (await invoke("execute_shell_command", { command: findCmd })).trim();
+                if (labPath) cachedClimaPath.value = labPath;
+            }
+        } catch (e) {
+            console.warn("No se pudo localizar el script de clima para refresco:", e);
+        }
     }
+
     const scriptPath = cachedClimaPath.value;
+    if (!scriptPath) return;
 
     try {
+        // Lanzar en segundo plano (spawn) para NO congelar la UI
+        // Los datos llegarán vía UDP -> Backend -> UI Event
         let command = `${pyPath} "${scriptPath}" --status --ip ${ac_ip} --silent`;
-        const output = await invoke("execute_shell_command", { command });
+        invoke("spawn_shell_command", { command });
         
-        // --- PARSEO JSON UNIFICADO ---
-        const lines = output.split('\n');
-        for (const line of lines) {
-            const trimmed = line.trim();
-            if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
-                try {
-                    const data = JSON.parse(trimmed);
-                    if (data.temp !== undefined) {
-                        acState.value.power = !!data.power;
-                        acState.value.temp = Math.round(data.temp);
-                        acState.value.mode = (data.mode || "cool").toLowerCase();
-                        acState.value.indoor = Math.round(data.indoor || 25);
-                        acState.value.outdoor = data.outdoor === "--" ? 0 : Math.round(data.outdoor || 0);
-                        acState.value.watts = data.watts !== undefined ? Math.round(data.watts) : null;
-                        acState.value.total_kwh = (data.total_kwh !== undefined && data.total_kwh !== null) ? parseFloat(data.total_kwh.toFixed(2)) : null;
-                        acState.value.monthly_kwh = (data.monthly_kwh !== undefined && data.monthly_kwh !== null) ? parseFloat(data.monthly_kwh.toFixed(2)) : null;
-                        
-                        console.log(`[AC] Sincronización exitosa: ${acState.value.total_kwh} kWh`);
-                        return;
-                    }
-                } catch (e) {
-                    console.error("Error parseando JSON de AC:", e);
-                }
-            }
-        }
-        
+        console.log(`[AC] Refresco lanzado en segundo plano (Non-blocking)`);
     } catch (e) {
-        console.error("Error crítico actualizando Aire (Script Externo):", e);
+        console.error("Error lanzando refresco de Aire:", e);
     }
 };
 
@@ -2246,39 +2240,30 @@ onMounted(() => {
         // Cargar información base del sistema
         await syncSystemInfo();
         
-        // Cargar clima inicial basado en caché si existe
+        // Cargar clima y programar sincronización cada 15 min (alineado al minuto 0)
         updateWeather();
-        setInterval(updateWeather, 60000);
+        const scheduleWeather = () => {
+            const now = new Date();
+            const msToNextQuarter = (15 - (now.getMinutes() % 15)) * 60000 - (now.getSeconds() * 1000);
+            setTimeout(() => {
+                updateWeather();
+                setInterval(updateWeather, 900000); // 15 minutos
+            }, msToNextQuarter);
+        };
+        scheduleWeather();
 
         // Polling de estadísticas de sistema (Ahora lo hace el backend)
         // setInterval(getSystemStats, 5000);
         // getSystemStats();
 
-        // Cargar Datos (Settings, I18n, etc)
-        const loadData = async () => {
-            try {
-                const i18nResp = await fetch("http://127.0.0.1:18000/api/i18n");
-                if (i18nResp.ok) i18nData.value = await i18nResp.json();
-            } catch (e) { console.warn("i18n fail", e); }
-
-            await fetchSettings();
-            await fetchContacts(); 
-            await fetchUserData(); 
-            syncContactsFromMobile();
-            fetchRecentEmails();
-            setInterval(fetchRecentEmails, 300000);
-        };
-        loadData();
-
-        // Secuencia de Arranque Visual
+        // 1. Plan de Arranque Visual (Secuencia de inicio)
         const runBootPlan = async () => {
             try {
                 finaState.value.process = t("proc_loading_sys", "CARGANDO SISTEMA");
                 addChatMessage(t('ui_sys_online'));
-                
                 await new Promise(r => setTimeout(r, 1000));
                 
-                // Sincronización Inicial de Hardware (Background)
+                // Refresco inicial rápido con settings ya cargados
                 refreshAcStatus(true).catch(() => {});
                 refreshDoorbellStatus().catch(() => {});
 
@@ -2298,17 +2283,39 @@ onMounted(() => {
                 finaState.value.status = "idle";
                 finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
                 
+                // --- ORDEN FINAL POST-ARRANQUE ---
+                // Una vez listo, refrescamos el aire para asegurar los kWh finales
+                setTimeout(() => refreshAcStatus(true), 1000);
                 setTimeout(detectMessagingApps, 5000);
             } catch (bootErr) {
                 console.error("Boot error:", bootErr);
                 finaState.value.process = t("sys_ready_short", "SISTEMA LISTO");
             }
         };
-        runBootPlan();
+
+        // 2. Carga de Datos y Disparo del Arranque
+        const initializeSystem = async () => {
+            try {
+                // Idioma e i18n
+                const i18nResp = await fetch("http://127.0.0.1:18000/api/i18n");
+                if (i18nResp.ok) i18nData.value = await i18nResp.json();
+            } catch (e) { console.warn("i18n fail", e); }
+
+            await fetchSettings(); 
+            await fetchContacts(); 
+            await fetchUserData(); 
+            syncContactsFromMobile();
+            fetchRecentEmails();
+            setInterval(fetchRecentEmails, 300000);
+            
+            //settings cargados, lanzamos visual
+            runBootPlan();
+        };
+        initializeSystem();
     };
     initApp();
 
-    // 3. LISTENERS Y MONITORIZACIÓN
+    // 3. LISTENERS Y MONITORIZACIÓN (Refresco cada 5 minutos)
     setInterval(() => {
         refreshAcStatus(true);
         refreshDoorbellStatus();
@@ -2343,8 +2350,14 @@ onMounted(() => {
                 if (ac.outdoor) acState.value.outdoor = ac.outdoor;
                 if (ac.mode) acState.value.mode = ac.mode.toLowerCase();
                 if (ac.watts !== undefined) acState.value.watts = ac.watts;
-                if (ac.total_kwh !== undefined) acState.value.total_kwh = ac.total_kwh;
-                if (ac.monthly_kwh !== undefined) acState.value.monthly_kwh = ac.monthly_kwh;
+                // --- PROTECCIÓN DE ENERGÍA ---
+                // Solo actualizamos si el backend trae un valor real (>0), para no borrar el dato del plugin
+                if (ac.total_kwh && Number(ac.total_kwh) > 0) {
+                    acState.value.total_kwh = Number(ac.total_kwh).toFixed(2);
+                }
+                if (ac.monthly_kwh && Number(ac.monthly_kwh) > 0) {
+                    acState.value.monthly_kwh = Number(ac.monthly_kwh).toFixed(2);
+                }
             }
 
             // System Stats Sync (From Backend Worker)
@@ -2955,15 +2968,11 @@ const selectFolder = async (settingKey) => {
                                             <span class="text-left text-[12.5px] font-black text-yellow-400 uppercase mt-1">{{ acState.watts }}<span class="text-[9px] ml-0.5 font-bold">W</span></span>
                                         </template>
 
-                                        <template v-if="acState.total_kwh !== undefined && acState.total_kwh !== null">
-                                            <span class="text-right text-[12.5px] font-black text-purple-500 uppercase mt-1">{{ t('ui_tot', 'TOT') }}:</span>
-                                            <span class="text-left text-[12.5px] font-black text-purple-400 uppercase mt-1">{{ acState.total_kwh }}<span class="text-[9px] ml-0.5 font-bold">kWh</span></span>
-                                        </template>
+                                        <span class="text-right text-[12.5px] font-black text-purple-500 uppercase mt-1">{{ t('ui_tot', 'TOT') }}:</span>
+                                        <span class="text-left text-[12.5px] font-black text-purple-400 uppercase mt-1">{{ acState.total_kwh || "0.00" }}<span class="text-[9px] ml-0.5 font-bold">kWh</span></span>
 
-                                        <template v-if="acState.monthly_kwh !== undefined && acState.monthly_kwh !== null">
-                                            <span class="text-right text-[12.5px] font-black text-pink-500 uppercase mt-1">{{ t('ui_mes', 'MES') }}:</span>
-                                            <span class="text-left text-[12.5px] font-black text-pink-400 uppercase mt-1">{{ acState.monthly_kwh }}<span class="text-[9px] ml-0.5 font-bold">kWh</span></span>
-                                        </template>
+                                        <span class="text-right text-[12.5px] font-black text-pink-500 uppercase mt-1">{{ t('ui_mes', 'MES') }}:</span>
+                                        <span class="text-left text-[12.5px] font-black text-pink-400 uppercase mt-1">{{ acState.monthly_kwh || "0.00" }}<span class="text-[9px] ml-0.5 font-bold">kWh</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -3252,7 +3261,7 @@ const selectFolder = async (settingKey) => {
                                             {{ t('ui_main_room', 'SALA PRINCIPAL') }}</div>
                                         
                                         <!-- Mini Stats in Detail Panel -->
-                                        <div v-if="acState.total_kwh !== undefined" class="mt-6 flex flex-col gap-2 w-full px-4">
+                                        <div class="mt-6 flex flex-col gap-2 w-full px-4">
                                             <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
                                                 <span class="text-purple-500">TOT:</span>
                                                 <span class="text-white">{{ acState.total_kwh }} kWh</span>

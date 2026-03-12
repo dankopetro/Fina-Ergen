@@ -51,26 +51,27 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: 1
         with:
           tagName: v__VERSION__
-          releaseName: "Fina Ergen v3.5.8-19"
+          releaseName: "Fina Ergen v3.5.9"
           releaseBody: |
-            ### 🚀 Fina Ergen v3.5.8-19 - Mejoras de Conectividad y Telemetría
+            ### 🚀 Fina Ergen v3.5.9 - Edición de Fluidez y Energía
             
-            Esta actualización introduce mejoras críticas en el motor de plugins y la visualización de datos:
+            Esta actualización introduce mejoras críticas en la fluidez del asistente y la gestión de energía:
             
-            - **❄️ Aire Acondicionado (Surrey/Midea):**
-                - Implementación de **autodescubrimiento inteligente de ID** (Handshake).
-                - Nuevo motor de telemetría con barrido secuencial de comandos (0x12, 0x44, 0x43) para compatibilidad universal.
-                - Sincronización exacta de kWh (Acumulado desde base histórica y mensual).
-            - **🔔 Doorbell MJPEG Stream:**
-                - Reparación definitiva del enlace de video (el signo "?" ya no aparece).
-                - Autodetección de IP de Waydroid mejorada.
-                - Sistema de reintento automático en la UI si el stream se demora.
-            - **🛠️ Refactor de Mercado:**
-                - Sincronización total entre los plugins locales y el repositorio del Market.
-                - Limpieza de logs de depuración para un rendimiento óptimo.
+            - **🌟 Fluidez Total (Non-blocking):**
+                - Implementado sistema de ejecución asíncrono (`spawn`) para el refresco del Aire AC.
+                - Se eliminaron los congelamientos de las animaciones y el habla durante las consultas de hardware.
+            - **🌡️ Aire Acondicionado (Energía y Sync):**
+                - Visualización real de kWh (Total y Mensual) en Dashboard y Panel.
+                - Sincronización robusta con Regex para limpiar ruidos de red en la terminal.
+                - Intervalo de refresco optimizado a 5 minutos.
+            - **🕒 Gestión de Tiempo:**
+                - Clima (Weather) ahora se sincroniza cada 15 minutos alineado con el reloj (:00, :15, :30, :45).
+            - **🧼 Core y Estabilidad:**
+                - Reorganización de importaciones en `main.py` para mayor velocidad.
+                - Protección en la UI para evitar sobreescritura de datos reales por el backend.
 
             ---
-            *Desarrollado con ❤️ por el equipo de Fina Ergen.*
+            *Desarrollado con ❤️ por Dankopetro.*
           releaseDraft: false
           prerelease: false
           args: --bundles deb,rpm

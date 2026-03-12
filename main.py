@@ -110,7 +110,8 @@ import threading
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 from intent_classifier import detect_intent
-# Importamos update_ui_state y logger desde utils para evitar duplicación
+
+# --- IMPORTACIÓN ORGANIZADA DE UTILITIES ---
 from utils import (
     update_ui_state, logger, read_recent_unread_emails, clean_text_for_speech, 
     trim_response, clean_input, speak as utils_speak, sleep_now, change_wallpaper,
@@ -138,15 +139,11 @@ from utils import (
     get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine, i18n,
     get_unified_config, get_sys_lang
 )
-# --- DEFERRED IMPORTS (Lazy Loading to prevent startup crash) ---
-# Moveremos biometría y plugins dentro de main() para que la ventana se abra primero
-# y podamos informar al usuario si algo falta.
-# --- CONFIG LOADING [SAFE] ---
 config, CONFIG_FOUND = load_config()
 
 # --- DIAGNÓSTICO INICIAL ---
 import getpass
-print(f"🧠 Cerebro de Fina Iniciado... (V3.5.8-19 (09/03/2026 13:06))", flush=True)
+print(f"🧠 Cerebro de Fina Iniciado... (V3.5.9 (12/03/2026 00:05))", flush=True)
 print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
 if os.getuid() == 0:
     print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)
@@ -286,7 +283,7 @@ async def resolve_contact_proactive(query, contacts, voice_model, model_for_list
     return None, None
 
 # --- Metadata del Sistema ---
-FINA_VERSION = "Fina Ergen v 3.5.8-15"
+FINA_VERSION = "Fina Ergen v 3.5.9"
 FINA_AUTHOR = "Dankopetro"
 FINA_CREATED = "el 04 de Marzo de 2026 a las 12:15"
 
