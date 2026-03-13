@@ -196,8 +196,8 @@ const activeTvRoom = ref('Living');
 const roomList = ['Dormitorio', 'Living', 'Comedor', 'Cocina', 'Cobertizo', 'Deco'];
 const activeBioTab = ref('huella');
 const activeCameraView = ref('grid');
-const version = "Fina Ergen v 3.5.9-1 (12/03/2026 13:20)";
-const buildDate = "Mié 11 Mar 2026 21:30";
+const version = "Fina Ergen v 3.5.9-5 (13/03/2026 13:30)";
+const buildDate = "Vie 13 Mar 2026 13:30";
 
 const showOptInModal = ref(false);
 const newDetectedApps = ref([]);
@@ -2195,7 +2195,7 @@ const setTab = (tab) => {
     activeTvAppsView.value = false;
     activeTvSearch.value = "";
     showCommModal.value = false;
-    activeSettingsDomain.value = "inteligencia";
+    activeSettingsDomain.value = null;
     // Al entrar en Casa, seleccionar primera habitación de TV disponible
     if (tab === 'clima' && userSettings.value.tvs?.length > 0) {
         activeTvRoom.value = userSettings.value.tvs[0].room || 'Living';
