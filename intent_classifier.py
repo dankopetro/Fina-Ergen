@@ -95,6 +95,11 @@ def detect_intent(text, confidence_threshold=0.55):
     if any(p in text for p in timer_words):
         return "start_timer", 1.0
 
+    # Regla específica: Sleep / Descanso (Prioridad absoluta para evitar MFA de 'exit')
+    sleep_trigger = ["descansa", "descansá", "ponete a dormir", "vete a dormir", "duerme", "buenas noches"]
+    if any(p in text for p in sleep_trigger):
+        return "sleep", 0.99
+
     from sentence_transformers import util
     query_embedding = embedder.encode(text, convert_to_tensor=True, show_progress_bar=False)
     cosine_scores = util.pytorch_cos_sim(query_embedding, phrase_embeddings)[0]

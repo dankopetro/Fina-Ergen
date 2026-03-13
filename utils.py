@@ -15,6 +15,17 @@ import socket
 import sys
 import imaplib
 import smtplib
+try:
+    import requests
+except ImportError:
+    requests = None
+
+try:
+    import aiohttp
+except ImportError:
+    aiohttp = None
+
+from typing import List, Dict, Optional, Any, Tuple, Union, Callable
 from email.message import EmailMessage
 from datetime import datetime, timedelta
 
@@ -191,26 +202,41 @@ except Exception as e:
 # --- MODISMOS SUPPORT ---
 IDIO_DATA = {}
 try:
-    idio_path = os.path.join(ERGEN_ROOT, "modismos.json")
-    if os.path.exists(idio_path):
-        with open(idio_path, 'r', encoding='utf-8') as f:
+    potential_paths = [
+        os.path.join(ERGEN_ROOT, "modismos.json"),
+        os.path.join(CONFIG_DIR, "modismos.json"),
+        "/usr/lib/fina-ergen/modismos.json"
+    ]
+    idio_path: Optional[str] = None
+    for p in potential_paths:
+        if p and os.path.exists(p):
+            idio_path = p
+            break
+            
+    if idio_path:
+        with open(str(idio_path), 'r', encoding='utf-8') as f:
             IDIO_DATA = json.load(f)
-            logger.info(f"🌍 Modismos regionales cargados.")
+            logger.info(f"🌍 Modismos regionales cargados desde: {idio_path}")
+    else:
+        logger.warning("⚠️ No se encontró modismos.json en ninguna ruta conocida.")
 except Exception as e:
     logger.error(f"❌ Error cargando modismos.json: {e}")
 
 def get_sys_locale():
     """Detecta el locale completo (ej: es_AR) para modismos."""
-    # 1. Preferencia guardada (ej: es_AR)
+    # 1. Preferencia guardada (ej: es_AR) en settings.json o config.py
     config_lang = get_unified_config("FINA_LANGUAGE")
     if config_lang and len(config_lang) >= 5: # ej: es_AR
+        logger.debug(f"🔍 Locale desde config: {config_lang}")
         return config_lang
 
     # 2. Variables de entorno (LANG=es_AR.UTF-8)
     for env_var in ['LANG', 'LC_ALL', 'LANGUAGE']:
         env_val = os.environ.get(env_var, '').strip()
         if env_val and env_val not in ('C', 'POSIX', 'C.UTF-8'):
-            return env_val.split('.')[0]
+            loc = env_val.split('.')[0]
+            logger.debug(f"🔍 Locale desde entorno ({env_var}): {loc}")
+            return loc
     
     # 3. Fallback a locale del sistema vía comando
     try:
@@ -219,9 +245,24 @@ def get_sys_locale():
         for line in result.stdout.splitlines():
             if line.startswith('LANG='):
                 val = line.split('=')[1].strip('"').strip("'")
-                if val: return val.split('.')[0]
+                if val: 
+                    loc = val.split('.')[0]
+                    logger.debug(f"🔍 Locale desde comando locale: {loc}")
+                    return loc
     except: pass
     
+    # Intento final: buscar en el sistema el país
+    try:
+        if os.path.exists('/etc/timezone'):
+            with open('/etc/timezone', 'r') as f:
+                tz = f.read().strip()
+                if 'Argentina' in tz: 
+                    logger.debug("🔍 Detectada Zona Horaria Argentina: Forzando es_AR")
+                    return "es_AR"
+    except: pass
+
+    logger.debug("🔍 Usando fallback por defecto: es_AR")
+    print("🌍 Idioma Regional Detectado:", "es_AR", flush=True)
     return "es_AR" # Fallback conservador
 
 def get_sys_lang():
@@ -229,25 +270,57 @@ def get_sys_lang():
     loc = get_sys_locale()
     return loc.split('_')[0].lower()
 
-def get_idiom(category):
-    """Obtiene un modismo aleatorio para la categoría ('welcome' o 'sleep')."""
+def get_idiom(category, default=None):
+    """Obtiene un modismo aleatorio para la categoría."""
     import random
     locale = get_sys_locale()
     lang = get_sys_lang()
     
-    # 1. Por locale exacto (es_AR)
-    if locale in IDIO_DATA:
-        phrases = IDIO_DATA[locale].get(category)
+    logger.info(f"🗣️ Solicitando modismo: {category} (Detected Locale: {locale}, Lang: {lang})")
+    logger.info(f"📂 Modismos disponibles para: {list(IDIO_DATA.keys())}")
+    
+    # 1. Por locale exacto (ej: es_AR) considerando mayúsculas/minúsculas
+    # Normalizamos llaves para búsqueda insensible
+    idio_keys_lower = {k.lower(): k for k in IDIO_DATA.keys()}
+    
+    locale_lower = locale.lower()
+    if locale_lower in idio_keys_lower:
+        real_key = idio_keys_lower[locale_lower]
+        phrases = IDIO_DATA[real_key].get(category)
         if phrases: return random.choice(phrases)
         
-    # 2. Por idioma base en default
-    if "default" in IDIO_DATA and lang in IDIO_DATA["default"]:
-        phrases = IDIO_DATA["default"][lang].get(category)
+    # 2. Por prefijo de idioma (si es 'es_ES' y tenemos 'es_AR', o si solo tenemos 'es')
+    base_lang = locale_lower.split('_')[0]
+    if base_lang in idio_keys_lower:
+        real_key = idio_keys_lower[base_lang]
+        phrases = IDIO_DATA[real_key].get(category)
         if phrases: return random.choice(phrases)
-        
-    # 3. Fallback hardcoded
+    
+    # 3. Buscar cualquier coincidencia que empiece con el mismo idioma (ej: 'es_')
+    # Forzamos prioridad para Argentina si el idioma es español
+    if base_lang == "es":
+        if "es_ar" in idio_keys_lower:
+            real_key = idio_keys_lower["es_ar"]
+            phrases = IDIO_DATA[real_key].get(category)
+            if phrases: return random.choice(phrases)
+    
+    for key_lower, real_key in idio_keys_lower.items():
+        if key_lower.startswith(f"{base_lang}_"):
+            phrases = IDIO_DATA[real_key].get(category)
+            if phrases: return random.choice(phrases)
+
+    # 5. Fallback proporcionado por el usuario
+    if default is not None:
+        return default
+
+    # 6. Fallback hardcoded (ahora consciente del tiempo)
     if category == "welcome":
-        return random.choice(["Hola, ¿en qué puedo ayudarte?", "Hola.", "Buen día."])
+        h = datetime.now().hour
+        if h < 12: greet = "Buen día."
+        elif h < 20: greet = "Buenas tardes."
+        else: greet = "Buenas noches."
+        return random.choice([f"{greet} ¿En qué puedo ayudarte?", greet, "Hola."])
+    
     return random.choice(["Entendido, descanso.", "Hasta luego.", "Me pongo en espera."])
 
 def update_ui_state(status, process=None, intensity=0.0, extra_payload=None):
@@ -274,15 +347,12 @@ def update_ui_state(status, process=None, intensity=0.0, extra_payload=None):
     except: pass
 
 def i18n(key, fallback=""):
+    # Prioridad 1: Traducciones estándar (vía I18N_DATA)
     lang = get_sys_lang()
-    # Si FINA_LANGUAGE no es uno de los listados en lang.json, usamos 'es'
     if lang not in I18N_DATA:
         lang = "en"
     
-    # Intenta obtener el idioma
     translations = I18N_DATA.get(lang, {})
-    
-    # Intenta obtener la clave
     return translations.get(key, fallback)
 
 # --- CONFIGURATION UNIFICATION (UI Priority) ---
@@ -311,16 +381,24 @@ def load_config():
     """Carga config.py desde ~/.config/Fina con CARGA ABSOLUTA para evitar colisiones"""
     import importlib.util
     try:
-        if os.path.exists(CONFIG_PY_PATH):
-            spec = importlib.util.spec_from_file_location("user_config", CONFIG_PY_PATH)
-            cfg = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(cfg)
-            logger.info(f"✅ config.py cargado desde: {CONFIG_PY_PATH}")
-            return cfg, True
-        else:
-            # Fallback al config.py interno si el del usuario no existe
+        if os.path.exists(str(CONFIG_PY_PATH)):
+            spec = importlib.util.spec_from_file_location("user_config", str(CONFIG_PY_PATH))
+            if spec and spec.loader:
+                cfg = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(cfg)
+                logger.info(f"✅ config.py cargado desde: {CONFIG_PY_PATH}")
+                return cfg, True
+            else:
+                logger.warning("⚠️ No se pudo crear el spec para config.py")
+        
+        # Fallback al config.py interno si el del usuario no existe o falló el spec
+        try:
             import config as internal_cfg
             return internal_cfg, False
+        except ImportError:
+            # Si ni siquiera el interno existe, devolvemos dummy
+            class EmptyConfig: pass
+            return EmptyConfig(), False
     except Exception as e:
         logger.error(f"❌ Error crítico cargando config.py: {e}")
         class DummyConfig:
@@ -359,10 +437,10 @@ loaded_language = None
 
 _translation_cache = {}
 
-def auto_translate(text):
+def auto_translate(text: str) -> str:
     """Traduce automáticamente los textos de Fina ('es') al idioma del usuario si este no es español."""
     if not text or not isinstance(text, str):
-        return text
+        return str(text) if text is not None else ""
         
     lang = get_sys_lang()
     # Si Fina está en español o si pasamos un texto muy largo (Wiki/Noticias que ya se obtienen en el propio idioma), evitamos traducir.
@@ -639,7 +717,7 @@ def _voice_engine_worker():
                     f'echo {safe_text} | '
                     f'LD_LIBRARY_PATH="{piper_libs_dir}:$LD_LIBRARY_PATH" '
                     f'ESPEAK_DATA_PATH="{espeak_data}" '
-                    f'{piper_path} --model "{model_path}" {espeak_flag} --length_scale 1.5 --output_file "{filepath}"'
+                    f'{piper_path} --model "{model_path}" {espeak_flag} --length_scale 1.3 --output_file "{filepath}"'
                 )
                 
                 # Ejecutar generación (Esto causa la latencia "invisible")
@@ -686,7 +764,12 @@ def _voice_engine_worker():
                     current_voice_process = None
                 
                 if voice_queue.empty():
+                    # Pequeña espera para que el usuario pueda leer el último mensaje antes de volver a 'ESCUCHANDO'
+                    time.sleep(0.8)
                     update_ui_state("idle", "ESCUCHANDO...", 0.0)
+                else:
+                    # Pausa natural entre frases consecutivas
+                    time.sleep(0.4)
 
             finally:
                 # CRITICAL: Always mark done so main thread doesn't freeze
@@ -954,7 +1037,7 @@ def sleep_now(model, detect_intent_func=None):
     while True:
         # Escuchamos usando el idioma base detectado
         audio = listen(language=get_sys_lang())
-        if audio:
+        if audio and isinstance(audio, str):
             if detect_intent_func:
                 intent, conf = detect_intent_func(audio)
                 if intent == "wake_up":
@@ -1076,6 +1159,19 @@ async def get_weather(city=None):
                 temp = d['main']['temp']
                 desc = d['weather'][0]['description']
                 name = d.get('name', i18n('val_your_city', 'tu ciudad'))
+                
+                # ACTUALIZACIÓN PROACTIVA DE UI: Para que aparezca en el widget sin esperar
+                weather_payload = {
+                    "temp": int(temp),
+                    "desc": desc.capitalize(),
+                    "city": name,
+                    "code": d['weather'][0]['id'],
+                    "humidity": d['main']['humidity'],
+                    "wind": int(d.get('wind', {}).get('speed', 0) * 3.6),
+                    "feels_like": int(d['main'].get('feels_like', temp))
+                }
+                update_ui_state("idle", extra_payload={"weather_data": weather_payload})
+
                 if lang == 'en':
                     return f"In {name} the temperature is {int(temp)} degrees, with {desc}."
                 return f"En {name} la temperatura es de {int(temp)} grados, con {desc}."
@@ -1203,7 +1299,21 @@ def change_wallpaper(m):
     return "No pude cambiar el fondo."
 
 def web_search(q): 
-    subprocess.Popen(["google-chrome", f"https://www.google.com/search?q={q}"])
+    if not q:
+        return "No escuché ningún término de búsqueda.", None
+    try:
+        # Intentamos abrir Google Chrome
+        subprocess.Popen(["google-chrome", f"https://www.google.com/search?q={q}"])
+        return f"Buscando {q} en Google.", f"https://www.google.com/search?q={q}"
+    except Exception as e:
+        logger.error(f"Error en web_search: {e}")
+        # Intento de rescate con xdg-open si falla chrome
+        try:
+            import subprocess as _sp
+            _sp.Popen(["xdg-open", f"https://www.google.com/search?q={q}"])
+            return f"Buscando {q}.", f"https://www.google.com/search?q={q}"
+        except:
+            return "No pude abrir el navegador.", None
 
 
 # --- LOCAL SCRIPTS ---
@@ -1789,6 +1899,7 @@ def toggle_night_mode(*args, **kwargs): pass
 def is_code_worthy(*args, **kwargs): return False
 def get_time_based_greeting(*args, **kwargs): 
     h = datetime.now().hour
+    logger.info(f"🕒 Hora detectada para saludo: {h}")
     if h < 12: return i18n("morning_greet", "Buenos días")
     if h < 20: return i18n("afternoon_greet", "Buenas tardes")
     return i18n("night_greet", "Buenas noches")

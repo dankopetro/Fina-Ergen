@@ -120,3 +120,44 @@ class VoiceAuthenticator:
         
         is_match = similarity > threshold
         return bool(is_match), float(similarity)
+
+    def identify_user(self, audio_data, fs=16000, threshold=0.65):
+        """
+        Identify the user from the provided audio by checking all available profiles.
+        Returns (user_name, score) or (None, 0.0)
+        """
+        if not HAS_RESEMBLYZER or not self.encoder:
+            return None, 0.0
+
+        # Embed candidate once
+        wav = audio_data.flatten().astype(np.float32)
+        if np.abs(wav).max() > 1.0:
+            wav = wav / 32768.0
+        
+        try:
+            processed_wav = preprocess_wav(wav, source_sr=fs)
+            candidate_embed = self.encoder.embed_utterance(processed_wav)
+        except Exception as e:
+            logger.error(f"Error procesando audio para identificación: {e}")
+            return None, 0.0
+
+        best_user = None
+        best_score = 0.0
+
+        # Iterate over all .npy profiles
+        for p_file in self.storage_path.glob("*.npy"):
+            try:
+                user_name = p_file.stem
+                target_embed = np.load(p_file)
+                similarity = np.inner(candidate_embed, target_embed)
+                
+                if similarity > best_score:
+                    best_score = similarity
+                    best_user = user_name
+            except Exception as e:
+                logger.error(f"Error cargando perfil {p_file.name}: {e}")
+
+        if best_score > threshold:
+            return best_user, float(best_score)
+        
+        return None, float(best_score)

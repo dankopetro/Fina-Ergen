@@ -1187,6 +1187,7 @@ const deviceTypesList = [
     { id: 'PC', label: 'PC/Tablet', icon: 'fa-laptop', color: 'text-slate-300', bg: 'bg-slate-500/10 hover:bg-slate-500/20' },
     { id: 'Motor', label: 'Motor/Persiana', icon: 'fa-gears', color: 'text-zinc-400', bg: 'bg-zinc-500/10 hover:bg-zinc-500/20' },
     { id: 'Solar', label: 'Panel Solar', icon: 'fa-solar-panel', color: 'text-amber-400', bg: 'bg-amber-500/10 hover:bg-amber-500/20' },
+    { id: 'Lavarropas', label: 'Lavarropas', icon: 'fa-soap', color: 'text-blue-300', bg: 'bg-blue-500/10 hover:bg-blue-500/20' },
     { id: 'Sensor', label: 'Sensor', icon: 'fa-rss', color: 'text-blue-400', bg: 'bg-blue-500/10 hover:bg-blue-500/20' },
     { id: 'Audio', label: 'Altavoz', icon: 'fa-music', color: 'text-violet-400', bg: 'bg-violet-500/10 hover:bg-violet-500/20' },
     { id: 'Router', label: 'Router/AP', icon: 'fa-route', color: 'text-indigo-300', bg: 'bg-indigo-500/10 hover:bg-indigo-500/20' },
@@ -2350,12 +2351,12 @@ onMounted(() => {
                 if (ac.outdoor) acState.value.outdoor = ac.outdoor;
                 if (ac.mode) acState.value.mode = ac.mode.toLowerCase();
                 if (ac.watts !== undefined) acState.value.watts = ac.watts;
-                // --- PROTECCIÓN DE ENERGÍA ---
-                // Solo actualizamos si el backend trae un valor real (>0), para no borrar el dato del plugin
-                if (ac.total_kwh && Number(ac.total_kwh) > 0) {
+
+                // --- ACTUALIZACIÓN DE ENERGÍA (Consistente y Robusta) ---
+                if (ac.total_kwh !== undefined && ac.total_kwh !== null) {
                     acState.value.total_kwh = Number(ac.total_kwh).toFixed(2);
                 }
-                if (ac.monthly_kwh && Number(ac.monthly_kwh) > 0) {
+                if (ac.monthly_kwh !== undefined && ac.monthly_kwh !== null) {
                     acState.value.monthly_kwh = Number(ac.monthly_kwh).toFixed(2);
                 }
             }
@@ -2399,14 +2400,20 @@ onMounted(() => {
                 const p = data.payload;
                 if (p.ac_status) {
                     const ac = p.ac_status;
-                    acState.value.power = ac.power;
-                    acState.value.temp = ac.temp;
-                    acState.value.mode = ac.mode?.toLowerCase() || acState.value.mode;
-                    acState.value.indoor = ac.indoor;
-                    acState.value.outdoor = ac.outdoor;
-                    acState.value.watts = ac.watts;
-                    acState.value.total_kwh = ac.total_kwh;
-                    if (ac.monthly_kwh !== undefined) acState.value.monthly_kwh = ac.monthly_kwh;
+                    if (ac.power !== undefined) acState.value.power = ac.power;
+                    if (ac.temp) acState.value.temp = ac.temp;
+                    if (ac.mode) acState.value.mode = ac.mode?.toLowerCase() || acState.value.mode;
+                    if (ac.indoor) acState.value.indoor = ac.indoor;
+                    if (ac.outdoor) acState.value.outdoor = ac.outdoor;
+                    if (ac.watts !== undefined) acState.value.watts = ac.watts;
+                    
+                    // --- ENERGÍA EN EVENTOS (Sincronizado con Polling) ---
+                    if (ac.total_kwh !== undefined && ac.total_kwh !== null) {
+                        acState.value.total_kwh = Number(ac.total_kwh).toFixed(2);
+                    }
+                    if (ac.monthly_kwh !== undefined && ac.monthly_kwh !== null) {
+                        acState.value.monthly_kwh = Number(ac.monthly_kwh).toFixed(2);
+                    }
                 }
                 
                 if (p.system_stats) {
@@ -4271,9 +4278,9 @@ const selectFolder = async (settingKey) => {
                                                 <span
                                                     class="text-[10px] font-black text-indigo-400 uppercase tracking-widest block mb-6 italic">{{ t('ui_local_infra', 'Infraestructura Local') }}</span>
                                                 <div
-                                                    class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                                                    class="space-y-3 max-h-[500px] overflow-y-auto overflow-x-auto custom-scrollbar pr-40">
                                                     <div v-for="(dev, index) in scannedDevices" :key="index"
-                                                        class="flex flex-col p-5 bg-black/40 rounded-3xl border border-white/5 hover:border-indigo-500/30 transition-all group/node">
+                                                        class="flex flex-col p-5 bg-black/40 rounded-3xl border border-white/5 hover:border-indigo-500/30 transition-all group/node min-w-[300px] mr-2">
                                                         <div class="flex items-center justify-between w-full">
                                                             <div class="flex items-center gap-4">
                                                                 <div
@@ -5703,5 +5710,33 @@ const selectFolder = async (settingKey) => {
 
 .list-move {
     transition: transform 0.4s ease;
+}
+
+/* Custom Scrollbar Thin & Modern */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.2); /* Indigo-500 tint */
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.5);
+}
+
+/* Evitar que tape iconos */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
 }
 </style>

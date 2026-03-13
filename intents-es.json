@@ -37,17 +37,6 @@
     "cuelga el teléfono",
     "corta"
   ],
-  "exit": [
-    "chau",
-    "fina chau",
-    "hasta luego",
-    "descansá",
-    "descansa",
-    "ponete a dormir",
-    "vete a dormir",
-    "silencio",
-    "basta"
-  ],
   "play_music": [
     "¿Puedes reproducir música?",
     "iniciar música",
@@ -158,8 +147,7 @@
     "ponela en pausa",
     "hacé una pausa",
     "pausa esto",
-    "pausar reproducción",
-    "pause"
+    "pausar reproducción"
   ],
   "next_track": [
     "siguiente canción",
@@ -172,8 +160,7 @@
     "salta esta canción",
     "otra canción",
     "cambiá el tema",
-    "cambia el tema",
-    "piste suivante"
+    "cambia el tema"
   ],
   "music_volume_down": [
     "bajá el volumen del reproductor",
@@ -185,14 +172,11 @@
   ],
   "shutdown": [
     "apagar el sistema computarizado",
-    "apagar equipo",
-    "pc herunterfahren"
+    "apagar equipo"
   ],
   "restart_pc": [
     "reiniciar el sistema",
     "reiniciar equipo",
-    "redémarre l'ordinateur",
-    "starte den computer neu",
     "pc neustarten"
   ],
   "exit_fina": [
@@ -202,7 +186,12 @@
     "cerrar programa",
     "desconectate",
     "adiós",
-    "adios"
+    "adios",
+    "chau",
+    "fina chau",
+    "hasta luego",
+    "silencio",
+    "basta"
   ],
   "suspend": [
     "suspender el sistema",
@@ -212,10 +201,7 @@
     "suspende el equipo",
     "suspender mi pc",
     "quiero suspender",
-    "suspender equipo",
-    "suspendre",
-    "computer in energiesparmodus",
-    "suspendieren"
+    "suspender equipo"
   ],
   "sleep": [
     "duerme ahora",
@@ -887,10 +873,6 @@
     "Fina, captura mi pantalla ahora mismo",
     "tomar una captura rápida",
     "capturar pantalla completa ahora",
-    "take a screenshot",
-    "fais une capture d'écran",
-    "capture l'écran",
-    "mache einen screenshot",
     "bildschirmfoto"
   ],
   "increase_volume": [
@@ -2590,36 +2572,13 @@
     "muéstrame el video del timbre"
   ],
   "tv_set_channel": [
-    "pon el canal",
-    "poné el canal",
-    "pone el canal",
-    "cambia al canal",
-    "cambiá al canal",
-    "vete al canal",
-    "quiero ver el canal",
-    "ir al canal",
-    "selecciona el canal",
-    "ponerme en el canal",
-    "pon telefe",
-    "poné telefe",
-    "ver telefe",
-    "pon el trece",
-    "poné el trece",
-    "pon canal 13",
-    "poné canal 13",
-    "ver espn",
-    "pon tyc sports",
-    "poné tyc sports",
-    "quiero ver disney",
-    "quiero ver las noticias",
-    "poné noticias",
-    "pone noticias",
-    "poné fútbol",
-    "pone fútbol",
-    "fútbol",
-    "quiero ver fútbol",
-    "pon deportivo",
-    "poné deportivo"
+    "poné telefe en la televisión",
+    "ver el trece en la tele",
+    "poné fútbol en la tv",
+    "sintonizá deportes en la televisión",
+    "poné tyc sports en la tele",
+    "poné espn en la tv",
+    "cambiar al canal de noticias en la tele"
   ],
   "tv_set_volume": [
     "pon el volumen en",
@@ -2731,35 +2690,100 @@
     "ponerme en el canal",
     "pon canal 13",
     "poné canal 13",
-    "pon decofe",
-    "poné decofe",
-    "ver decofe"
+    "pon el 13 en el deco",
+    "poné el 11 en el decovisión",
+    "sintonizá el canal del deco",
+    "poné telefe en el deco",
+    "ver telefe",
+    "poné el trece",
+    "poné el once",
+    "poné el siete",
+    "poné tyc sports en el deco",
+    "poné espn en el decovisión",
+    "poné telefe",
+    "poné disney",
+    "ver noticias",
+    "poné fútbol",
+    "poné deportes",
+    "poné tyc sports",
+    "poné espn"
   ],
   "deco_volume_up": [
     "sube el volumen del deco",
     "subir volumen deco",
-    "subir volumen decovisión"
+    "subir volumen decovisión",
+    "subí el deco",
+    "más fuerte el deco",
+    "dale más volumen al decovisión",
+    "subí el sonido del deco"
   ],
   "deco_volume_down": [
     "bajá el volumen del deco",
     "bajar volumen deco",
-    "bajar volumen decovisión"
+    "bajar volumen decovisión",
+    "bajá el sonido del deco",
+    "bajale al deco",
+    "menos volumen en el decovisión",
+    "bajá el deco"
   ],
   "deco_mute": [
-    "quitar sonido deco"
+    "quitar sonido deco",
+    "silenciar deco",
+    "que no se escuche el decovisión",
+    "mudo el deco",
+    "silenciá el decovisión",
+    "quitarle el audio al deco"
   ],
   "deco_unmute": [
-    "activar sonido deco"
+    "activar sonido deco",
+    "poné el sonido del deco",
+    "reactivar audio decovisión",
+    "quitar silencio deco",
+    "que se escuche el deco de nuevo"
   ],
-  "deco_channel_up": [],
-  "deco_channel_down": [],
-  "deco_set_volume": [],
+  "deco_channel_up": [
+    "siguiente canal deco",
+    "subir canal decovisión",
+    "poné el siguiente canal",
+    "subí el canal en el deco",
+    "pasame al siguiente canal",
+    "cambiá de canal para arriba"
+  ],
+  "deco_channel_down": [
+    "bajar canal deco",
+    "canal anterior en el decovisión",
+    "bajá de canal",
+    "poné el canal de antes",
+    "cambiá de canal para abajo",
+    "retroceder canal en el deco"
+  ],
+  "deco_set_volume": [
+    "establecer volumen deco en",
+    "poné el volumen del deco en",
+    "volumen decovisión al",
+    "ajustá el deco a",
+    "poné el deco en",
+    "poné el volumen en"
+  ],
   "deco_open_app": [
     "abrir app deco",
-    "lanzar aplicación en deco"
+    "lanzar aplicación en deco",
+    "abrir netflix en el deco",
+    "abrir youtube en el decovisión",
+    "poné la aplicación en el deco"
   ],
   "deco_exit_app": [
-    "volver a ver decovisión"
+    "volver a ver decovisión",
+    "salir de la aplicación del deco",
+    "cerrar app deco",
+    "salir al canal",
+    "volver a la tele"
   ],
-  "deco_set_input": []
+  "deco_set_input": [
+    "cambiar entrada deco",
+    "poné el deco en hdmi",
+    "cambiá la señal del decovisión",
+    "ajustar entrada del deco",
+    "cambiar fuente del decovisión"
+  ]
 }

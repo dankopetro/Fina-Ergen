@@ -12,6 +12,34 @@
       "¡Hola! Mirá quién apareció.",
       "Acá estoy, firme como rulo de estatua."
     ],
+    "msg_web_search_query": [
+      "Dale, fiera. ¿Qué querés que busque?",
+      "Decime qué buscamos en la red, capo.",
+      "Soy todo oídos. ¿Qué bicho buscamos hoy?",
+      "Metéle ficha, ¿qué tengo que buscar?",
+      "Decime qué necesitás encontrar y yo te banco."
+    ],
+    "thinking": [
+      "Bancame un cachito que lo proceso...",
+      "Esperá que le meto neurona...",
+      "Dejame que lo piense bien, fiera.",
+      "Procesando, no me apurés...",
+      "Aguantá un toque que mi cerebro de silicio está a mil."
+    ],
+    "msg_resting_listening": [
+      "Descanso el oído pero me quedo atenta por si me necesitás. ¡Chau!",
+      "Me pongo en espera, cualquier cosa pegame el grito, fiera.",
+      "Quedo atenta por acá, no te pierdas. ¡Nos vemos!",
+      "Descanso un toque, si me necesitás ya sabés dónde estoy.",
+      "Metéle pata, yo me quedo acá vigilando. ¡Chau!"
+    ],
+    "msg_voice_mismatch": [
+      "Pará la mano, tu voz no me suena de nada. Acceso denegado.",
+      "¿Quién sos vos? No te tengo en la lista, fiera. Rajá de acá.",
+      "Tu voz no coincide con la del administrador. No me chamuyes.",
+      "Identidad no confirmada. No te puedo dar bola si no te conozco.",
+      "Acceso denegado, capo. Registrate primero."
+    ],
     "sleep": [
       "Chau fiera. Me voy a la cucha.",
       "Que te garue finito. Cualquier cosa me pegás el grito.",

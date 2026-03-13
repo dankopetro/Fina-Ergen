@@ -430,7 +430,7 @@ async def get_system_info():
         "python_path": sys.executable,
         "project_root": PROJECT_ROOT,
         "config_dir": CONFIG_DIR,
-        "version": "3.5.6 (04/03/2026 12:35)"
+        "version": "3.5.9-1 (12/03/2026 13:20)"
     }
 
 # --- Static ---

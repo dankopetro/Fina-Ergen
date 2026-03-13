@@ -137,13 +137,13 @@ from utils import (
     show_doorbell_stream, send_ui_command, check_system_dependencies, is_code_worthy,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config,
     get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine, i18n,
-    get_unified_config, get_sys_lang
+    get_unified_config, get_sys_lang, get_idiom
 )
 config, CONFIG_FOUND = load_config()
 
 # --- DIAGNÓSTICO INICIAL ---
 import getpass
-print(f"🧠 Cerebro de Fina Iniciado... (V3.5.9-1 ({time.strftime('%d/%m/%Y %H:%M')}))", flush=True)
+print(f"🧠 Cerebro de Fina Iniciado... (V3.5.9-2 ({time.strftime('%d/%m/%Y %H:%M')}))", flush=True)
 print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
 if os.getuid() == 0:
     print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)
@@ -157,16 +157,16 @@ check_system_dependencies()
 
 # update_ui_state removido (ahora importado de utils)
 
-def speak(text, model=None, sink=None):
+def speak(text, model=None, sink=None, wait=True):
     """Local wrapper to delegate speech and UI updates to utils"""
     if not text: return
     
     # 2. Actual Voice Output (will update UI in background worker for sync)
     try:
         if sink:
-            utils_speak(text, model, sink=sink)
+            utils_speak(text, model, sink=sink, wait=wait)
         else:
-            utils_speak(text, model)
+            utils_speak(text, model, wait=wait)
         # Small sleep to allow worker thread to take context if needed
         time.sleep(0.05)
     except Exception as e:
@@ -222,8 +222,10 @@ async def resolve_contact_proactive(query, contacts, voice_model, model_for_list
             else:
                 # Búsqueda difusa por cada palabra del comando
                 for qw in query_words:
-                    if len(qw) < 3: continue
-                    ratio = difflib.SequenceMatcher(None, part, qw).ratio()
+                    if not isinstance(qw, str) or len(qw) < 3: continue
+                    a_str = str(part)
+                    b_str = str(qw)
+                    ratio = difflib.SequenceMatcher(None, a_str, b_str).ratio()
                     if ratio > 0.8: score += 8
                     elif ratio > 0.6: score += 4
                     
@@ -283,7 +285,7 @@ async def resolve_contact_proactive(query, contacts, voice_model, model_for_list
     return None, None
 
 # --- Metadata del Sistema ---
-FINA_VERSION = "Fina Ergen v 3.5.9"
+FINA_VERSION = "Fina Ergen v 3.5.9-2"
 FINA_AUTHOR = "Dankopetro"
 FINA_CREATED = "el 04 de Marzo de 2026 a las 12:15"
 
@@ -407,10 +409,15 @@ async def main():
             except: pass
         
         import threading
+        # --- INICIO DE FEEDBACK VISUAL INMEDIATO ---
+        update_ui_state("idle", "Iniciando Fina Ergen...")
+        time.sleep(0.3)
+        
         # --- CARGA ASÍNCRONA DE MOTORES PESADOS (FONDO) ---
         print("🚀 Lanzando carga de motores en segundo plano...", flush=True)
         def load_engines():
             try:
+                update_ui_state("idle", "Cargando modelos de lenguaje...")
                 from intent_classifier import _initialize_model, detect_intent
                 _initialize_model()
                 detect_intent("hola", confidence_threshold=0.1)
@@ -419,6 +426,7 @@ async def main():
                 logger.error(f"Error en hilos de motores: {e}")
 
             try:
+                update_ui_state("idle", "Sincronizando reconocimiento de voz...")
                 utils.load_vosk_model(sys_lang)
                 print("✅ Vosk listo.", flush=True)
             except Exception as e:
@@ -428,7 +436,8 @@ async def main():
 
         # --- INICIALIZACIÓN DE PLUGINS Y BIOMETRÍA ---
         print("🔌 Inicializando plugins y biometría...", flush=True)
-        update_ui_state("idle", i18n("init_systems", "Iniciando sistemas..."))
+        update_ui_state("idle", "Conectando hardware y biometría...")
+        time.sleep(0.3)
         
         plugin_integration = None
         voice_auth = None
@@ -539,7 +548,18 @@ async def main():
             
             # 2. Registrar Listener AC (Y propagar a la UI)
             if plugin_integration:
+                # Memoria persistente para evitar reseteos a cero del AC
+                last_ac_payload = {}
+                
                 def handle_ac_update(payload):
+                    nonlocal last_ac_payload
+                    # Si el payload nuevo trae ceros en energía pero el viejo tenía valores, mantenemos el viejo
+                    if last_ac_payload and payload.get("total_kwh", 0) == 0 and last_ac_payload.get("total_kwh", 0) > 0:
+                        payload["total_kwh"] = last_ac_payload["total_kwh"]
+                        payload["monthly_kwh"] = last_ac_payload["monthly_kwh"]
+                    
+                    last_ac_payload = payload.copy()
+                    
                     # Actualizamos visualmente el panel de AC
                     update_ui_state("idle", extra_payload={"ac_status": payload})
                     ready_ac.set()
@@ -568,83 +588,65 @@ async def main():
             except:
                 ready_weather.set()
 
-            # 4. Loop de espera funcional (Clima/AC)
+            # 4. Verificación paralela de Clima y AC (con feedback)
+            # Ya no bloqueamos la ejecución principal, solo damos un micro-respiro
             wait_start = time.time()
             print("⏳ Verificando funciones críticas...", flush=True)
-            while time.time() - wait_start < 8:
+            while time.time() - wait_start < 1.0: # Reducido drásticamente
                 if ready_weather.is_set() and ready_ac.is_set():
                     break
-                time.sleep(0.5)
+                time.sleep(0.1)
             
             # 5. Estabilización Universal de CPU 
-            # (Garantiza que Weston/Waydroid/Modelos pesados no ahoguen el micrófono dejándolo sordo)
             try:
                 import psutil
-                cpu_checks = 0
-                max_cpu_wait = 25
-                cpu_start_time = time.time()
-                
-                # Check inicial, si el CPU está prendido fuego, esperamos.
-                if psutil.cpu_percent(interval=0.5) > 70:
-                    update_ui_state("idle", "Estabilizando recursos antes de iniciar...")
-                    print("⚙️ Alerta Alta Carga de CPU: Esperando estabilización para no dejar sordo al micrófono...", flush=True)
-                    while time.time() - cpu_start_time < max_cpu_wait:
-                        current_cpu = psutil.cpu_percent(interval=1.0)
-                        if current_cpu < 55:
-                            cpu_checks += 1
-                            if cpu_checks >= 2:  # CPU relajada 2 lecturas consecutivas
-                                print("✅ CPU Estabilizada.", flush=True)
-                                break
-                        else:
-                            cpu_checks = 0
-            except Exception as e:
-                pass
+                # Un pequeño respiro tras la carga masiva de modelos
+                cpu_usage = psutil.cpu_percent(interval=0.1)
+                if cpu_usage > 65:
+                    print(f"⚙️ Alerta Alta Carga de CPU ({cpu_usage}%): Esperando estabilización...", flush=True)
+                    # Solo esperamos si es realmente necesario y por poco tiempo
+                    time.sleep(1.0)
+            except: pass
                 
             # 6. Check de Arranque de Android (Waydroid/Weston) para Timbre
-            # Evita que el micrófono se sature mientras Android levanta el entorno de ventanas
             try:
                 import psutil, subprocess
-                
-                # Detectamos si el plugin de Timbre M8 está cargado
-                # O si Weston ya está en la lista de procesos (por si se lanzó manual)
                 m8_active = False
                 if plugin_integration:
                     m8_active = any(p.get('name') == 'M8' for p in plugin_integration.get_loaded_plugins())
                 
-                weston_running = any(p.name() == 'weston' for p in psutil.process_iter(['name']))
-                
                 if m8_active:
-                    # Si el plugin M8 está cargado, entonces sí nos importa el estado de Weston
-                    # Si no está cargado, seguimos de largo aunque Weston exista (puede ser para otra cosa)
-                    update_ui_state("idle", "Aguardando virtualización (Waydroid)...")
-                    print("🤖 Sistema de Timbre detectado. Esperando estabilidad de Android...", flush=True)
+                    print("🤖 Sistema de Timbre detectado. Esperando arranque total de Android...", flush=True)
+                    waydroid_start = time.time()
+                    # Mensajes dinámicos para la espera de Waydroid
+                    waydroid_msgs = [
+                        "Iniciando Virtualización Android...",
+                        "Conectando con el núcleo (ADB)...",
+                        "Despertando sistema de Timbre...",
+                        "Cargando escritorio Android...",
+                        "Aguardando estabilidad de UI..."
+                    ]
                     
-                    # Esperar a que Weston aparezca si aún no está (Popen demora unos ms)
-                    if not weston_running:
-                        for _ in range(10):
-                            if any(p.name() == 'weston' for p in psutil.process_iter(['name'])):
-                                weston_running = True
+                    while time.time() - waydroid_start < 90: 
+                        current_msg = waydroid_msgs[int((time.time() - waydroid_start) // 5) % len(waydroid_msgs)]
+                        update_ui_state("idle", current_msg)
+                        
+                        try:
+                            waydroid_ip = get_unified_config("WAYDROID_IP") or "127.0.0.1"
+                            res = subprocess.run(f"adb connect {waydroid_ip}:5555 >/dev/null 2>&1; adb shell getprop sys.boot_completed", shell=True, capture_output=True, text=True, timeout=2.0)
+                            if "1" in res.stdout:
+                                update_ui_state("idle", "¡Android Listo!")
+                                print("✅ Android totalmente funcional (boot_completed).", flush=True)
+                                time.sleep(2)
                                 break
-                            time.sleep(0.5)
-                    
-                    if weston_running:
-                        waydroid_start = time.time()
-                        # Tiempo máximo 60s para no trabar a Fina para siempre si algo falla
-                        while time.time() - waydroid_start < 60:
-                            try:
-                                # Chequeo ADB real
-                                waydroid_ip = get_unified_config("WAYDROID_IP") or "127.0.0.1"
-                                res = subprocess.run(f"adb connect {waydroid_ip}:5555 >/dev/null 2>&1; adb shell getprop sys.boot_completed", shell=True, capture_output=True, text=True, timeout=2)
-                                if "1" in res.stdout:
-                                    time.sleep(3) # Respiro final para que el launcher cargue los recursos pesados
-                                    print("✅ Escritorio Android listo.", flush=True)
-                                    break
-                            except Exception:
-                                pass
-                            time.sleep(1.5)
-            except Exception:
-                pass
+                        except: pass
+                        time.sleep(2)
+            except: pass
 
+            update_ui_state("idle", "Sintonizando voz natural...")
+            time.sleep(0.5) # Reducido de 2.0s
+            update_ui_state("idle", "Sistemas en línea.")
+            time.sleep(0.2) # Reducido de 0.5s
             update_ui_state("idle", None)
             
         if CONFIG_FOUND:
@@ -654,9 +656,12 @@ async def main():
                 username_config = getpass.getuser()
             username = (username_config or "Usuario").capitalize()
             greeting = get_time_based_greeting()
-            msg = utils.i18n("systems_ready", "Sistemas listos. Por favor, diga Fina para comenzar.")
+            idiom = get_idiom("welcome")
+            username_clean = username.split()[0] # Solo el primer nombre para más naturalidad
             
-            full_msg = f"{greeting} {username}. {msg}"
+            # Combinar saludo, modismo y mensaje de sistema
+            full_msg = f"{greeting} {username_clean}. {idiom} {utils.i18n('systems_ready', 'Sistemas listos.')}"
+            
             update_ui_state("idle", utils.i18n("sys_ready_short", "SISTEMA LISTO"))
             speak(full_msg, DEFAULT_VOICE)
         else:
@@ -692,7 +697,8 @@ async def main():
                 if not user_is_authenticated:
                     update_ui_state("authenticating", utils.i18n("auth_waiting", "Esperando autenticación..."))
                     temp_voice_model, _ = get_current_voice_info()
-                    if authenticate_user(voice_model=temp_voice_model, speak_func=speak):
+                    # Verificamos si la función existe antes de llamarla
+                    if authenticate_user and authenticate_user(voice_model=temp_voice_model, speak_func=speak):
                         user_is_authenticated = True
                         update_ui_state("speaking", utils.i18n("auth_success", "Autenticación Exitosa"))
                         speak("Autenticación Exitosa", temp_voice_model)
@@ -765,30 +771,39 @@ async def main():
             print(f"🎤 ESCUCHÉ: '{command}'", flush=True) # Redundancia para garantizar visibilidad
             sys.stdout.flush() # Doble seguridad
             
-            # Verify Speaker (Passive)
-            is_admin = False
+            # Identify Speaker (Passive)
+            identified_user = None
             score = 0.0
             if voice_auth:
                 try:
-                    # Siempre verificar contra Administrador que es el admin
-                    is_admin, score = voice_auth.verify_user("admin", audio_data)
+                    # Identificar entre todos los perfiles disponibles
+                    identified_user, score = voice_auth.identify_user(audio_data)
                 except Exception as e: 
-                    # logger.error(f"Error verificando voz pasiva: {e}")
+                    # logger.error(f"Error identificando voz pasiva: {e}")
                     pass
             
-            current_user = "Administrador" if is_admin else "Invitado"
+            # Si se identifica un usuario, lo capitalizamos para el log
+            current_user = identified_user.capitalize() if identified_user else "Invitado"
+            is_admin = (identified_user is not None) # Por ahora, cualquier voz conocida se trata con privilegios de usuario
             print(f"🎤 Hablante: {current_user} (Confianza: {score:.2f})")
             
-            update_ui_state("speaking", utils.i18n("thinking", "Procesando..."))
+            # Fina ahora DIRÁ el modismo de procesamiento para que el usuario sepa que está trabajando
             commandFinal = command.lower()
+            thinking_msg = utils.get_idiom("thinking", "Procesando...")
+            if len(commandFinal) > 4:
+                # Lo ponemos en la cola sin bloquear para que la detección de intent siga en paralelo
+                speak(thinking_msg, selected_voice_model, wait=False)
+            else:
+                update_ui_state("speaking", thinking_msg)
 
             # --- CORRECCIÓN INTENCIONES DISCORDANTES ---
-            # Si dice "Soy Administrador", NO es sleep. Es una afirmación de identidad.
-            if "soy admin" in commandFinal or "abre sesion" in commandFinal:
-                if is_admin:
-                    speak(f"Hola Administrador. Te reconozco. ¿Qué necesitas?", selected_voice_model)
+            # Si dice "Soy Claudio", "Soy Yo", etc., NO es una búsqueda ni otra cosa.
+            identity_phrases = ["soy yo", "quién soy", "quien soy", "me conoces", "me conocés", "soy admin", "abre sesion", "abre sesión"]
+            if any(p in commandFinal for p in identity_phrases):
+                if identified_user:
+                    speak(f"Hola {identified_user.capitalize()}. Te reconozco perfectamente. ¿Qué necesitás?", selected_voice_model)
                 else:
-                    speak(i18n("msg_voice_mismatch", "Tu voz no coincide con la de Administrador. Acceso denegado."), selected_voice_model)
+                    speak(i18n("msg_voice_mismatch", "Tu voz no coincide con ningún perfil registrado. Acceso denegado."), selected_voice_model)
                 continue
             # -------------------------------------------
 
@@ -804,7 +819,15 @@ async def main():
                     continue # Saltar detección normal
             # -------------------------
 
-            intent, confidence = detect_intent(commandFinal)
+            # --- OVERRIDE DE SEGURIDAD PARA COMANDOS DE SUEÑO Y SALIDA (Evitar MFA) ---
+            if any(p in commandFinal.lower() for p in ["descansa", "descansá", "ponete a dormir", "vete a dormir", "dormí", "duerme"]):
+                intent = "sleep"
+                confidence = 1.0
+            elif any(p in commandFinal.lower() for p in ["desconectate", "desconéctate", "apagar sistema", "apagar todo"]):
+                intent = "exit_fina"
+                confidence = 1.0
+            else:
+                intent, confidence = detect_intent(commandFinal)
             print("Intent:", intent)
 
             if intent == "exit_fina":
@@ -918,69 +941,6 @@ async def main():
                 # Dormir ahora no requiere autenticación según pedido del usuario
                 sleep_now(selected_voice_model, detect_intent_func=detect_intent)
                 continue
-            elif intent == "exit":
-                # SEGURIDAD DE HIERRO PARA SALIDA (Multifactor)
-                authenticated = False
-                attempts = 0
-                max_attempts = 3
-                
-                speak(f"Solicitud de salida detectada. Iniciando verificación de identidad.", selected_voice_model)
-                
-                while attempts < max_attempts:
-                    attempts += 1
-                    update_ui_state("authenticating", i18n("ui_checking_voice", "Verificando Voz ({attempts}/{max_attempts})").format(attempts=attempts, max_attempts=max_attempts))
-                    
-                    if attempts > 1:
-                        speak(f"Intento {attempts}. Hable ahora.", selected_voice_model)
-                    
-                    # Verificación de voz real
-                    # Escuchar para obtener muestra de voz
-                    # Necesitamos capturar audio fresco para verificar
-                    audio_sample = None
-                    try:
-                        # Escuchar brevemente (5s)
-                        result_listen = listen(model, timeout=5, return_audio=True)
-                        if result_listen:
-                            audio_sample = result_listen[1]
-                    except:
-                        pass
-
-                    # Verificación de voz real
-                    if voice_auth and audio_sample is not None:
-                         is_valid, score = voice_auth.verify_user("admin", audio_sample)
-                         if is_valid:
-                             authenticated = True
-                             break
-                    
-                    # Si falló la auth o no hubo audio
-                    if not authenticated:
-                        if attempts < max_attempts:
-                            speak(i18n("msg_voice_not_recon_retry", "Voz no reconocida. Reintentando."), selected_voice_model)
-                        else:
-                            speak(i18n("msg_voice_recon_fatal", "Fallo crítico de reconocimiento de voz. Iniciando protocolos de emergencia."), selected_voice_model)
-
-                # Si falla la voz tras 3 intentos, pasamos a Huella + Contraseña
-                if not authenticated:
-                    speak(i18n("msg_fingerprint_prompt", "Por favor, use su huella dactilar para continuar."), selected_voice_model)
-                    update_ui_state("authenticating", i18n("ui_waiting_fingerprint", "Esperando Huella..."))
-                    
-                    # authenticate_user maneja huella y contraseña (fallback interno)
-                    # Pero el usuario pidió explícitamente "Huella MÁS contraseña" con reglas estrictas
-                    if authenticate_user(voice_model=selected_voice_model, speak_func=speak):
-                        authenticated = True
-                    else:
-                        speak(i18n("msg_auth_failed_total", "Autenticación fallida totalmente. El sistema permanecerá activo."), selected_voice_model)
-                        update_ui_state("idle", utils.i18n("idle_msg", "Diga 'Fina' para empezar"))
-                        continue
-
-                if authenticated:
-                    speak(i18n("msg_identity_confirmed_admin", "Identidad confirmada plenamente. Hasta luego Administrador."), selected_voice_model)
-                    # No cerramos el programa con return para que pueda despertar con "Fina"
-                    sleep_now(selected_voice_model)
-                else:
-                    speak(i18n("msg_access_denied_security", "Acceso denegado. El sistema permanecerá activo por seguridad."), selected_voice_model)
-                    update_ui_state("idle", utils.i18n("idle_msg", "Diga 'Fina' para empezar"))
-                    continue
 
             elif intent == "train_voice":
                 speak(i18n("msg_voice_train_start", "Iniciando modo de entrenamiento de voz. Preparate para hablar."), selected_voice_model)
@@ -1173,10 +1133,19 @@ async def main():
 
             # Web search
             elif intent == "web_search":
-                speak(i18n("msg_web_search_query", "¿Qué tengo buscar?"), selected_voice_model)
+                speak(i18n("msg_web_search_query", "¿Qué tengo que buscar?"), selected_voice_model)
                 query = listen(model, language=sys_lang)
-                output, link = web_search(query)
-                speak(output, selected_voice_model)
+                if query:
+                    # En utils.py, web_search ahora devuelve (mensaje, link)
+                    result = web_search(query)
+                    if isinstance(result, tuple) and len(result) == 2:
+                        output, link = result
+                        speak(output, selected_voice_model)
+                    else:
+                        # Fallback por si acaso
+                        speak(f"Buscando {query} en Google.", selected_voice_model)
+                else:
+                    speak("No te escuché, búsqueda cancelada.", selected_voice_model)
 
             # Assistant Utility Features
             elif intent == "change_wallpaper":
@@ -1281,7 +1250,11 @@ async def main():
                     if sec_display < 60:
                         msg = f"Iniciando en {sec_display} segundos."
                     else:
-                        msg = f"Iniciando en {round(minutes, 1)} minutos."
+                        try:
+                            val_round = float(minutes)
+                            msg = f"Iniciando en {round(val_round, 1)} minutos."
+                        except:
+                            msg = f"Iniciando en {minutes} minutos."
                         
                     start_timer(minutes * 60, "¡Tiempo cumplido!", selected_voice_model)
                 else:
