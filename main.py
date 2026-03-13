@@ -143,7 +143,7 @@ config, CONFIG_FOUND = load_config()
 
 # --- DIAGNÓSTICO INICIAL ---
 import getpass
-print(f"🧠 Cerebro de Fina Iniciado... (V3.5.9-2 ({time.strftime('%d/%m/%Y %H:%M')}))", flush=True)
+print(f"🧠 Cerebro de Fina Iniciado... (V3.5.9-3 ({time.strftime('%d/%m/%Y %H:%M')}))", flush=True)
 print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
 if os.getuid() == 0:
     print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)
@@ -285,7 +285,7 @@ async def resolve_contact_proactive(query, contacts, voice_model, model_for_list
     return None, None
 
 # --- Metadata del Sistema ---
-FINA_VERSION = "Fina Ergen v 3.5.9-2"
+FINA_VERSION = "Fina Ergen v 3.5.9-3"
 FINA_AUTHOR = "Dankopetro"
 FINA_CREATED = "el 04 de Marzo de 2026 a las 12:15"
 
@@ -456,6 +456,8 @@ async def main():
             if plugin_integration:
                 try:
                     def ac_update_worker():
+                        # Esperamos para la primera actualización para no saturar el arranque
+                        time.sleep(10)
                         while True:
                             try:
                                 if plugin_integration:
@@ -616,31 +618,19 @@ async def main():
                     m8_active = any(p.get('name') == 'M8' for p in plugin_integration.get_loaded_plugins())
                 
                 if m8_active:
-                    print("🤖 Sistema de Timbre detectado. Esperando arranque total de Android...", flush=True)
-                    waydroid_start = time.time()
-                    # Mensajes dinámicos para la espera de Waydroid
-                    waydroid_msgs = [
-                        "Iniciando Virtualización Android...",
-                        "Conectando con el núcleo (ADB)...",
-                        "Despertando sistema de Timbre...",
-                        "Cargando escritorio Android...",
-                        "Aguardando estabilidad de UI..."
-                    ]
-                    
-                    while time.time() - waydroid_start < 90: 
-                        current_msg = waydroid_msgs[int((time.time() - waydroid_start) // 5) % len(waydroid_msgs)]
-                        update_ui_state("idle", current_msg)
-                        
-                        try:
-                            waydroid_ip = get_unified_config("WAYDROID_IP") or "127.0.0.1"
-                            res = subprocess.run(f"adb connect {waydroid_ip}:5555 >/dev/null 2>&1; adb shell getprop sys.boot_completed", shell=True, capture_output=True, text=True, timeout=2.0)
-                            if "1" in res.stdout:
-                                update_ui_state("idle", "¡Android Listo!")
-                                print("✅ Android totalmente funcional (boot_completed).", flush=True)
-                                time.sleep(2)
-                                break
-                        except: pass
-                        time.sleep(2)
+                    def waydroid_check_worker():
+                        print("🤖 Sistema de Timbre detectado. Verificando Android en segundo plano...", flush=True)
+                        waydroid_start = time.time()
+                        while time.time() - waydroid_start < 90:
+                            try:
+                                waydroid_ip = get_unified_config("WAYDROID_IP") or "127.0.0.1"
+                                res = subprocess.run(f"adb connect {waydroid_ip}:5555 >/dev/null 2>&1; adb shell getprop sys.boot_completed", shell=True, capture_output=True, text=True, timeout=2.0)
+                                if "1" in res.stdout:
+                                    print("✅ Android (Timbre) perfectamente operativo.", flush=True)
+                                    break
+                            except: pass
+                            time.sleep(10) # Intervalo menos agresivo
+                    threading.Thread(target=waydroid_check_worker, daemon=True).start()
             except: pass
 
             update_ui_state("idle", "Sintonizando voz natural...")

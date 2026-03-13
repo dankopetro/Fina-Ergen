@@ -386,7 +386,7 @@ def load_config():
             if spec and spec.loader:
                 cfg = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(cfg)
-                logger.info(f"✅ config.py cargado desde: {CONFIG_PY_PATH}")
+                logger.debug(f"✅ config.py cargado desde: {CONFIG_PY_PATH}")
                 return cfg, True
             else:
                 logger.warning("⚠️ No se pudo crear el spec para config.py")
