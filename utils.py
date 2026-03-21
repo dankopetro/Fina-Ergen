@@ -428,6 +428,28 @@ def check_system_dependencies():
         print("\n\x1b[33m⚠️ ADVERTENCIA: Faltan dependencias de sistema:\x1b[0m")
         for m in missing: print(f"  - {m}")
         print("\x1b[33m💡 Algunas funciones podrían no estar disponibles.\x1b[0m\n")
+        
+        # Pop-up visual para ayudar a usuarios novatos en AppImage
+        try:
+            if shutil.which("zenity"):
+                lang = get_sys_lang()
+                pkg_names = " ".join([m.split()[0] for m in missing])
+                if lang == "es":
+                    msg = "¡Hola! Fina funcionará bien, pero he detectado que en tu Linux faltan estas herramientas del sistema:\n\n"
+                    for m in missing: msg += f" - {m}\n"
+                    msg += f"\nPara tener la experiencia al 100%, abrí una terminal y ejecutá:\n\nsudo apt install {pkg_names}"
+                    title = "Aviso de Sistema - Fina Ergen"
+                else:
+                    msg = "Hello! Fina will run fine, but I detected your Linux is missing some system tools:\n\n"
+                    for m in missing: msg += f" - {m}\n"
+                    msg += f"\nFor a 100% complete experience, open a terminal and run:\n\nsudo apt install {pkg_names}"
+                    title = "System Notice - Fina Ergen"
+                
+                import subprocess
+                subprocess.Popen(["zenity", "--warning", "--title", title, "--text", msg, "--width", "500"])
+        except Exception as e:
+            pass
+            
     return missing
 
 # Caching for Lazy Loading
