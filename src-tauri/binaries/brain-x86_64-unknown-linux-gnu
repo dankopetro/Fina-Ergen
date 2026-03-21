@@ -110,7 +110,7 @@ fi
 
 if [ ! -f "$PYTHON_BIN" ]; then
     if command -v zenity >/dev/null 2>&1 && [ "$NEEDS_INSTALL" -eq 1 ]; then
-        zenity --info --title="Fina Ergen" --text="Fina está preparando su 'cerebro' por primera vez.\nEsto tardará unos minutos dependiendo de tu internet.\nNo cierres el proceso para asegurar que la biometría funcione." --width=400 &
+        zenity --info --title="Fina Ergen - ¡Primer Contacto!" --text="Fina está construyendo su cerebro para adaptarse a esta computadora.\n\n⚠️ ¡ATENCIÓN!\nEste proceso puede parecer CONGELADO durante 10 a 20 minutos más adelante (estará compilando en profundo).\n\nPor favor, NO CIERRES NINGUNA VENTANA aunque veas que la barra de progreso no avanza. ¡Prepará un café ☕ mientras espero!" --width=550 &
     fi
     
     echo "🛠️ Creando VENV en $USER_VENV..."
@@ -129,22 +129,22 @@ if [ -f "$PYTHON_BIN" ]; then
         if command -v zenity >/dev/null 2>&1 && [ ! -f "$HOME/.config/Fina/.installed" ] && [ "$NEEDS_INSTALL" -eq 1 ]; then
             echo "📦 Instalando componentes pesados (Torch, Resemblyzer)..."
             (
-                echo "# Actualizando herramientas base (pip)..."; echo "10"
+                echo "# Actualizando herramientas base de Python..."; echo "10"
                 "$PYTHON_BIN" -m pip install --upgrade pip >/dev/null 2>&1
                 
-                echo "# Instalando servicios y drivers..."; echo "30"
+                echo "# Descargando servicios y drivers..."; echo "30"
                 "$PYTHON_BIN" -m pip install fastapi uvicorn requests psutil numpy sounddevice soundfile >/dev/null 2>&1
                 
-                echo "# Descargando motores de IA (Biometría)..."; echo "60"
+                echo "# Instalando motores IA (PyTorch / Resemblyzer)..."; echo "60"
                 "$PYTHON_BIN" -m pip install resemblyzer torch --extra-index-url https://download.pytorch.org/whl/cpu >/dev/null 2>&1
                 
-                echo "# Instalando y acomodando archivos finales..."; echo "90"
+                echo "# ⚙️ ADAPTACIÓN A TU PC: COMPILANDO C++ (ESTO PUEDE TARDAR UNA ETERNIDAD, POR FAVOR NO ME CIERRES)..."; echo "85"
                 "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" >/dev/null 2>&1
                 
                 touch "$HOME/.config/Fina/.installed"
-                echo "# ¡Todo listo! Fina está despertando..."; echo "100"
-                sleep 1
-            ) | zenity --progress --title="Fina Ergen - Primer Arranque" --text="Iniciando configuración..." --percentage=0 --auto-close
+                echo "# ¡Todo listo! Despertando el núcleo..."; echo "100"
+                sleep 2
+            ) | zenity --progress --title="Instalador de Fina Ergen" --text="Iniciando configuración inicial..." --percentage=0 --auto-close
         else
             # Instalación silenciosa
             echo "📦 Instalando dependencias silenciosamente..."
