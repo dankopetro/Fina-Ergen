@@ -280,10 +280,19 @@ fn open_manual(app_handle: tauri::AppHandle) -> Result<(), String> {
     use tauri_plugin_opener::OpenerExt;
     use tauri::Manager;
     
+    let sys_lang = std::env::var("LANG").unwrap_or_else(|_| "en".to_string());
+    let is_spanish = sys_lang.to_lowercase().starts_with("es");
+    
+    let manual_filename = if is_spanish {
+        "Manual_Guia_Configuracion_Fina.pdf"
+    } else {
+        "Manual_Configuration_Guide_Fina_EN.pdf"
+    };
+
     // Al estar fuera de src-tauri, se empaqueta en _up_/docs/
     let manual_path = app_handle.path().resource_dir()
         .map_err(|e| format!("Error en recursos: {}", e))?
-        .join("_up_/docs/Manual_Guia_Configuracion_Fina.pdf");
+        .join(format!("_up_/docs/{}", manual_filename));
         
     println!("[RUST] Intentando abrir manual en: {:?}", manual_path);
     
