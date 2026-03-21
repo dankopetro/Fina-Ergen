@@ -108,9 +108,33 @@ elif ! "$PYTHON_BIN" -c "import fastapi, uvicorn, requests, pydantic, resemblyze
     NEEDS_INSTALL=1
 fi
 
+# DETERMINAR IDIOMA DEL SISTEMA
+SYS_LANG="${LANG:0:2}"
+if [ "$SYS_LANG" = "es" ]; then
+    MSG_INFO_TITLE="Fina Ergen - ¡Primer Contacto!"
+    MSG_INFO_TEXT="Fina está construyendo su cerebro para adaptarse a esta computadora.\n\n⚠️ ¡ATENCIÓN!\nEste proceso puede parecer CONGELADO durante 10 a 20 minutos más adelante (estará compilando en profundo).\n\nPor favor, NO CIERRES NINGUNA VENTANA aunque veas que la barra de progreso no avanza. ¡Prepará un café ☕ mientras espero!"
+    MSG_PROG_TITLE="Instalador de Fina Ergen"
+    MSG_PROG_TEXT="Iniciando configuración inicial..."
+    MSG_STEP_1="# Actualizando herramientas base de Python..."
+    MSG_STEP_2="# Descargando servicios y drivers..."
+    MSG_STEP_3="# Instalando motores IA (PyTorch / Resemblyzer)..."
+    MSG_STEP_4="# ⚙️ ADAPTACIÓN A TU PC: COMPILANDO C++ (ESTO PUEDE TARDAR HASTA 20 MINUTOS)..."
+    MSG_STEP_FIN="# ¡Todo listo! Despertando el núcleo..."
+else
+    MSG_INFO_TITLE="Fina Ergen - First Contact!"
+    MSG_INFO_TEXT="Fina is building its brain to adapt to this computer.\n\n⚠️ ATTENTION!\nThis process may appear FROZEN for 10 to 20 minutes later on (deep compilation in progress).\n\nPlease DO NOT CLOSE ANY WINDOWS even if the progress bar doesn't advance. Brew some coffee ☕ while I wait!"
+    MSG_PROG_TITLE="Fina Ergen Installer"
+    MSG_PROG_TEXT="Starting initial configuration..."
+    MSG_STEP_1="# Updating base Python tools..."
+    MSG_STEP_2="# Downloading services and drivers..."
+    MSG_STEP_3="# Installing AI engines (PyTorch / Resemblyzer)..."
+    MSG_STEP_4="# ⚙️ ADAPTING TO YOUR PC: COMPILING C++ (THIS MAY TAKE UP TO 20 MINUTES)..."
+    MSG_STEP_FIN="# All set! Waking up the core..."
+fi
+
 if [ ! -f "$PYTHON_BIN" ]; then
     if command -v zenity >/dev/null 2>&1 && [ "$NEEDS_INSTALL" -eq 1 ]; then
-        zenity --info --title="Fina Ergen - ¡Primer Contacto!" --text="Fina está construyendo su cerebro para adaptarse a esta computadora.\n\n⚠️ ¡ATENCIÓN!\nEste proceso puede parecer CONGELADO durante 10 a 20 minutos más adelante (estará compilando en profundo).\n\nPor favor, NO CIERRES NINGUNA VENTANA aunque veas que la barra de progreso no avanza. ¡Prepará un café ☕ mientras espero!" --width=550 &
+        zenity --info --title="$MSG_INFO_TITLE" --text="$MSG_INFO_TEXT" --width=550 &
     fi
     
     echo "🛠️ Creando VENV en $USER_VENV..."
@@ -129,16 +153,16 @@ if [ -f "$PYTHON_BIN" ]; then
         if command -v zenity >/dev/null 2>&1 && [ ! -f "$HOME/.config/Fina/.installed" ] && [ "$NEEDS_INSTALL" -eq 1 ]; then
             echo "📦 Instalando componentes pesados (Torch, Resemblyzer)..."
             (
-                echo "# Actualizando herramientas base de Python..."; echo "10"
+                echo "$MSG_STEP_1"; echo "10"
                 "$PYTHON_BIN" -m pip install --upgrade pip >/dev/null 2>&1
                 
-                echo "# Descargando servicios y drivers..."; echo "30"
+                echo "$MSG_STEP_2"; echo "30"
                 "$PYTHON_BIN" -m pip install fastapi uvicorn requests psutil numpy sounddevice soundfile >/dev/null 2>&1
                 
-                echo "# Instalando motores IA (PyTorch / Resemblyzer)..."; echo "60"
+                echo "$MSG_STEP_3"; echo "60"
                 "$PYTHON_BIN" -m pip install resemblyzer torch --extra-index-url https://download.pytorch.org/whl/cpu >/dev/null 2>&1
                 
-                echo "# ⚙️ ADAPTACIÓN A TU PC: COMPILANDO C++ (ESTO PUEDE TARDAR HASTA 20 MINUTOS)..."; echo "70"
+                echo "$MSG_STEP_4"; echo "70"
                 "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" >/dev/null 2>&1 &
                 PIP_PID=$!
                 
@@ -149,15 +173,19 @@ if [ -f "$PYTHON_BIN" ]; then
                     if [ $prog -lt 99 ]; then
                         prog=$((prog + 1))
                         echo "$prog"
-                        echo "# ⚙️ Construyendo piezas internas para el hardware ($prog%)... ¡Paciencia, no me cierres!"
+                        if [ "$SYS_LANG" = "es" ]; then
+                            echo "# ⚙️ Construyendo piezas internas para el hardware ($prog%)... ¡Paciencia, no me cierres!"
+                        else
+                            echo "# ⚙️ Building internal pieces for hardware ($prog%)... Patience, don't close me!"
+                        fi
                     fi
                 done
                 wait $PIP_PID
                 
                 touch "$HOME/.config/Fina/.installed"
-                echo "# ¡Todo listo! Despertando el núcleo..."; echo "100"
+                echo "$MSG_STEP_FIN"; echo "100"
                 sleep 2
-            ) | zenity --progress --title="Instalador de Fina Ergen" --text="Iniciando configuración inicial..." --percentage=0 --auto-close
+            ) | zenity --progress --title="$MSG_PROG_TITLE" --text="$MSG_PROG_TEXT" --percentage=0 --auto-close
         else
             # Instalación silenciosa
             echo "📦 Instalando dependencias silenciosamente..."
