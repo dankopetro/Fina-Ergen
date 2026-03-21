@@ -138,8 +138,21 @@ if [ -f "$PYTHON_BIN" ]; then
                 echo "# Instalando motores IA (PyTorch / Resemblyzer)..."; echo "60"
                 "$PYTHON_BIN" -m pip install resemblyzer torch --extra-index-url https://download.pytorch.org/whl/cpu >/dev/null 2>&1
                 
-                echo "# ⚙️ ADAPTACIÓN A TU PC: COMPILANDO C++ (ESTO PUEDE TARDAR UNA ETERNIDAD, POR FAVOR NO ME CIERRES)..."; echo "85"
-                "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" >/dev/null 2>&1
+                echo "# ⚙️ ADAPTACIÓN A TU PC: COMPILANDO C++ (ESTO PUEDE TARDAR HASTA 20 MINUTOS)..."; echo "70"
+                "$PYTHON_BIN" -m pip install -r "$ERGEN_ROOT/requirements.txt" >/dev/null 2>&1 &
+                PIP_PID=$!
+                
+                # Bucle para simular progreso para usuarios ansiosos
+                prog=70
+                while kill -0 $PIP_PID 2>/dev/null; do
+                    sleep 15
+                    if [ $prog -lt 99 ]; then
+                        prog=$((prog + 1))
+                        echo "$prog"
+                        echo "# ⚙️ Construyendo piezas internas para el hardware ($prog%)... ¡Paciencia, no me cierres!"
+                    fi
+                done
+                wait $PIP_PID
                 
                 touch "$HOME/.config/Fina/.installed"
                 echo "# ¡Todo listo! Despertando el núcleo..."; echo "100"
