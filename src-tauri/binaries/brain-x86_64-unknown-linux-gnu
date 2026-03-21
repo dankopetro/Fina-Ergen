@@ -28,6 +28,10 @@ search_paths=(
     "$SCRIPT_DIR/../_up_"           # Relativo al sidecar en /usr/lib/fina-ergen/binaries/
     "$SCRIPT_DIR/.."                # Tauri Resources standard
     "$SCRIPT_DIR/../../.."          # Development (src-tauri/binaries -> project_root)
+    "$SCRIPT_DIR/../lib/fina-ergen/_up_" # AppImage Resource path (Tauri v2)
+    "$SCRIPT_DIR/../lib/fina-ergen"      # AppImage Alternative
+    "$SCRIPT_DIR/../share/fina-ergen/_up_" # AppImage Share path
+    "$SCRIPT_DIR/../share/fina-ergen"      # AppImage Share Alternative
     "/usr/lib/fina-ergen/_up_"      # Ruta absoluta estándar DEB (Fina Resources)
     "/usr/lib/fina-ergen"           # Ruta absoluta alternativa
     "/usr/share/fina-ergen/_up_"    # Ruta absoluta estándar RPM
