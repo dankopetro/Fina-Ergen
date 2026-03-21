@@ -143,7 +143,7 @@ config, CONFIG_FOUND = load_config()
 
 # --- DIAGNÓSTICO INICIAL ---
 import getpass
-print(f"🧠 Cerebro de Fina Iniciado... (V3.5.9-5 ({time.strftime('%d/%m/%Y %H:%M')}))", flush=True)
+print(f"🧠 Cerebro de Fina Iniciado... (V3.5.9-6 ({time.strftime('%d/%m/%Y %H:%M')}))", flush=True)
 print(f"👤 Corriendo como: {getpass.getuser()}", flush=True)
 if os.getuid() == 0:
     print("⚠️  [ADVERTENCIA] Fina está siendo ejecutada como ROOT.", flush=True)

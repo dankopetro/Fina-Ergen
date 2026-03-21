@@ -51,28 +51,25 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: 1
         with:
           tagName: v__VERSION__
-          releaseName: "Fina Ergen v3.5.9-1"
+          releaseName: "Fina Ergen v3.5.9-6"
           releaseBody: |
-            ### 🚀 Fina Ergen v3.5.9-1 - Edición de Fluidez y Regionalismo
+            ### 🚀 Fina Ergen v3.5.9-6 - Edición "Primer Contacto Perfecto"
             
-            Esta actualización introduce la mayor expansión de regionalismos hasta la fecha y mejoras en el modo sueño:
+            Esta actualización se enfoca por completo en la experiencia de primer uso (First Boot) para novatos y en la perfección cruzada del AppImage portátil.
             
-            - **🌍 Regionalismo Global (I18N):**
-                - Implementación masiva de modismos para más de 20 locales (España, México, Argentina, Uruguay, Paraguay, Chile, Perú, Colombia, Venezuela, Centroamérica, Caribe, Brasil, Portugal, Francia, Quebec, Alemania, Suiza, Austria, Japón y China).
-                - Saludos y despedidas dinámicas adaptadas al sistema operativo.
-            - **💤 Sleep Mode Inteligente:**
-                - El comando "dormir" ya no requiere autenticación biométrica (voz/huella).
-                - Fina puede despertar mediante detección de intenciones ("Dormir" y "Despertar" ahora son intenciones separadas).
-            - **🌟 Fluidez Total (Non-blocking):**
-                - Sistema de ejecución asíncrono para el refresco del Aire AC.
-                - Se eliminaron los congelamientos durante consultas de hardware.
-            - **🕒 Gestión de Tiempo:**
-                - Clima sincronizado cada 15 minutos alineado con el reloj (:00, :15, :30, :45).
-            - **🧼 Core:**
-                - Mejora en la velocidad de carga inicial de `main.py`.
-
+            - **🧠 Instalador Tolerante a la Ansiedad:**
+                - La compilación masiva de código C++ pesado (NumPy/PyTorch/Dlib) ahora cuenta con una barra de progreso simulada que engaña al sistema y se mueve lentamente hasta el 99%, evitando que usuarios novatos cierren el programa pensando que se congeló.
+            - **🌍 Instalador Bilingüe:**
+                - Las ventanas de advertencia y los textos asíncronos del instalador base (Zenity) ahora detectan el idioma del Sistema Operativo (`LANG`) y se ajustan al inglés universal de forma automática si no es español.
+            - **📦 Reparación Estructural AppImage:**
+                - Se reescribió la lógica del *sidecar* para que logre salir del túnel ciego de Tauri y encuentre sus dependencias de lenguaje en el directorio comprimido temporal (`_up_`) previniendo rutas erróneas de Linux.
+            - **🔌 Detección Humana de Dependencias:**
+                - Si al portátil le faltan librerías globales del sistema operativo (como `nmap` o `vlc`), ya no lo escupirá silenciosamente por consola, sino que levantará un pop-up gráfico directo en la cara del usuario con el comando exacto para que hagan `sudo apt install`.
+            - **📖 Manual Contextual:**
+                - El botón integrado de "Manual de Configuración" en la interfaz de usuario ahora sabe si debe abrir el PDF en español o en inglés basándose en la cultura nativa del Host.
+            
             ---
-            *Desarrollado con ❤️ por Dankopetro.*
+            *Diseñado y Pulido con ❤️ por Danko.*
           releaseDraft: false
           prerelease: false
           args: --bundles deb,rpm
