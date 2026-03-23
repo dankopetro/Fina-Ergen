@@ -51,25 +51,19 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: 1
         with:
           tagName: v__VERSION__
-          releaseName: "Fina Ergen v3.5.9-6"
+          releaseName: "Fina Ergen v__VERSION__"
           releaseBody: |
-            ### 🚀 Fina Ergen v3.5.9-6 - Edición "Primer Contacto Perfecto"
+            ### 🚀 Fina Ergen v__VERSION__
             
-            Esta actualización se enfoca por completo en la experiencia de primer uso (First Boot) para novatos y en la perfección cruzada del AppImage portátil.
+            Esta actualización marca un salto importante en la madurez del asistente, con un enfoque en la expansión domótica universal y la modularidad del mercado de plugins.
             
-            - **🧠 Instalador Tolerante a la Ansiedad:**
-                - La compilación masiva de código C++ pesado (NumPy/PyTorch/Dlib) ahora cuenta con una barra de progreso simulada que engaña al sistema y se mueve lentamente hasta el 99%, evitando que usuarios novatos cierren el programa pensando que se congeló.
-            - **🌍 Instalador Bilingüe:**
-                - Las ventanas de advertencia y los textos asíncronos del instalador base (Zenity) ahora detectan el idioma del Sistema Operativo (`LANG`) y se ajustan al inglés universal de forma automática si no es español.
-            - **📦 Reparación Estructural AppImage:**
-                - Se reescribió la lógica del *sidecar* para que logre salir del túnel ciego de Tauri y encuentre sus dependencias de lenguaje en el directorio comprimido temporal (`_up_`) previniendo rutas erróneas de Linux.
-            - **🔌 Detección Humana de Dependencias:**
-                - Si al portátil le faltan librerías globales del sistema operativo (como `nmap` o `vlc`), ya no lo escupirá silenciosamente por consola, sino que levantará un pop-up gráfico directo en la cara del usuario con el comando exacto para que hagan `sudo apt install`.
-            - **📖 Manual Contextual:**
-                - El botón integrado de "Manual de Configuración" en la interfaz de usuario ahora sabe si debe abrir el PDF en español o en inglés basándose en la cultura nativa del Host.
+            - **📊 Monitor de Hábitat:** Nueva visualización de consumo energético mensual y soporte para electrodomésticos inteligentes.
+            - **🧠 Inteligencia Adaptativa:** El motor ahora puede aprender modismos regionales y comandos personalizados en tiempo de ejecución.
+            - **📦 Instalación Simplificada:** Instala nuevos plugins directamente desde archivos ZIP locales a través de la interfaz.
+            - **🌐 Core i18n:** Traducciones completas a 7 idiomas para el ecosistema Zero-Config.
             
             ---
-            *Diseñado y Pulido con ❤️ por Danko.*
+            *Consultar `docs/release_notes_v3_6_0.md` para el desglose detallado de esta versión.*
           releaseDraft: false
           prerelease: false
           args: --bundles deb,rpm

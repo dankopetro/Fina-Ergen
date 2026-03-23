@@ -2353,21 +2353,101 @@ def toggle_night_mode(m, state="on"):
         return "Redshift no está instalado."
 
 def update_assistant_code(m=None, *args, **kwargs):
-    """Pull universal de cambios desde git"""
+    """Actualización universal: soportada en Git (dev) y Sistemas Instalados (.deb/AppImage)."""
     try:
         if m:
-            speak("Buscando actualizaciones en el repositorio...", m)
+            speak("Verificando disponibilidad de actualizaciones...", m)
         
-        # Primero probamos git pull
-        res = subprocess.run(["git", "pull"], capture_output=True, text=True, timeout=30)
+        # 1. MODO DESARROLLADOR (GIT)
+        if os.path.exists(os.path.join(GLOBAL_ROOT, ".git")):
+            res = subprocess.run(["git", "pull"], capture_output=True, text=True, timeout=30)
+            if "Already up to date" in res.stdout:
+                return "Fina ya está en su versión de desarrollo más reciente."
+            return "Actualización del código cargada. Reinicia Fina para aplicar."
+
+        # 2. MODO USUARIO FINAL (GITHUB RELEASES)
+        repo_user = get_unified_config("GITHUB_USER", "dankopetro")
+        repo_name = get_unified_config("GITHUB_REPO", "Fina-Ergen")
+        api_url = f"https://api.github.com/repos/{repo_user}/{repo_name}/releases/latest"
         
-        if "Already up to date" in res.stdout:
-            return "Fina ya está en su versión más reciente."
-        
-        return "Actualización completada. Reinicia Fina para aplicar los cambios."
+        # Version local actual (extraída si es posible, sino default)
+        try:
+            from main import FINA_VERSION
+            local_v = FINA_VERSION.split()[-1] 
+        except:
+            local_v = "0.0.0"
+
+        if requests:
+            resp = requests.get(api_url, timeout=5)
+            if resp.status_code == 200:
+                release_data = resp.json()
+                latest_v = release_data.get("tag_name", "").replace("v", "")
+                
+                # Comparación simple de versiones
+                if latest_v > local_v:
+                    if m: speak(f"He encontrado la versión {latest_v}. ¿Deseas descargarla e instalarla?", m)
+                    
+                    # 1. ¿Somos un AppImage?
+                    appimage_path = os.environ.get("APPIMAGE")
+                    if appimage_path:
+                        # Buscar AppImage en assets
+                        appimage_url = None
+                        for asset in release_data.get("assets", []):
+                            if asset["name"].endswith(".AppImage") and "amd64" in asset["name"]:
+                                appimage_url = asset["browser_download_url"]
+                                break
+                        
+                        if appimage_url:
+                            if m: speak("Descargando nueva versión del AppImage...", m)
+                            tmp_app = f"{appimage_path}.new"
+                            with requests.get(appimage_url, stream=True) as r:
+                                with open(tmp_app, 'wb') as f:
+                                    shutil.copyfileobj(r.raw, f)
+                            
+                            # Reemplazo atómico (en Linux es posible cambiar el nombre de un binario en ejecución)
+                            os.chmod(tmp_app, 0o755)
+                            os.rename(tmp_app, appimage_path)
+                            return f"Fina AppImage actualizada a v{latest_v}. Reinicia la aplicación."
+                    
+                    # 2. ¿Somos un Sistema instalado (DEB o RPM)?
+                    deb_url = None
+                    rpm_url = None
+                    for asset in release_data.get("assets", []):
+                        lname = asset["name"].lower()
+                        if "amd64" in lname or "x86_64" in lname:
+                            if lname.endswith(".deb"): deb_url = asset["browser_download_url"]
+                            if lname.endswith(".rpm"): rpm_url = asset["browser_download_url"]
+                    
+                    # Detectar gestor de paquetes
+                    if deb_url and shutil.which("dpkg"):
+                        tmp_deb = f"/tmp/fina_update_{latest_v}.deb"
+                        if m: speak("Descargando actualización Debian...", m)
+                        with requests.get(deb_url, stream=True) as r:
+                            with open(tmp_deb, 'wb') as f: shutil.copyfileobj(r.raw, f)
+                        subprocess.Popen(["pkexec", "dpkg", "-i", tmp_deb])
+                        return f"Instalación de v{latest_v} (.deb) iniciada."
+                        
+                    elif rpm_url and shutil.which("rpm"):
+                        tmp_rpm = f"/tmp/fina_update_{latest_v}.rpm"
+                        if m: speak("Descargando actualización RPM...", m)
+                        with requests.get(rpm_url, stream=True) as r:
+                            with open(tmp_rpm, 'wb') as f: shutil.copyfileobj(r.raw, f)
+                        # Usamos dnf si existe, sino rpm
+                        cmd = ["pkexec", "dnf", "install", "-y", tmp_rpm] if shutil.which("dnf") else ["pkexec", "rpm", "-U", tmp_rpm]
+                        subprocess.Popen(cmd)
+                        return f"Instalación de v{latest_v} (.rpm) iniciada."
+                    
+                    return f"Hay una versión {latest_v} pero no encontré un paquete compatible para tu distribución Linux."
+                else:
+                    return f"Tu versión ({local_v}) es la más reciente."
+            else:
+                return "No pude conectar con el servidor de actualizaciones."
+        else:
+            return "El módulo de red 'requests' no está disponible para verificar actualizaciones."
+            
     except Exception as e:
-        logger.error(f"Error actualizando Fina: {e}")
-        return f"No pude completar la actualización: {e}"
+        logger.error(f"Error en Actualización Universal: {e}")
+        return f"Ocurrió un error al intentar actualizar: {str(e)}"
 
 
 def scan_network_cmd(m):
