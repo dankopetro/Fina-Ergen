@@ -4886,7 +4886,7 @@ const selectFolder = async (settingKey) => {
                                                 </div>
 
                                                 <div
-                                                    class="flex flex-col p-8 bg-white/5 rounded-[40px] border border-white/10 shadow-2xl gap-8">
+                                                    class="relative flex flex-col p-8 bg-white/5 rounded-[40px] border border-white/10 shadow-2xl gap-8 overflow-hidden">
                                                     <div
                                                         class="flex flex-col items-center border-b border-white/5 pb-4">
                                                         <span

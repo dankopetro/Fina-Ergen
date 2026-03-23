@@ -2748,3 +2748,12 @@ def deco_set_channel_cmd(c, m):
 
 def is_code_worthy(*args, **kwargs): return False
 
+
+def get_time_based_greeting(*args, **kwargs):
+    h = datetime.now().hour
+    if h < 12:
+        return i18n("morning_greet", "Buenos días")
+    elif h < 20:
+        return i18n("afternoon_greet", "Buenas tardes")
+    else:
+        return i18n("night_greet", "Buenas noches")
