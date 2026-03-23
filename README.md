@@ -99,5 +99,5 @@ El desarrollo de Fina comenzó como un _fork_ espiritual fuertemente inspirado e
 ---
 <p align="center">
   <b>Hecho con ❤️ en Argentina. Licencia MIT.</b> <br>
-  <i>"El hierro inteligente."</i>
+  <i>"El alambre inteligente."</i>
 </p>
