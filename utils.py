@@ -1869,9 +1869,34 @@ def text_to_number_es(text):
 # Placeholder real para funciones costosas o no implementadas
 def run_schedule_loop(*args, **kwargs): pass
 
-def get_doorbell_status_cmd(*args, **kwargs): return "Sistema de timbre no conectado aún."
-def show_doorbell_image(*args, **kwargs): pass
-def show_doorbell_stream(*args, **kwargs): pass
+def get_doorbell_status_cmd(*args, **kwargs): 
+    # Intentamos verificar si la IP del timbre está en línea
+    ip = get_unified_config("DOORBELL_IP", "0.0.0.0")
+    if ip == "0.0.0.0": return "Sistema de timbre no configurado aún."
+    
+    try:
+        # Ping rápido (1 paquete, 1s timeout)
+        res = subprocess.run(["ping", "-c", "1", "-W", "1", ip], capture_output=True)
+        if res.returncode == 0:
+            return "El timbre está conectado y en línea."
+        else:
+            return "El timbre parece estar fuera de línea en este momento."
+    except:
+        return "No pude verificar el estado del timbre."
+
+def show_doorbell_image(*args, **kwargs): 
+    ip = get_unified_config("DOORBELL_IP", "0.0.0.0")
+    if ip == "0.0.0.0": return
+    # Intentar abrir la URL de captura (genérico MJPEG/JPG)
+    url = f"http://{ip}/capture"
+    subprocess.Popen(["xdg-open", url])
+
+def show_doorbell_stream(*args, **kwargs): 
+    ip = get_unified_config("DOORBELL_IP", "0.0.0.0")
+    if ip == "0.0.0.0": return
+    # Abrir stream en el navegador o VLC
+    url = f"http://{ip}/stream"
+    subprocess.Popen(["xdg-open", url])
 def play_youtube(q=""): 
     subprocess.Popen(["xdg-open", f"https://www.youtube.com/results?search_query={q}"])
     return f"Buscando {q} en YouTube..."
@@ -2172,9 +2197,6 @@ def update_assistant_code(m, *args, **kwargs):
     except:
         return "Error al conectar con el servidor de actualizaciones."
 
-def get_weather_forecast(m, *args, **kwargs):
-    # Reutilizar lógica de get_weather pero para forecast
-    return "Función de pronóstico extendido en desarrollo."
 
 def scan_network_cmd(m):
     """Llama al escáner de red y reporta dispositivos encontrados"""
@@ -2279,12 +2301,69 @@ def fridge_inventory_cmd(m):
         response = plugin.handle_intent("fridge_inventory", "que falta")
         if response: speak(response, m)
     else:
-        speak("Tu heladera actual no tiene funciones de inventario inteligente.", m)
+        speak("No puedo revisar el inventario sin un plugin de heladera compatible.", m)
+
+def fridge_set_temp_cmd(m, temp):
+    plugin = _get_plugin_by_category("Refrigerators")
+    if plugin:
+        response = plugin.handle_intent("set_fridge_temp", f"temperatura {temp}")
+        if response: speak(response, m)
+    else:
+        speak("No puedo ajustar la temperatura de la heladera.", m)
+
+def lights_set_brightness_cmd(m, level=50):
+    plugin = _get_plugin_by_category("Lights") or _get_plugin_by_category("SmartHome")
+    if plugin:
+        response = plugin.handle_intent("set_brightness", f"brillo {level}")
+        if response: speak(response, m)
+    else:
+        speak("No detecto luces regulables.", m)
+
+def blinds_close_cmd(m):
+    plugin = _get_plugin_by_category("Blinds")
+    if plugin:
+        response = plugin.handle_intent("blinds_close", "cerrar persianas")
+        if response: speak(response, m)
+    else:
+        speak("No puedo cerrar las persianas.", m)
+
+def lock_status_cmd(m):
+    plugin = _get_plugin_by_category("Locks")
+    if plugin:
+        response = plugin.handle_intent("lock_status", "estado cerradura")
+        if response: speak(response, m)
+    else:
+        speak("No detecto el estado de la cerradura.", m)
+
+def robot_status_cmd(m):
+    plugin = _get_plugin_by_category("Robots")
+    if plugin:
+        response = plugin.handle_intent("robot_status", "estado robot")
+        if response: speak(response, m)
+    else:
+        speak("Información del robot no disponible.", m)
+
+def appliance_status_cmd(m):
+    plugin = _get_plugin_by_category("Appliances")
+    if plugin:
+        response = plugin.handle_intent("appliance_status", "estado lavarropas")
+        if response: speak(response, m)
+    else:
+        speak("No tengo información de tus electrodomésticos.", m)
+
+def energy_status_cmd(m):
+    plugin = _get_plugin_by_category("Energy")
+    if plugin:
+        response = plugin.handle_intent("power_status", "estado energia")
+        if response: speak(response, m)
+    else:
+        speak("Sistema de energía no monitoreado.", m)
+
 
 def _get_plugin_by_category(category):
     """Busca un plugin en el market que pertenezca a una categoría"""
     import yaml
-    market_path = os.path.join(PROJECT_ROOT, ".local_lab", "Fina-Plugins-Market-Working")
+    market_path = os.path.join(ERGEN_ROOT, ".local_lab", "Fina-Plugins-Market-Working")
     for root, dirs, files in os.walk(market_path):
         if "plugin.yaml" in files:
             try:

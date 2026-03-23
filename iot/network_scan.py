@@ -139,6 +139,9 @@ MAC_VENDORS = {
     "F4:F5:24": "Motorola (Celular)",
     "E0:76:D0": "Motorola (Celular)",
     "A4:70:D6": "Motorola Mobile",
+    "14:91:82": "Wemo (Belkin - Smart Plug)",
+    "00:22:6C": "Belkin (Hogar Conectado)",
+    "60:38:E0": "Belkin International",
 }
 
 def get_local_ip():

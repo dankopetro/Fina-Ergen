@@ -139,7 +139,8 @@ from utils import (
     show_doorbell_stream, send_ui_command, check_system_dependencies, is_code_worthy,
     perform_ac_control, scan_network_cmd, robot_clean_cmd, lights_on_cmd, lights_off_cmd,
     lock_door_cmd, unlock_door_cmd, blinds_open_cmd, start_watering_cmd, check_solar_production_cmd,
-    fridge_status_cmd, fridge_inventory_cmd,
+    fridge_status_cmd, fridge_inventory_cmd, fridge_set_temp_cmd, lights_set_brightness_cmd,
+    blinds_close_cmd, lock_status_cmd, robot_status_cmd, appliance_status_cmd, energy_status_cmd,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config,
     get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine, i18n,
     get_unified_config, get_sys_lang, get_idiom
@@ -1371,8 +1372,8 @@ async def main():
             elif intent == "play_ambient":
                 speak(i18n("msg_ambient_sound_query", "¿Qué sonido ambiental? (lluvia, bosque, océano)"), selected_voice_model)
                 type_ = listen(model, language=sys_lang)
-                result = play_ambient_sound(type_)
-                speak(result, selected_voice_model)
+                result = play_ambient_sound(selected_voice_model, type_)
+                # El speak ya sucede dentro de la función para el feedback imediato
 
             elif intent == "take_screenshot":
                 result = take_screenshot()
@@ -1384,7 +1385,7 @@ async def main():
                 intent , confidence = detect_intent(user_status)
                 if intent == "yes":
                     speak(i18n("msg_cheese", "cheese!"), selected_voice_model)
-                    result, path = take_webcam_photo()
+                    result, path = take_webcam_photo(selected_voice_model)
                     speak(result, selected_voice_model)
                     speak(i18n("msg_open_photo_query", "¿Querés que abra tu foto?"), selected_voice_model)
                     user_choice = listen(model="tiny", language=sys_lang)
@@ -1405,7 +1406,7 @@ async def main():
             elif intent == "download_instagram":
                 speak(i18n("msg_instagram_reel_query", "Pegue la URL del reel de Instagram."), selected_voice_model)
                 url = listen(model, language=sys_lang)
-                result = download_instagram_reel(url)
+                result = download_instagram_reel(selected_voice_model, url)
                 speak(result, selected_voice_model)
 
             elif intent == "toggle_night_mode":
@@ -1427,10 +1428,10 @@ async def main():
                 speak(i18n("msg_tv_brightness_err", "Lo siento, aún no puedo controlar el brillo del televisor."), selected_voice_model)
             
             elif intent == "lights_increase_brightness":
-                speak(i18n("msg_lights_brightness_inc_err", "No tengo luces inteligentes configuradas para aumentar el brillo."), selected_voice_model)
+                lights_set_brightness_cmd(selected_voice_model, level=80)
             
             elif intent == "lights_decrease_brightness":
-                speak(i18n("msg_lights_brightness_dec_err", "No tengo luces inteligentes configuradas para disminuir el brillo."), selected_voice_model)
+                lights_set_brightness_cmd(selected_voice_model, level=20)
             
             elif intent == "open_spotify":
                 try:
@@ -1686,17 +1687,37 @@ async def main():
             elif intent == "open_blinds":
                 blinds_open_cmd(selected_voice_model)
 
+            elif intent == "close_blinds":
+                blinds_close_cmd(selected_voice_model)
+
             elif intent == "start_watering":
                 start_watering_cmd(selected_voice_model)
 
             elif intent == "check_solar_production":
-                check_solar_production_cmd(selected_voice_model)
+                energy_status_cmd(selected_voice_model)
 
             elif intent == "fridge_status":
                 fridge_status_cmd(selected_voice_model)
 
             elif intent == "fridge_inventory":
                 fridge_inventory_cmd(selected_voice_model)
+
+            elif intent == "set_fridge_temp":
+                # Extraer temperatura del comando
+                nums = re.findall(r'\d+', commandFinal)
+                if nums:
+                    fridge_set_temp_cmd(selected_voice_model, nums[0])
+                else:
+                    speak("¿Qué temperatura quieres poner?", selected_voice_model)
+
+            elif intent == "lock_status":
+                lock_status_cmd(selected_voice_model)
+
+            elif intent == "robot_status":
+                robot_status_cmd(selected_voice_model)
+
+            elif intent == "appliance_status":
+                appliance_status_cmd(selected_voice_model)
                 
 # main entry point
 def handle_exit(signum, frame):
