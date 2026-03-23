@@ -1,19 +1,73 @@
 {
-  "scan_iot": ["netzwerk scannen", "geräte suchen", "wer ist verbunden", "iot scan"],
-  "robot_clean": ["staubsaugen", "reinigungsroboter starten", "putz den boden"],
-  "lights_on": ["licht an", "licht einschalten", "lampe einschalten"],
-  "lights_off": ["licht aus", "alles ausschalten", "licht ausschalten"],
-  "lock_door": ["tür abschließen", "zusperren", "haus sichern"],
-  "unlock_door": ["tür aufschließen", "tür öffnen"],
-  "check_lock_status": ["ist die tür zu?", "türstatus prüfen"],
-  "start_washing_machine": ["waschmaschine starten", "wäsche waschen"],
-  "open_blinds": ["rollladen öffnen", "jalousien hoch", "fenster öffnen"],
-  "close_blinds": ["rollladen schließen", "jalousien runter", "fenster schließen"],
-  "start_watering": ["garten bewässern", "bewässerung starten", "pflanzen gießen"],
-  "check_solar_production": ["solarproduktion prüfen", "wie viel solarstrom?"],
-  "check_solar_battery": ["solarbatterie status", "batteriespeicher prüfen"],
-  "fridge_status": ["kühlschrank status", "kühlschrank temperatur"],
-  "fridge_inventory": ["was fehlt im kühlschrank?", "einkaufsliste erstellen"],
+  "scan_iot": [
+    "netzwerk scannen",
+    "geräte suchen",
+    "wer ist verbunden",
+    "iot scan"
+  ],
+  "robot_clean": [
+    "staubsaugen",
+    "reinigungsroboter starten",
+    "putz den boden"
+  ],
+  "lights_on": [
+    "licht an",
+    "licht einschalten",
+    "lampe einschalten"
+  ],
+  "lights_off": [
+    "licht aus",
+    "alles ausschalten",
+    "licht ausschalten"
+  ],
+  "lock_door": [
+    "tür abschließen",
+    "zusperren",
+    "haus sichern"
+  ],
+  "unlock_door": [
+    "tür aufschließen",
+    "tür öffnen"
+  ],
+  "check_lock_status": [
+    "ist die tür zu?",
+    "türstatus prüfen"
+  ],
+  "start_washing_machine": [
+    "waschmaschine starten",
+    "wäsche waschen"
+  ],
+  "open_blinds": [
+    "rollladen öffnen",
+    "jalousien hoch",
+    "fenster öffnen"
+  ],
+  "close_blinds": [
+    "rollladen schließen",
+    "jalousien runter",
+    "fenster schließen"
+  ],
+  "start_watering": [
+    "garten bewässern",
+    "bewässerung starten",
+    "pflanzen gießen"
+  ],
+  "check_solar_production": [
+    "solarproduktion prüfen",
+    "wie viel solarstrom?"
+  ],
+  "check_solar_battery": [
+    "solarbatterie status",
+    "batteriespeicher prüfen"
+  ],
+  "fridge_status": [
+    "kühlschrank status",
+    "kühlschrank temperatur"
+  ],
+  "fridge_inventory": [
+    "was fehlt im kühlschrank?",
+    "einkaufsliste erstellen"
+  ],
   "about": [
     "kannst du über fina für mich",
     "über fina jetzt",

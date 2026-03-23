@@ -52,6 +52,66 @@ Security and video-doorbell control.
 | `monitor.py` | Start Quick View | `--trigger` argument |
 | `hangup_doorbell.py`| End Communication | |
 
+### 💡 Category: `Lights` and `SmartHome`
+Smart lighting automation.
+
+| Script | Action | Extra Argument |
+| :--- | :--- | :--- |
+| `light_on.py` | Turn on lights | |
+| `light_off.py` | Turn off lights | |
+| `set_brightness.py`| Change brightness | `--level [0-100]` |
+
+### 🚪 Category: `Doors` and `Locks`
+Automated doors and smart locks.
+
+| Script | Action |
+| :--- | :--- |
+| `lock_on.py` | Lock door |
+| `lock_off.py` | Unlock door |
+| `lock_status.py` | Get lock status |
+
+### 🪟 Category: `Blinds`
+Smart blinds and curtain motors.
+
+| Script | Action |
+| :--- | :--- |
+| `blinds_open.py` | Open blinds |
+| `blinds_close.py` | Close blinds |
+| `blinds_stop.py` | Stop moving |
+
+### 🌱 Category: `Irrigation`
+Smart watering and garden control.
+
+| Script | Action |
+| :--- | :--- |
+| `watering_start.py`| Start watering cycle |
+| `watering_stop.py` | Stop watering cycle |
+
+### 🤖 Category: `Robots`
+Vacuum and cleaning robots.
+
+| Script | Action |
+| :--- | :--- |
+| `robot_clean.py` | Start cleaning |
+| `robot_dock.py` | Return to base/dock |
+| `robot_status.py`| Get battery/state |
+
+### 🧊 Category: `Refrigerators` and `Appliances`
+Smart fridges and heavy appliances.
+
+| Script | Action |
+| :--- | :--- |
+| `fridge_status.py` | Read temp/general status |
+| `fridge_inventory.py`| Read inventory (if supported) |
+
+### ⚡ Category: `Energy`
+Solar panel and inverter monitoring.
+
+| Script | Action |
+| :--- | :--- |
+| `solar_status.py` | Read power production (W) |
+| `battery_status.py` | Read home battery level |
+
 ---
 
 ## 📝 The `plugin.yaml` file

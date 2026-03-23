@@ -430,8 +430,53 @@ async def get_system_info():
         "python_path": sys.executable,
         "project_root": PROJECT_ROOT,
         "config_dir": CONFIG_DIR,
-        "version": "3.5.9-1 (12/03/2026 13:20)"
+        "version": "3.6.0"
     }
+
+@app.post("/api/system/export")
+async def export_migration():
+    """Llama a utils para empaquetar la configuración"""
+    try:
+        result = utils.export_migration_data()
+        return result
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/system/import")
+async def import_migration(payload: dict):
+    """Llama a utils para restaurar un ZIP de migración"""
+    zip_path = payload.get("path")
+    if not zip_path:
+        raise HTTPException(status_code=400, detail="Falta ruta del archivo ZIP")
+    try:
+        result = utils.import_migration_data(zip_path)
+        return result
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/system/plugins/install")
+async def install_plugin_from_url(payload: dict):
+    """Llama a utils para descargar e instalar un plugin custom"""
+    url = payload.get("url")
+    if not url:
+        raise HTTPException(status_code=400, detail="Falta URL del plugin")
+    try:
+        result = utils.install_custom_plugin(url)
+        return result
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/system/update")
+async def update_system():
+    """Llama a utils para actualizar el core vía git pull"""
+    try:
+        # Usamos la función ya definida en utils
+        message = utils.update_assistant_code(m=None)
+        if "No pude completar" in message:
+            return {"status": "error", "message": message}
+        return {"status": "success", "message": message}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 # --- Static ---
 if os.path.exists(os.path.join(PROJECT_ROOT, "static")):

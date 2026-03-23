@@ -1337,7 +1337,7 @@ async def main():
                 speak(text[:500], selected_voice_model)  # Read a preview
 
             elif intent == "update_assistant":
-                result = update_assistant_code()
+                result = update_assistant_code(m=selected_voice_model)
                 speak(result, selected_voice_model)
 
             elif intent == "greeting":
@@ -1736,6 +1736,7 @@ async def main():
             elif intent == "set_fridge_temp":
                 # Extraer temperatura del comando
                 nums = re.findall(r'\d+', commandFinal)
+                if nums:
                     fridge_set_temp_cmd(selected_voice_model, nums[0])
                 else:
                     speak("¿Qué temperatura quieres poner?", selected_voice_model)

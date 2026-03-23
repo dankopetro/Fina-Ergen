@@ -132,6 +132,10 @@ const userSettings = ref({
         VOICE_MODELS_PATH: "",
         VOSK_MODEL_PATH: "",
         AC_IP: "",
+        VENTANAS_IP: "",
+        RIEGO_IP: "",
+        LIMPIEZA_IP: "",
+        HELADERA_IP: "",
         USER_NAME: "Usuario"
     },
     tvs: [],
@@ -179,6 +183,7 @@ const universalPinInput = ref("");
 
 const installedMessagingApps = ref(['sms']); // IDs de apps instaladas
 const selectedMessagingApp = ref('sms'); // ID de app seleccionada
+const customPluginUrl = ref("");
 
 const isSidebarCollapsed = ref(true);
 const activeTab = ref("dashboard");
@@ -245,11 +250,6 @@ const doorbellBattery = ref("90");
 const acState = ref({
     power: false,
     temp: 24,
-    indoor: 25,
-    mode: "cool",
-    swing: false,
-    turbo: false,
-    fan: "auto",
     eco: false,
     display: true,
     sleep: false,
@@ -1875,19 +1875,98 @@ const syncContactsFromMobile = async (force = false) => {
     }
 };
 
-const importFromCore = async () => {
-    finaState.value.process = t("proc_importing", "IMPORTANDO DESDE CORE...");
+const exportToCore = async () => {
+    finaState.value.process = t("proc_exporting", "EXPORTANDO CONFIGURACIÓN...");
     try {
-        const rootPath = ".";
-        // En Fina-Ergen ya no hay carpeta 'test/fina-ergen', todo es local.
-        console.log("Sincronización core saltada: Ya estamos en la carpeta raíz.");
+        const response = await fetch("http://127.0.0.1:18000/api/system/export", { method: "POST" });
+        const result = await response.json();
+        if (result.status === "success") {
+            finaState.value.process = t("proc_export_done", "EXPORTACIÓN EXITOSA");
+            // Mostrar la ruta del archivo con zenity
+            invoke("spawn_shell_command", { command: `zenity --info --text="Migración completada. Archivo guardado en:\\n${result.path}"` });
+        } else {
+            finaState.value.process = t("proc_err_export", "ERROR EN EXPORTACIÓN");
+            invoke("spawn_shell_command", { command: `zenity --error --text="Error al exportar: ${result.message}"` });
+        }
+    } catch (e) {
+        console.error("Error exporting:", e);
+        finaState.value.process = t("proc_err_export", "ERROR EN EXPORTACIÓN");
+    } finally {
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 5000);
+    }
+};
 
-        await fetchSettings();
-        finaState.value.process = t("proc_import_done", "IMPORTACIÓN EXITOSA");
-        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 3000);
+const importFromCore = async () => {
+    try {
+        const zipPath = await invoke("execute_shell_command", { command: "zenity --file-selection --file-filter='*.zip'" });
+        if (!zipPath || zipPath.trim() === "") return;
+
+        finaState.value.process = t("proc_importing", "IMPORTANDO DATOS...");
+        const response = await fetch("http://127.0.0.1:18000/api/system/import", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ path: zipPath.trim() })
+        });
+        const result = await response.json();
+        if (result.status === "success") {
+            await fetchSettings();
+            finaState.value.process = t("proc_import_done", "IMPORTACIÓN EXITOSA");
+            invoke("spawn_shell_command", { command: `zenity --info --text="${result.message}"` });
+        } else {
+            finaState.value.process = t("proc_err_import", "ERROR EN IMPORTACIÓN");
+            invoke("spawn_shell_command", { command: `zenity --error --text="${result.message}"` });
+        }
     } catch (e) {
         console.error("Error importing:", e);
         finaState.value.process = t("proc_err_import", "ERROR EN IMPORTACIÓN");
+    } finally {
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 5000);
+    }
+};
+
+const installCustomPlugin = async () => {
+    if (!customPluginUrl.value) return;
+    finaState.value.process = t("proc_installing", "INSTALANDO...");
+    try {
+        const response = await fetch("http://127.0.0.1:18000/api/system/plugins/install", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: customPluginUrl.value })
+        });
+        const result = await response.json();
+        if (result.status === "success") {
+            finaState.value.process = t("proc_inst_done", "INSTALACIÓN COMPLETADA");
+            addChatMessage(result.message);
+            customPluginUrl.value = "";
+        } else {
+            finaState.value.process = t("proc_err_inst", "ERROR EN INSTALACIÓN");
+            addChatMessage("Error: " + result.message);
+        }
+    } catch (e) {
+        console.error("Install error:", e);
+        finaState.value.process = t("proc_err_inst", "ERROR EN INSTALACIÓN");
+    } finally {
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 3000);
+    }
+};
+
+const updateSystem = async () => {
+    finaState.value.process = t("proc_updating", "ACTUALIZANDO SISTEMA...");
+    try {
+        const response = await fetch("http://127.0.0.1:18000/api/system/update", { method: "POST" });
+        const result = await response.json();
+        if (result.status === "success") {
+            finaState.value.process = t("proc_update_done", "SISTEMA ACTUALIZADO");
+            invoke("spawn_shell_command", { command: `zenity --info --title="Actualización" --text="${result.message}"` });
+        } else {
+            finaState.value.process = t("proc_err_update", "ERROR AL ACTUALIZAR");
+            invoke("spawn_shell_command", { command: `zenity --error --title="Actualización" --text="${result.message}"` });
+        }
+    } catch (e) {
+        console.error("Update error:", e);
+        finaState.value.process = t("proc_err_update", "ERROR AL ACTUALIZAR");
+    } finally {
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 5000);
     }
 };
 
@@ -4368,9 +4447,12 @@ const selectFolder = async (settingKey) => {
                                                     </h4>
                                                     <div class="relative">
                                                         <input type="text"
+                                                            v-model="customPluginUrl"
+                                                            @keyup.enter="installCustomPlugin"
                                                             :placeholder="t('ui_repo_url_placeholder', 'URL del repositorio o .zip...')"
                                                             class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono">
                                                         <button
+                                                            @click="installCustomPlugin"
                                                             class="absolute right-3 top-3 w-10 h-10 bg-indigo-500 rounded-xl text-white hover:scale-105 transition-transform"><i
                                                                 class="fa-solid fa-download"></i></button>
                                                     </div>
@@ -4383,10 +4465,31 @@ const selectFolder = async (settingKey) => {
                                                         <span
                                                             class="text-sm font-black text-white uppercase tracking-widest">{{ t('ui_migrated_core', 'Migración Core') }}</span>
                                                         <span
-                                                            class="text-[10px] text-slate-500 uppercase font-black mt-1">{{ t('ui_sync_root_config', 'Sincronizar config raíz') }}</span>
+                                                            class="text-[10px] text-slate-500 uppercase font-black mt-1">{{ t('ui_sync_root_config', 'Exportar o Importar datos de usuario') }}</span>
                                                     </div>
-                                                    <button @click="importFromCore"
-                                                        class="px-8 py-3 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl text-indigo-400 text-[10px] font-black uppercase hover:bg-indigo-500 hover:text-white transition-all text-white">{{ t('ui_import', 'Importar') }}</button>
+                                                    <div class="flex gap-3">
+                                                        <button @click="exportToCore"
+                                                            class="px-8 py-3 bg-white/5 border border-white/10 rounded-2xl text-slate-300 text-[10px] font-black uppercase hover:bg-white/10 hover:text-white transition-all text-white">{{ t('ui_export', 'Exportar') }}</button>
+                                                        <button @click="importFromCore"
+                                                            class="px-8 py-3 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl text-indigo-400 text-[10px] font-black uppercase hover:bg-indigo-500 hover:text-white transition-all text-white">{{ t('ui_import', 'Importar') }}</button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Actualización de Sistema -->
+                                                <div
+                                                    class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex items-center justify-between">
+                                                    <div class="flex flex-col">
+                                                        <span
+                                                            class="text-sm font-black text-white uppercase tracking-widest">{{ t('ui_update_system', 'Actualización de Sistema') }}</span>
+                                                        <span
+                                                            class="text-[10px] text-slate-500 uppercase font-black mt-1">{{ t('ui_check_repo_updates', 'Buscar y aplicar mejoras desde el código fuente') }}</span>
+                                                    </div>
+                                                    <div class="flex gap-2">
+                                                        <button @click="updateSystem"
+                                                            class="px-8 py-4 bg-orange-500 rounded-3xl text-[10px] font-black uppercase text-white hover:scale-105 transition-all shadow-lg shadow-orange-500/20 active:scale-95">
+                                                            {{ t('ui_btn_update', 'Actualizar') }}
+                                                        </button>
+                                                    </div>
                                                 </div>
 
                                                 <!-- ADB -->
@@ -4764,8 +4867,7 @@ const selectFolder = async (settingKey) => {
                                                         class="text-[9px] font-black text-slate-500 uppercase tracking-widest px-1">IP
                                                         del Equipo
                                                         AC</label>
-                                                    <input type="text" :value="userSettings.apis.AC_IP"
-                                                        @input="e => userSettings.apis.AC_IP = e.target.value"
+                                                    <input type="text" v-model="userSettings.apis.AC_IP"
                                                         class="bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs font-mono focus:border-emerald-500 outline-none transition-all" />
                                                 </div>
 
@@ -4787,6 +4889,19 @@ const selectFolder = async (settingKey) => {
                                                             </div>
                                                             <span
                                                                 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">{{ t('ui_power', 'Potencia') }}</span>
+                                                        </div>
+                                                        <div class="w-px h-12 bg-white/10">
+                                                        </div>
+                                                        <div v-if="acState.monthly_kwh !== undefined && acState.monthly_kwh !== null"
+                                                            class="flex flex-col items-center">
+                                                            <div class="flex items-baseline">
+                                                                <span
+                                                                    class="text-2xl font-black text-pink-400/70 tracking-tighter leading-none">{{ acState.monthly_kwh }}</span>
+                                                                <span
+                                                                    class="text-xs font-black text-pink-400/40 ml-1">kWh</span>
+                                                            </div>
+                                                            <span
+                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">{{ t('ui_monthly', 'Mensual') }}</span>
                                                         </div>
                                                         <div class="w-px h-12 bg-white/10">
                                                         </div>
@@ -4833,7 +4948,112 @@ const selectFolder = async (settingKey) => {
                                             </div>
                                         </div>
 
-                                        <!-- Placeholder Tabs for Habitat -->
+                                        <!-- VENTANAS -->
+                                        <div v-else-if="activeSettingsTab === 'ventanas'" class="grid grid-cols-2 gap-10">
+                                            <div
+                                                class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex flex-col items-center justify-center gap-6 text-center">
+                                                <i class="fa-solid fa-table-cells text-6xl text-emerald-500/40"></i>
+                                                <h4 class="text-xl font-black text-white uppercase tracking-tighter">Ventanas Inteligentes</h4>
+                                                <p class="text-[10px] text-slate-500 uppercase tracking-widest">Protocolo: Somfy RTS / Zigbee (4C:C2:06)</p>
+                                                <div class="w-full space-y-4 mt-4">
+                                                    <div class="flex flex-col gap-2 text-left">
+                                                        <label class="text-[9px] font-black text-slate-500 uppercase ml-2">IP del Hub Somfy/Lutron</label>
+                                                        <input type="text" v-model="userSettings.apis.VENTANAS_IP" placeholder="Ej: 192.168.1.XX"
+                                                            class="bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs font-mono focus:border-emerald-500 outline-none transition-all" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex flex-col justify-center">
+                                                <span class="text-[10px] font-black text-emerald-400 uppercase tracking-widest block mb-4">Sensores Somfy Detectados</span>
+                                                <ul class="space-y-3">
+                                                    <li class="flex items-center justify-between p-4 bg-black/20 rounded-2xl border border-white/5">
+                                                        <span class="text-xs font-bold text-slate-400"> Persianas Living</span>
+                                                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-[9px] font-black rounded-lg uppercase">Online</span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <!-- RIEGO -->
+                                        <div v-else-if="activeSettingsTab === 'riego'" class="grid grid-cols-2 gap-10">
+                                            <div
+                                                class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex flex-col items-center justify-center gap-6 text-center">
+                                                <i class="fa-solid fa-droplet text-6xl text-blue-500/40"></i>
+                                                <h4 class="text-xl font-black text-white uppercase tracking-tighter">Sistema de Riego</h4>
+                                                <p class="text-[10px] text-slate-500 uppercase tracking-widest">Protocolo: Rain Bird / Rachio (4C:A1:61)</p>
+                                                <div class="w-full space-y-4 mt-4">
+                                                    <div class="flex flex-col gap-2 text-left">
+                                                        <label class="text-[9px] font-black text-slate-500 uppercase ml-2">IP del Controlador de Riego</label>
+                                                        <input type="text" v-model="userSettings.apis.RIEGO_IP" placeholder="Ej: 192.168.1.XX"
+                                                            class="bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs font-mono focus:border-blue-500 outline-none transition-all" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex items-center justify-center opacity-40 italic">
+                                                <span class="text-[10px] font-black text-slate-600 uppercase">Sin Actividad Programada</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- LIMPIEZA -->
+                                        <div v-else-if="activeSettingsTab === 'limpieza'" class="grid grid-cols-2 gap-10">
+                                            <div
+                                                class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex flex-col items-center justify-center gap-6 text-center">
+                                                <i class="fa-solid fa-broom text-6xl text-amber-500/40"></i>
+                                                <h4 class="text-xl font-black text-white uppercase tracking-tighter">Robots de Limpieza</h4>
+                                                <p class="text-[10px] text-slate-500 uppercase tracking-widest">Protocolo: iRobot / Roborock (50:14:79)</p>
+                                                <div class="w-full space-y-4 mt-4">
+                                                    <div class="flex flex-col gap-2 text-left">
+                                                        <label class="text-[9px] font-black text-slate-500 uppercase ml-2">IP de la Estación de Carga</label>
+                                                        <input type="text" v-model="userSettings.apis.LIMPIEZA_IP" placeholder="Ej: 192.168.1.XX"
+                                                            class="bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs font-mono focus:border-amber-500 outline-none transition-all" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex flex-col justify-center gap-4">
+                                                <div class="bg-black/20 p-6 rounded-3xl border border-white/5 flex items-center gap-4">
+                                                    <i class="fa-solid fa-battery-half text-amber-400"></i>
+                                                    <div class="flex flex-col">
+                                                        <span class="text-[10px] font-black text-white uppercase">iRobot "Fina-Helper"</span>
+                                                        <span class="text-[9px] font-black text-slate-500 uppercase">Cargando 45%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- HELADERA -->
+                                        <div v-else-if="activeSettingsTab === 'heladera'" class="grid grid-cols-2 gap-10">
+                                            <div
+                                                class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex flex-col items-center justify-center gap-6 text-center">
+                                                <i class="fa-solid fa-temperature-empty text-6xl text-cyan-400/40"></i>
+                                                <h4 class="text-xl font-black text-white uppercase tracking-tighter">Line-up Smart (Samsung/LG)</h4>
+                                                <p class="text-[10px] text-slate-500 uppercase tracking-widest">Protocolo: ThinQ / SmartThings (E8:7D:66)</p>
+                                                <div class="w-full space-y-4 mt-4">
+                                                    <div class="flex flex-col gap-2 text-left">
+                                                        <label class="text-[9px] font-black text-slate-500 uppercase ml-2">IP de la Heladera Inteligente</label>
+                                                        <input type="text" v-model="userSettings.apis.HELADERA_IP" placeholder="Ej: 192.168.1.XX"
+                                                            class="bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs font-mono focus:border-cyan-500 outline-none transition-all" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="p-8 bg-white/5 rounded-[40px] border border-white/10 flex flex-col justify-center gap-6">
+                                                <div class="flex justify-between items-center text-[10px] font-black uppercase text-slate-500">
+                                                    <span>Refrigerador</span>
+                                                    <span class="text-cyan-400">3°C</span>
+                                                </div>
+                                                <div class="h-1 bg-white/10 rounded-full">
+                                                    <div class="w-1/4 h-full bg-cyan-500 rounded-full"></div>
+                                                </div>
+                                                <div class="flex justify-between items-center text-[10px] font-black uppercase text-slate-500">
+                                                    <span>Freezer</span>
+                                                    <span class="text-cyan-600">-18°C</span>
+                                                </div>
+                                                <div class="h-1 bg-white/10 rounded-full">
+                                                    <div class="w-3/4 h-full bg-cyan-600 rounded-full"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Placeholder fallback -->
                                         <div v-else
                                             class="flex flex-col items-center justify-center h-[400px] text-center opacity-50">
                                             <i class="fa-solid fa-hammer text-6xl text-emerald-500 mb-6"></i>

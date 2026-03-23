@@ -348,12 +348,21 @@ def update_ui_state(status, process=None, intensity=0.0, extra_payload=None):
 
 def i18n(key, fallback=""):
     # Prioridad 1: Traducciones estándar (vía I18N_DATA)
-    lang = get_sys_lang()
+    lang = get_sys_lang() # Implementado arriba
     if lang not in I18N_DATA:
         lang = "en"
     
     translations = I18N_DATA.get(lang, {})
-    return translations.get(key, fallback)
+    # 1. Buscar en primer nivel
+    if key in translations:
+        return translations[key]
+    
+    # 2. Buscar en sub-objeto 'ui' (como hace App.vue)
+    if "ui" in translations and isinstance(translations["ui"], dict):
+        if key in translations["ui"]:
+            return translations["ui"][key]
+            
+    return fallback
 
 # --- CONFIGURATION UNIFICATION (UI Priority) ---
 def get_unified_config(key, default=None):
@@ -1831,6 +1840,78 @@ def backup_files():
     except Exception as e:
         return f"Error en backup: {e}"
 
+def export_migration_data():
+    """Empaqueta todo ~/.config/Fina en un ZIP para migrar a otra PC"""
+    import zipfile
+    try:
+        migration_dir = os.path.expanduser("~/Fina_Migraciones")
+        os.makedirs(migration_dir, exist_ok=True)
+        filename = f"fina_migracion_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
+        zip_path = os.path.join(migration_dir, filename)
+        
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(CONFIG_DIR):
+                # Excluir carpetas pesadas o temporales
+                if "venv" in root or "Logs" in root or "__pycache__" in root:
+                    continue
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, CONFIG_DIR)
+                    zipf.write(file_path, arcname)
+        
+        return {"status": "success", "path": zip_path}
+    except Exception as e:
+        logger.error(f"❌ Error al exportar migración: {e}")
+        return {"status": "error", "message": str(e)}
+
+def import_migration_data(zip_path):
+    """Desempaqueta un archivo de migración en ~/.config/Fina"""
+    import zipfile
+    try:
+        if not os.path.exists(zip_path):
+            return {"status": "error", "message": "Archivo no encontrado"}
+            
+        with zipfile.ZipFile(zip_path, 'r') as zipf:
+            zipf.extractall(CONFIG_DIR)
+            
+        return {"status": "success", "message": "Importación completada satisfactoriamente"}
+    except Exception as e:
+        logger.error(f"❌ Error al importar migración: {e}")
+        return {"status": "error", "message": str(e)}
+
+def install_custom_plugin(url):
+    """Descarga e instala un plugin desde una URL (ZIP o GitHub)"""
+    import zipfile
+    import requests
+    import io
+    import shutil
+    try:
+        # Normalizar URL de GitHub a ZIP si es necesario
+        if "github.com" in url and not url.endswith(".zip"):
+            url = url.rstrip("/") + "/archive/refs/heads/main.zip"
+            
+        plugins_dir = os.path.join(CONFIG_DIR, "plugins")
+        os.makedirs(plugins_dir, exist_ok=True)
+        
+        logger.info(f"📥 Descargando plugin desde: {url}")
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        
+        with zipfile.ZipFile(io.BytesIO(r.content)) as z:
+            root_name = z.namelist()[0].split('/')[0]
+            dest_dir = os.path.join(plugins_dir, root_name)
+            
+            if os.path.exists(dest_dir):
+                shutil.rmtree(dest_dir)
+            
+            z.extractall(plugins_dir)
+            
+        logger.info(f"✅ Plugin instalado en: {dest_dir}")
+        return {"status": "success", "message": f"Plugin instalado en {root_name}", "plugin": root_name}
+    except Exception as e:
+        logger.error(f"❌ Error instalando plugin custom: {e}")
+        return {"status": "error", "message": str(e)}
+
 def get_public_ip():
     try:
         import requests
@@ -2241,16 +2322,22 @@ def toggle_night_mode(m, state="on"):
     except:
         return "Redshift no está instalado."
 
-def update_assistant_code(m, *args, **kwargs):
+def update_assistant_code(m=None, *args, **kwargs):
     """Pull universal de cambios desde git"""
     try:
-        speak("Buscando actualizaciones en el repositorio...", m)
+        if m:
+            speak("Buscando actualizaciones en el repositorio...", m)
+        
+        # Primero probamos git pull
         res = subprocess.run(["git", "pull"], capture_output=True, text=True, timeout=30)
+        
         if "Already up to date" in res.stdout:
             return "Fina ya está en su versión más reciente."
+        
         return "Actualización completada. Reinicia Fina para aplicar los cambios."
-    except:
-        return "Error al conectar con el servidor de actualizaciones."
+    except Exception as e:
+        logger.error(f"Error actualizando Fina: {e}")
+        return f"No pude completar la actualización: {e}"
 
 
 def scan_network_cmd(m):

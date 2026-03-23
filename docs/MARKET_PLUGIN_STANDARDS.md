@@ -52,6 +52,66 @@ Control de seguridad y video-porteros.
 | `monitor.py` | Iniciar visualización rápida | Argumento `--trigger` |
 | `hangup_doorbell.py`| Cerrar comunicación | |
 
+### 💡 Categoría: `Lights` y `SmartHome`
+Automatización de iluminación inteligente.
+
+| Script | Acción | Argumento Extra |
+| :--- | :--- | :--- |
+| `light_on.py` | Encender luces | |
+| `light_off.py` | Apagar luces | |
+| `set_brightness.py`| Cambiar intensidad | `--level [0-100]` |
+
+### 🚪 Categoría: `Doors` y `Locks`
+Cerraduras y puertas automatizadas.
+
+| Script | Acción |
+| :--- | :--- |
+| `lock_on.py` | Bloquear puerta (Cerrar llave) |
+| `lock_off.py` | Desbloquear puerta (Abrir llave) |
+| `lock_status.py` | Obtener estado de cerradura |
+
+### 🪟 Categoría: `Blinds`
+Motores de cortinas y persianas inteligentes.
+
+| Script | Acción |
+| :--- | :--- |
+| `blinds_open.py` | Abrir persianas |
+| `blinds_close.py` | Cerrar persianas |
+| `blinds_stop.py` | Detener a medio camino |
+
+### 🌱 Categoría: `Irrigation`
+Control de riego de jardines.
+
+| Script | Acción |
+| :--- | :--- |
+| `watering_start.py`| Iniciar ciclo de riego |
+| `watering_stop.py` | Detener ciclo de riego |
+
+### 🤖 Categoría: `Robots`
+Robots aspiradores o de limpieza.
+
+| Script | Acción |
+| :--- | :--- |
+| `robot_clean.py` | Iniciar ciclo de limpieza |
+| `robot_dock.py` | Volver a la base de carga |
+| `robot_status.py`| Obtener batería o estado |
+
+### 🧊 Categoría: `Refrigerators` y `Appliances`
+Heladeras y electrodomésticos pesados.
+
+| Script | Acción |
+| :--- | :--- |
+| `fridge_status.py` | Leer temperatura/estado general |
+| `fridge_inventory.py` | Leer inventario (si lo soporta) |
+
+### ⚡ Categoría: `Energy`
+Monitoreo de paneles solares e inversores.
+
+| Script | Acción |
+| :--- | :--- |
+| `solar_status.py` | Leer producción (W) y voltaje |
+| `battery_status.py` | Leer estado de baterías del hogar |
+
 ---
 
 ## 📝 El archivo `plugin.yaml`
