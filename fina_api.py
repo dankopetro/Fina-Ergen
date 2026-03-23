@@ -23,7 +23,7 @@ def get_best_python():
 best_py = get_best_python()
 if "venv" in best_py and "venv" not in sys.executable:
     print(f"🔄 API: Relanzando con entorno detectado: {best_py}", flush=True)
-    os.execl(best_py, best_py, *sys.argv)
+    os.execv(best_py, [best_py] + sys.argv)
 
 # FORZAR VISIBILIDAD DE LIBRERÍAS DEL USUARIO (Para aislamientos de AppImage)
 import glob
@@ -139,7 +139,7 @@ print(f"🌐 API XDG: {os.environ.get('XDG_CONFIG_HOME')}", flush=True)
 print(f"📂 API Config Dir: {CONFIG_DIR}", flush=True)
 
 try:
-    from fastapi import FastAPI, HTTPException
+    from fastapi import FastAPI, HTTPException, UploadFile, File
     from fastapi.staticfiles import StaticFiles
     from fastapi.responses import FileResponse
     from fastapi.middleware.cors import CORSMiddleware
@@ -153,9 +153,13 @@ try:
     if os.path.exists(CONFIG_PY_PATH):
         try:
             spec = importlib.util.spec_from_file_location("user_config", CONFIG_PY_PATH)
-            config = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(config)
-            print(f"✅ API: config.py cargado desde {CONFIG_PY_PATH}", flush=True)
+            if spec and spec.loader:
+                config = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(config)
+                print(f"✅ API: config.py cargado desde {CONFIG_PY_PATH}", flush=True)
+            else:
+                import config
+                print("ℹ️ [INFO] Usando config.py interno (Template).", flush=True)
         except Exception as e:
             print(f"⚠️ [WARN] Error en config.py personalizado: {e}. Usando defaults internos.", flush=True)
             import config
@@ -280,6 +284,10 @@ def load_settings_data():
                         data["apis"] = loaded.copy()
                     else:
                         data.update(loaded)
+                    
+                    # Normalizar: asegurar que apis sea un diccionario
+                    if not isinstance(data.get("apis"), dict):
+                        data["apis"] = {}
         except Exception as e:
             print(f"❌ Error cargando settings.json: {e}", flush=True)
 
@@ -291,12 +299,18 @@ def load_settings_data():
             "HUE_BRIDGE_IP", "HUE_USERNAME", "EMAIL_USER", "EMAIL_PASSWORD",
             "WEATHER_CITY_ID", "WEATHER_UNITS", "GITHUB_TOKEN", "GITHUB_REPO", "GITHUB_USER"
         ]
-        if "apis" not in data: data["apis"] = {}
+        
+        # Re-asegurar que 'apis' es un diccionario para evitar errores de linting/runtime
+        apis_dict = data.get("apis")
+        if not isinstance(apis_dict, dict):
+            apis_dict = {}
+            data["apis"] = apis_dict
+            
         for k in keys_to_sync:
-            if not data["apis"].get(k):
+            if not apis_dict.get(k):
                 val = utils.get_unified_config(k)
                 if val is not None:
-                    data["apis"][k] = val
+                    apis_dict[k] = val
     except Exception as e:
         print(f"⚠️ Aviso: No se pudieron sincronizar variables de config.py a UI: {e}", flush=True)
         
@@ -462,6 +476,32 @@ async def install_plugin_from_url(payload: dict):
         raise HTTPException(status_code=400, detail="Falta URL del plugin")
     try:
         result = utils.install_custom_plugin(url)
+        return result
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/system/plugins/install_b64")
+async def install_plugin_b64(payload: dict):
+    """Recibe un base64 del ZIP y lo extrae en la carpeta de plugins"""
+    filename = payload.get("filename", "plugin_upload.zip")
+    b64_data = payload.get("data")
+    if not b64_data:
+        raise HTTPException(status_code=400, detail="Falta data base64 del plugin")
+    try:
+        result = utils.install_local_zip(filename, b64_data)
+        return result
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/system/plugins/install_zip")
+async def install_plugin_zip(file: UploadFile = File(...)):
+    """Recibe un archivo ZIP real y lo extrae en la carpeta de plugins"""
+    import base64
+    try:
+        content = await file.read()
+        # Convertir a b64 para reusar la función de utils
+        b64_data = base64.b64encode(content).decode('utf-8')
+        result = utils.install_local_zip(file.filename, b64_data)
         return result
     except Exception as e:
         return {"status": "error", "message": str(e)}

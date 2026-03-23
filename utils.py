@@ -1108,6 +1108,7 @@ def read_recent_unread_emails(i, e, p, d=7, m=5):
         if not nums: 
             return None
         import email
+        import email.header
         # USAR PEEK PARA NO MARCAR COMO LEÍDO
         _, data = mail.fetch(nums[-1], '(BODY.PEEK[])')
         msg = email.message_from_bytes(data[0][1])
@@ -1910,6 +1911,35 @@ def install_custom_plugin(url):
         return {"status": "success", "message": f"Plugin instalado en {root_name}", "plugin": root_name}
     except Exception as e:
         logger.error(f"❌ Error instalando plugin custom: {e}")
+        return {"status": "error", "message": str(e)}
+
+def install_local_zip(filename: str, b64_data: str):
+    """Saves a base64 zip and extracts it to the plugins directory."""
+    import zipfile
+    import base64
+    import io
+    import shutil
+    try:
+        plugins_dir = os.path.join(CONFIG_DIR, "plugins")
+        os.makedirs(plugins_dir, exist_ok=True)
+        
+        # Decode base64 to bytes
+        zip_bytes = base64.b64decode(b64_data)
+        
+        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
+            # Check for name collision and extract
+            root_name = z.namelist()[0].split('/')[0]
+            dest_dir = os.path.join(plugins_dir, root_name)
+            
+            if os.path.exists(dest_dir):
+                shutil.rmtree(dest_dir)
+            
+            z.extractall(plugins_dir)
+            
+        logger.info(f"✅ Plugin local instalado: {root_name}")
+        return {"status": "success", "message": f"Plugin '{filename}' instalado en plugins/", "plugin": root_name}
+    except Exception as e:
+        logger.error(f"❌ Error instalando plugin ZIP local: {e}")
         return {"status": "error", "message": str(e)}
 
 def get_public_ip():
@@ -2746,10 +2776,33 @@ def deco_set_channel_cmd(c, m):
 
 
 
-def is_code_worthy(*args, **kwargs): return False
+def is_code_worthy(command):
+    """Determina si un comando de voz es real o solo ruido/captura fallida."""
+    if not command or not isinstance(command, str):
+        return False
+    cmd_clean = command.strip().lower()
+    if not cmd_clean:
+        return False
+        
+    # Si tiene más de una palabra, es muy probable que sea una frase válida
+    words = cmd_clean.split()
+    if len(words) > 1:
+        return True
+        
+    # Palabras clave de acción que son válidas aunque sean una sola palabra
+    common_keywords = {
+        "luz", "luces", "hola", "fina", "chau", "apaga", "prende", "encender", 
+        "clima", "tiempo", "musica", "reproduce", "para", "detente", "silencio",
+        "volumen", "noticias", "recordatorio", "alarma", "tv", "television"
+    }
+    
+    if cmd_clean in common_keywords:
+        return True
+        
+    return False
 
-
-def get_time_based_greeting(*args, **kwargs):
+def get_time_based_greeting():
+    """Devuelve un saludo (Buenos días/tardes/noches) según la hora actual."""
     h = datetime.now().hour
     if h < 12:
         return i18n("morning_greet", "Buenos días")

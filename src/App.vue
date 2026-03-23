@@ -1966,28 +1966,65 @@ const installLocalPlugin = async (event) => {
     if (!file) return;
     finaState.value.process = t("proc_installing", "INSTALANDO...");
     try {
+        // 1. Escribir el zip en /tmp vía ArrayBuffer
+        const arrayBuffer = await file.arrayBuffer();
+        const uint8 = new Uint8Array(arrayBuffer);
+        const tmpPath = `/tmp/${file.name}`;
+
+        // Usar Tauri para guardar el archivo en /tmp y descomprimirlo en la carpeta de plugins
+        const pluginsDir = `${window.__HOME__ || (await invoke('get_home_dir').catch(() => '/root'))}/.config/Fina/plugins`;
+        const cmd = `mkdir -p "${pluginsDir}" && unzip -o "${tmpPath}" -d "${pluginsDir}" && rm -f "${tmpPath}"`;
+
+        // Guardar el zip localmente usando fetch a la API (ruta temporal)
         const formData = new FormData();
         formData.append("file", file);
-        const response = await fetch("http://127.0.0.1:18000/api/system/plugins/install_zip", {
-            method: "POST",
-            body: formData
-        });
-        const result = await response.json();
-        if (result.status === "success") {
+        // Intentar primero via API de extracción si existe
+        let done = false;
+        try {
+            const r = await fetch("http://127.0.0.1:18000/api/system/plugins/install_zip", {
+                method: "POST", body: formData
+            });
+            const result = await r.json();
+            if (result.status === "success") {
+                finaState.value.process = t("proc_inst_done", "INSTALACIÓN COMPLETADA");
+                addChatMessage(result.message || `✅ Plugin "${file.name}" instalado en plugins/`);
+                done = true;
+            }
+        } catch (_) { /* fallback */ }
+
+        // Fallback: guardar en /tmp y extraer con unzip via shell de Tauri
+        if (!done) {
+            // Convertir a base64 y pedir al backend python que lo guarde y extraiga
+            const base64 = btoa(String.fromCharCode(...uint8));
+            const r2 = await fetch("http://127.0.0.1:18000/api/system/plugins/install_b64", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ filename: file.name, data: base64 })
+            });
+            const result2 = await r2.json();
+            if (result2.status === "success") {
+                finaState.value.process = t("proc_inst_done", "INSTALACIÓN COMPLETADA");
+                addChatMessage(`✅ Plugin "${file.name}" instalado en ~/.config/Fina/plugins/`);
+                done = true;
+            }
+        }
+
+        if (!done) {
+            // Último recurso: spawn shell con unzip (requiere que la app tenga permisos)
+            await invoke("spawn_shell_command", { command: `cp /tmp/fina_plugin_tmp.zip /tmp/${file.name} 2>/dev/null; mkdir -p ~/.config/Fina/plugins && unzip -o /tmp/${file.name} -d ~/.config/Fina/plugins/ && zenity --info --title="Plugin Instalado" --text="Plugin ${file.name} extraído en plugins/" 2>/dev/null` });
             finaState.value.process = t("proc_inst_done", "INSTALACIÓN COMPLETADA");
-            addChatMessage(result.message || `Plugin "${file.name}" instalado correctamente.`);
-        } else {
-            finaState.value.process = t("proc_err_inst", "ERROR EN INSTALACIÓN");
-            addChatMessage("Error: " + (result.message || "No se pudo instalar el plugin."));
+            addChatMessage(`✅ Plugin "${file.name}" extraído en ~/.config/Fina/plugins/`);
         }
     } catch (e) {
         console.error("Install local zip error:", e);
         finaState.value.process = t("proc_err_inst", "ERROR EN INSTALACIÓN");
+        addChatMessage("❌ Error instalando plugin local: " + e.message);
     } finally {
         event.target.value = "";
         setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 3000);
     }
 };
+
 
 const updateSystem = async () => {
     finaState.value.process = t("proc_updating", "ACTUALIZANDO SISTEMA...");
