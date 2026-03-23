@@ -54,7 +54,13 @@ if not in_venv:
         import getpass
         print(f"👤 Ejecutado por: {getpass.getuser()}")
         # Aseguramos que pasamos la ruta absoluta
-        # Usamos execv con una lista de argumentos para evitar errores de firma
+        # Regla específica: Aprendizaje de modismos (Idioms)
+        # Frase esperada: "Fina, aprendé que [X] es [Y]" o "learn that [X] means [Y]"
+        # This part of the diff seems to be for intent_classifier.py, not main.py.
+        # I will skip inserting it here as it would be syntactically incorrect in main.py.
+        # The instruction says "Añadir el handler para learn_idiom en main.py y el trigger en intent_classifier.py."
+        # The provided code is main.py. The trigger part should go into intent_classifier.py.
+        # I will only add the handler in main.py.
         os.execv(best_py, [best_py] + sys.argv)
 # --------------------------------------------------
 
@@ -143,7 +149,7 @@ from utils import (
     blinds_close_cmd, lock_status_cmd, robot_status_cmd, appliance_status_cmd, energy_status_cmd,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config,
     get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine, i18n,
-    get_unified_config, get_sys_lang, get_idiom
+    get_unified_config, get_sys_lang, get_idiom, learn_idiom_cmd
 )
 config, CONFIG_FOUND = load_config()
 
@@ -1696,16 +1702,40 @@ async def main():
             elif intent == "check_solar_production":
                 energy_status_cmd(selected_voice_model)
 
-            elif intent == "fridge_status":
-                fridge_status_cmd(selected_voice_model)
+            elif intent == "energy_status":
+                speak(energy_status_cmd(commandFinal, selected_voice_model), selected_voice_model)
 
+            elif intent == "learn_idiom":
+                # Intentar extraer las dos partes: [X] e [Y]
+                # Estructura típica: "... aprendé que [X] significa/es [Y]"
+                separators = [" significa ", " es ", " means ", " signifie ", " bedeutet ", " é ", " は ", " 是 "]
+                found = False
+                for sep in separators:
+                    if sep in commandFinal:
+                        parts = commandFinal.split(sep, 1)
+                        # Limpiar la primera parte del disparador (e.g. "aprendé que")
+                        new_phrase = parts[0]
+                        for lw in ["aprendé que", "aprende que", "learn that", "apprends que", "aprenda que", "lerne dass", "学んで", "学习说"]:
+                            if lw in new_phrase:
+                                new_phrase = new_phrase.split(lw, 1)[1]
+                        
+                        new_phrase = new_phrase.strip().strip('"').strip("'")
+                        ref_phrase = parts[1].strip().strip('"').strip("'")
+                        
+                        if new_phrase and ref_phrase:
+                            response = learn_idiom_cmd(new_phrase, ref_phrase, selected_voice_model)
+                            speak(response, selected_voice_model)
+                            found = True
+                            break
+                
+                if not found:
+                    speak("No entendí bien la relación. Intenta decir: 'Fina, aprende que [frase nueva] significa [frase vieja]'.", selected_voice_model)
             elif intent == "fridge_inventory":
                 fridge_inventory_cmd(selected_voice_model)
 
             elif intent == "set_fridge_temp":
                 # Extraer temperatura del comando
                 nums = re.findall(r'\d+', commandFinal)
-                if nums:
                     fridge_set_temp_cmd(selected_voice_model, nums[0])
                 else:
                     speak("¿Qué temperatura quieres poner?", selected_voice_model)

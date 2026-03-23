@@ -2048,6 +2048,49 @@ def scan_ports(host):
     except:
         return "Error escaneando."
 
+# --- LEARNING & CUSTOMIZATION ---
+CUSTOM_INTENTS_PATH = os.path.join(CONFIG_DIR, "custom_intents.json")
+
+def learn_idiom_cmd(new_phrase, reference_phrase, m):
+    """Mapea una frase nueva (modismo) a un intento existente basado en una frase de referencia."""
+    from intent_classifier import detect_intent
+    
+    # 1. Detectar qué intent quiere el usuario usando la frase de referencia
+    target_intent, confidence = detect_intent(reference_phrase)
+    
+    if not target_intent:
+        return f"No entiendo qué significa '{reference_phrase}', así que no puedo aprender que '{new_phrase}' es lo mismo. ¿Podrías explicármelo con otras palabras?"
+
+    # 2. Cargar o crear el archivo de intents personalizados
+    custom_data = {}
+    if os.path.exists(CUSTOM_INTENTS_PATH):
+        try:
+            with open(CUSTOM_INTENTS_PATH, 'r') as f:
+                custom_data = json.load(f)
+        except:
+             custom_data = {}
+
+    # 3. Añadir la nueva frase al intent detectado
+    if target_intent not in custom_data:
+        custom_data[target_intent] = []
+    
+    if new_phrase.lower() not in [p.lower() for p in custom_data[target_intent]]:
+        custom_data[target_intent].append(new_phrase)
+        
+        # 4. Guardar archivo
+        os.makedirs(os.path.dirname(CUSTOM_INTENTS_PATH), exist_ok=True)
+        with open(CUSTOM_INTENTS_PATH, 'w') as f:
+            json.dump(custom_data, f, indent=4, ensure_ascii=False)
+        
+        # 5. Notificar éxito y REINICIAR el clasificador (forzar lazy load)
+        # Necesitamos que el clasificador se entere del cambio
+        import intent_classifier
+        intent_classifier.embedder = None # Forzar recarga en la próxima llamada
+        
+        return f"¡Entendido! He aprendido que '{new_phrase}' significa '{target_intent}'. Lo he guardado en tus preferencias personales."
+    else:
+        return f"Ya sabía que '{new_phrase}' significaba eso, ¡pero gracias por recordármelo!"
+
 def get_proactive_briefing(m=None):
     """Obtiene noticias de Google News RSS (Argentina) sin librerías externas pesadas"""
     try:
