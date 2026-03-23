@@ -292,7 +292,13 @@
     "bitte battery saver"
   ],
   "play_ambient": [
-    "play ambient für mich"
+    "Entspannungsmusik abspielen",
+    "Regengeräusche",
+    "Waldgeräusche",
+    "Naturgeräusche",
+    "Ozeanwellen",
+    "Zen-Musik",
+    "Weißes Rauschen für mich"
   ],
   "take_photo": [
     "könntest du take photo"

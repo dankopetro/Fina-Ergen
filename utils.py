@@ -1385,8 +1385,20 @@ def take_screenshot():
     return "No pude tomar la captura."
 
 # --- MUSIC ---
-def play_music(m): subprocess.run(["audtool", "playback-play"])
-def stop_music(m): subprocess.run(["audtool", "playback-stop"])
+def play_music(m):
+    # Intentar reproducir en Audacious
+    subprocess.run(["audtool", "playback-play"], stderr=subprocess.DEVNULL)
+    return "Reproduciendo música local."
+
+def stop_music(m):
+    # 1. Detener Audacious (Local)
+    subprocess.run(["audtool", "playback-stop"], stderr=subprocess.DEVNULL)
+    
+    # 2. Detener MPV (Ambiental / Streams)
+    # Usamos pkill para asegurar que se cierren todas las instancias de mpv
+    subprocess.run(["pkill", "-9", "mpv"], stderr=subprocess.DEVNULL)
+    
+    return "Música y sonidos ambientales detenidos."
 def pause_music(m): subprocess.run(["audtool", "playback-pause"])
 def next_track(m): subprocess.run(["audtool", "playlist-advance"])
 def music_volume_up(m): subprocess.run(["audtool", "set-volume", "100"])

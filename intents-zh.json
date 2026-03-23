@@ -284,7 +284,13 @@
     "请 battery saver 请"
   ],
   "play_ambient": [
-    "我想 play ambient 谢谢"
+    "播放放松的音乐",
+    "播放雨声",
+    "大自然的声音",
+    "森林的声音",
+    "海浪声",
+    "禅宗音乐",
+    "播放白噪音 谢谢"
   ],
   "take_photo": [
     "助手 take photo"
