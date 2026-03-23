@@ -2225,6 +2225,46 @@ def lights_off_cmd(m):
     else:
         speak("No puedo apagar las luces si no hay un plugin activo.", m)
 
+def lock_door_cmd(m):
+    plugin = _get_plugin_by_category("Locks") or _get_plugin_by_category("Doors")
+    if plugin:
+        response = plugin.handle_intent("lock_door", "cerrar llave")
+        if response: speak(response, m)
+    else:
+        speak("No detecto ninguna cerradura inteligente configurada.", m)
+
+def unlock_door_cmd(m):
+    plugin = _get_plugin_by_category("Locks") or _get_plugin_by_category("Doors")
+    if plugin:
+        response = plugin.handle_intent("unlock_door", "abrir llave")
+        if response: speak(response, m)
+    else:
+        speak("Cerradura no encontrada.", m)
+
+def blinds_open_cmd(m):
+    plugin = _get_plugin_by_category("Blinds")
+    if plugin:
+        response = plugin.handle_intent("blinds_open", "abrir persianas")
+        if response: speak(response, m)
+    else:
+        speak("Persianas no configuradas en el sistema.", m)
+
+def start_watering_cmd(m):
+    plugin = _get_plugin_by_category("Irrigation")
+    if plugin:
+        response = plugin.handle_intent("start_watering", "regar")
+        if response: speak(response, m)
+    else:
+        speak("No hay un sistema de riego registrado.", m)
+
+def check_solar_production_cmd(m):
+    plugin = _get_plugin_by_category("Energy")
+    if plugin:
+        response = plugin.handle_intent("check_solar_production", "cuanta energia")
+        if response: speak(response, m)
+    else:
+        speak("Inversor solar no detectado.", m)
+
 def _get_plugin_by_category(category):
     """Busca un plugin en el market que pertenezca a una categoría"""
     import yaml

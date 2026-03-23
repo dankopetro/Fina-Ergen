@@ -23,6 +23,64 @@
     "enciende el living",
     "prende las lámparas"
   ],
+  "lock_door": [
+    "cierra la puerta",
+    "pon llave",
+    "bloquear cerradura",
+    "cerrar con llave la entrada",
+    "traba la puerta"
+  ],
+  "unlock_door": [
+    "abre la puerta",
+    "quitar llave",
+    "destrabar cerradura",
+    "abrir la entrada principal",
+    "abre con llave"
+  ],
+  "check_lock_status": [
+    "¿está cerrada la puerta?",
+    "¿está la puerta con llave?",
+    "estado de la cerradura",
+    "dime si la puerta está bloqueada"
+  ],
+  "start_washing_machine": [
+    "pon el lavarropas",
+    "inicia el lavado",
+    "que empiece el lavarropas",
+    "pon el ciclo de lavado",
+    "lavar ropa"
+  ],
+  "open_blinds": [
+    "abre las persianas",
+    "sube las cortinas",
+    "persianas abiertas",
+    "que entre la luz de afuera",
+    "abre las ventanas"
+  ],
+  "close_blinds": [
+    "cierra las persianas",
+    "baja las cortinas",
+    "persianas cerradas",
+    "tapa las ventanas",
+    "es hora de dormir cierra las persianas"
+  ],
+  "start_watering": [
+    "prende el riego",
+    "regar el jardín",
+    "iniciar riego automático",
+    "pon el agua para las plantas"
+  ],
+  "check_solar_production": [
+    "¿cuánto estamos produciendo?",
+    "estado de los paneles solares",
+    "producción de energía solar",
+    "dime cuánto generan los paneles"
+  ],
+  "check_solar_battery": [
+    "carga de la batería solar",
+    "¿cuánta energía guardada hay?",
+    "estado de la batería de la casa"
+  ],
   "lights_off": [
     "apaga la luz",
     "luces fuera",

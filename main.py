@@ -138,6 +138,7 @@ from utils import (
     ensure_tv_is_on, get_doorbell_status_cmd, show_doorbell_image, 
     show_doorbell_stream, send_ui_command, check_system_dependencies, is_code_worthy,
     perform_ac_control, scan_network_cmd, robot_clean_cmd, lights_on_cmd, lights_off_cmd,
+    lock_door_cmd, unlock_door_cmd, blinds_open_cmd, start_watering_cmd, check_solar_production_cmd,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config,
     get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine, i18n,
     get_unified_config, get_sys_lang, get_idiom
@@ -1674,6 +1675,21 @@ async def main():
 
             elif intent == "lights_off":
                 lights_off_cmd(selected_voice_model)
+
+            elif intent == "lock_door":
+                lock_door_cmd(selected_voice_model)
+
+            elif intent == "unlock_door":
+                unlock_door_cmd(selected_voice_model)
+
+            elif intent == "open_blinds":
+                blinds_open_cmd(selected_voice_model)
+
+            elif intent == "start_watering":
+                start_watering_cmd(selected_voice_model)
+
+            elif intent == "check_solar_production":
+                check_solar_production_cmd(selected_voice_model)
                 
 # main entry point
 def handle_exit(signum, frame):
