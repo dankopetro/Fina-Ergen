@@ -1959,6 +1959,36 @@ const installCustomPlugin = async () => {
     }
 };
 
+const pluginFileInput = ref(null);
+
+const installLocalPlugin = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    finaState.value.process = t("proc_installing", "INSTALANDO...");
+    try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const response = await fetch("http://127.0.0.1:18000/api/system/plugins/install_zip", {
+            method: "POST",
+            body: formData
+        });
+        const result = await response.json();
+        if (result.status === "success") {
+            finaState.value.process = t("proc_inst_done", "INSTALACIÓN COMPLETADA");
+            addChatMessage(result.message || `Plugin "${file.name}" instalado correctamente.`);
+        } else {
+            finaState.value.process = t("proc_err_inst", "ERROR EN INSTALACIÓN");
+            addChatMessage("Error: " + (result.message || "No se pudo instalar el plugin."));
+        }
+    } catch (e) {
+        console.error("Install local zip error:", e);
+        finaState.value.process = t("proc_err_inst", "ERROR EN INSTALACIÓN");
+    } finally {
+        event.target.value = "";
+        setTimeout(() => finaState.value.process = t("sys_ready_short", "SISTEMA LISTO"), 3000);
+    }
+};
+
 const updateSystem = async () => {
     finaState.value.process = t("proc_updating", "ACTUALIZANDO SISTEMA...");
     try {
@@ -4464,11 +4494,14 @@ const selectFolder = async (settingKey) => {
                                                             v-model="customPluginUrl"
                                                             @keyup.enter="installCustomPlugin"
                                                             :placeholder="t('ui_repo_url_placeholder', 'URL del repositorio o .zip...')"
-                                                            class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono">
+                                                            class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono pr-14">
+                                                        <!-- Hidden file input for local .zip -->
+                                                        <input type="file" accept=".zip" ref="pluginFileInput" @change="installLocalPlugin" class="hidden" />
                                                         <button
-                                                            @click="installCustomPlugin"
-                                                            class="absolute right-3 top-3 w-10 h-10 bg-indigo-500 rounded-xl text-white hover:scale-105 transition-transform"><i
-                                                                class="fa-solid fa-download"></i></button>
+                                                            @click="pluginFileInput.click()"
+                                                            title="Seleccionar archivo .zip local"
+                                                            class="absolute right-3 top-3 w-10 h-10 bg-indigo-500 rounded-xl text-white hover:scale-105 hover:bg-indigo-400 transition-all"><i
+                                                                class="fa-solid fa-floppy-disk"></i></button>
                                                     </div>
                                                 </div>
 
@@ -4886,49 +4919,47 @@ const selectFolder = async (settingKey) => {
                                                 </div>
 
                                                 <div
-                                                    class="relative flex flex-col p-8 bg-white/5 rounded-[40px] border border-white/10 shadow-2xl gap-8 overflow-hidden">
+                                                    class="relative flex flex-col p-5 bg-white/5 rounded-[40px] border border-white/10 shadow-2xl gap-4 overflow-hidden">
                                                     <div
-                                                        class="flex flex-col items-center border-b border-white/5 pb-4">
+                                                        class="flex flex-col items-center border-b border-white/5 pb-3">
                                                         <span
-                                                            class="text-[11px] font-black text-emerald-500 uppercase tracking-[0.2em] leading-none">Consumo
+                                                            class="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] leading-none">Consumo
                                                             Energético</span>
                                                     </div>
-                                                    <div class="flex items-center justify-center gap-12">
+                                                    <div class="flex items-center justify-around gap-2">
                                                         <div class="flex flex-col items-center">
                                                             <div class="flex items-baseline">
                                                                 <span
-                                                                    class="text-2xl font-mono text-white tracking-tighter leading-none">{{ acState.watts !== undefined ? acState.watts : '---' }}</span>
+                                                                    class="text-lg font-mono text-white tracking-tighter leading-none">{{ acState.watts !== undefined ? acState.watts : '---' }}</span>
                                                                 <span
-                                                                    class="text-xs font-black text-emerald-400/40 ml-2">W</span>
+                                                                    class="text-[10px] font-black text-emerald-400/40 ml-1">W</span>
                                                             </div>
                                                             <span
-                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">{{ t('ui_power', 'Potencia') }}</span>
+                                                                class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ t('ui_power', 'Potencia') }}</span>
                                                         </div>
-                                                        <div class="w-px h-12 bg-white/10">
+                                                        <div class="w-px h-8 bg-white/10">
                                                         </div>
-                                                        <div v-if="acState.monthly_kwh !== undefined && acState.monthly_kwh !== null"
-                                                            class="flex flex-col items-center">
+                                                        <div class="flex flex-col items-center">
                                                             <div class="flex items-baseline">
                                                                 <span
-                                                                    class="text-2xl font-black text-pink-400/70 tracking-tighter leading-none">{{ acState.monthly_kwh }}</span>
+                                                                    class="text-lg font-black text-pink-400/70 tracking-tighter leading-none">{{ acState.monthly_kwh || '—' }}</span>
                                                                 <span
-                                                                    class="text-xs font-black text-pink-400/40 ml-1">kWh</span>
+                                                                    class="text-[10px] font-black text-pink-400/40 ml-1">kWh</span>
                                                             </div>
                                                             <span
-                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">{{ t('ui_monthly', 'Mensual') }}</span>
+                                                                class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ t('ui_monthly', 'Mensual') }}</span>
                                                         </div>
-                                                        <div class="w-px h-12 bg-white/10">
+                                                        <div class="w-px h-8 bg-white/10">
                                                         </div>
-                                                        <div v-if="acState.total_kwh !== undefined && acState.total_kwh !== null"
-                                                            class="flex flex-col items-center">
+                                                        <div class="flex flex-col items-center">
                                                             <div class="flex items-baseline">
                                                                 <span
-                                                                    class="text-2xl font-black text-red-400/70 tracking-tighter leading-none">{{ acState.total_kwh }}</span>
+                                                                    class="text-lg font-black text-red-400/70 tracking-tighter leading-none">{{ acState.total_kwh || '—' }}</span>
                                                                 <span
-                                                                    class="text-xs font-black text-purple-400/40 ml-1">kWh</span>
+                                                                    class="text-[10px] font-black text-purple-400/40 ml-1">kWh</span>
                                                             </div>
                                                             <span
-                                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">{{ t('ui_accumulated', 'Acumulado') }}</span>
+                                                                class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ t('ui_accumulated', 'Acumulado') }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
