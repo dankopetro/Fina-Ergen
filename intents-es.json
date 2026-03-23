@@ -1,4 +1,35 @@
 {
+  "scan_iot": [
+    "escanea la red",
+    "busca dispositivos",
+    "quién está conectado",
+    "busca aparatos inteligentes",
+    "escaneo de red",
+    "qué dispositivos hay",
+    "actualiza la lista de dispositivos"
+  ],
+  "robot_clean": [
+    "pasa la aspiradora",
+    "que limpie el robot",
+    "limpia la casa con el robot",
+    "inicia limpieza",
+    "robot a limpiar",
+    "que el robot barra"
+  ],
+  "lights_on": [
+    "prende la luz",
+    "enciende las luces",
+    "luz encendida",
+    "enciende el living",
+    "prende las lámparas"
+  ],
+  "lights_off": [
+    "apaga la luz",
+    "luces fuera",
+    "apaga todo",
+    "apagar las luces",
+    "luz apagada"
+  ],
   "about": [
     "quién te creó",
     "quién te hizo",

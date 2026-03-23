@@ -62,3 +62,15 @@ weasyprint              # Generación de PDFs y documentación a partir de HTML
 click                   # Interfaces de línea de comandos
 fastapi                 # Backend API (Fina Server)
 uvicorn                 # Servidor ASGI para FastAPI
+
+# === DESCARGAS & MULTIMEDIA AVANZADA ===
+yt-dlp                  # Descarga de Video/Audio universal (Instagram, YouTube, etc.)
+markdown2               # Conversión MD a HTML mejorada
+
+# === DEPENDENCIAS DEL SISTEMA (BINARIOS) ===
+# Fina requiere estos binarios instalados vía apt/pacman/dnf:
+# - ffmpeg              # Captura de webcam y conversión de audio
+# - mpv                 # Reproductor de sonidos ambientales (streams)
+# - redshift            # Control de modo noche (temperatura de color)
+# - powerprofilesctl    # Control de perfiles de energía (ahorro de batería)
+# - v4l-utils           # Utilidades para cámara (opcional)

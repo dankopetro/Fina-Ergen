@@ -2053,28 +2053,212 @@ def get_proactive_briefing(m=None):
 
 def save_voice_note(text): return create_note(f"[VOZ] {text}")
 
-def get_daily_affirmation(*args, **kwargs): return "Hoy será un gran día."
-def toggle_battery_saver(*args, **kwargs): pass
-def play_ambient_sound(*args, **kwargs): pass
-def take_webcam_photo(*args, **kwargs): return "Cámara no disponible.", ""
-def download_instagram_reel(*args, **kwargs): return "Descarga no disponible."
-def convert_md_to_html(*args, **kwargs): return ""
-def generate_password(length=16, *args, **kwargs): return "P4ssw0rd!"
-def check_linux_updates(*args, **kwargs): return "Sistema actualizado."
-def toggle_night_mode(*args, **kwargs): pass
-def is_code_worthy(*args, **kwargs): return False
-def get_time_based_greeting(*args, **kwargs): 
-    h = datetime.now().hour
-    logger.info(f"🕒 Hora detectada para saludo: {h}")
-    if h < 12: return i18n("morning_greet", "Buenos días")
-    if h < 20: return i18n("afternoon_greet", "Buenas tardes")
-    return i18n("night_greet", "Buenas noches")
+def get_daily_affirmation(*args, **kwargs):
+    import random
+    affirmations = [
+        "Soy capaz de lograr todo lo que me proponga hoy.",
+        "Mi potencial es ilimitado y mi voluntad es de hierro.",
+        "Cada desafío es una oportunidad para crecer.",
+        "Confío en mi intuición y tomo decisiones sabias.",
+        "Merezco ser feliz y tener éxito en mis proyectos.",
+        "Hoy elijo ser la mejor versión de mí mismo.",
+        "Mi energía es positiva y contagia a los que me rodean.",
+        "Tengo el control de mis pensamientos y de mi destino."
+    ]
+    return random.choice(affirmations)
 
-def update_assistant_code(*args, **kwargs):
-    return "Función de actualización aún no implementada."
+def toggle_battery_saver(m, state="on"):
+    """Activa/Desactiva ahorro de energía en Linux (GNOME/KDE/Generic)"""
+    try:
+        profile = "power-saver" if state == "on" else "balanced"
+        subprocess.run(["powerprofilesctl", "set", profile], check=True)
+        return f"Modo {profile} activado."
+    except:
+        return i18n("msg_feature_not_supported", "Función no soportada en este sistema.")
 
-def get_weather_forecast(*args, **kwargs):
-    return "Pronóstico no disponible."
+def play_ambient_sound(m, type_="lluvia"):
+    """Reproduce sonidos relajantes desde streams estables"""
+    streams = {
+        "lluvia": "https://stream.zeno.fm/0r0xa792kwzuv", # Lofi/Rain
+        "bosque": "https://ais-sa2.cdnstream1.com/2214_128.mp3",
+        "oceano": "https://stream.zeno.fm/6n76h792kwzuv",
+        "naturaleza": "https://ais-sa2.cdnstream1.com/2214_128.mp3"
+    }
+    url = streams.get(type_.lower(), streams["lluvia"])
+    try:
+        # Usar mpv en segundo plano para el stream
+        subprocess.Popen(["mpv", "--no-video", "--volume=60", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        speak(f"Reproduciendo sonido de {type_}.", m)
+    except:
+        speak("No pude iniciar el sonido ambiental. Verifica que mpv esté instalado.", m)
+
+def take_webcam_photo(m, *args, **kwargs):
+    """Captura una foto usando ffmpeg"""
+    try:
+        photo_path = os.path.join(os.path.expanduser("~"), "Imágenes", f"fina_foto_{int(time.time())}.jpg")
+        os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+        # Comando universal con ffmpeg
+        cmd = ["ffmpeg", "-f", "v4l2", "-video_size", "1280x720", "-i", "/dev/video0", "-frames:v", "1", photo_path, "-y"]
+        subprocess.run(cmd, capture_output=True, timeout=5)
+        if os.path.exists(photo_path):
+            return f"Foto guardada en {photo_path}", photo_path
+        return "No se pudo detectar la cámara.", ""
+    except Exception as e:
+        logger.error(f"Error cámara: {e}")
+        return "Error al acceder a la cámara.", ""
+
+def download_instagram_reel(m, url):
+    """Descarga Reels usando yt-dlp"""
+    try:
+        download_dir = os.path.join(os.path.expanduser("~"), "Descargas")
+        os.makedirs(download_dir, exist_ok=True)
+        output_template = os.path.join(download_dir, "%(title)s.%(ext)s")
+        
+        speak("Iniciando descarga del Reel, esto puede tardar un momento.", m)
+        cmd = ["yt-dlp", "-o", output_template, "--no-playlist", url]
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        
+        if res.returncode == 0:
+            return "¡Listo! El Reel ha sido guardado en tu carpeta de Descargas."
+        return "Hubo un error al descargar el Reel. Verifica el enlace."
+    except:
+        return "Fallo crítico en el motor de descarga."
+
+def convert_md_to_html(content, *args, **kwargs):
+    # Intentar usar markdown2 si está disponible
+    try:
+        import markdown2
+        return markdown2.markdown(content)
+    except:
+        return f"<pre>{content}</pre>"
+
+def generate_password(length=16, *args, **kwargs):
+    import string
+    import secrets
+    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+def check_linux_updates(m, *args, **kwargs):
+    try:
+        res = subprocess.run(["checkupdates"], capture_output=True, text=True) # Arch
+        if not res.stdout:
+            res = subprocess.run(["apt-get", "-s", "upgrade"], capture_output=True, text=True) # Debian/Ubuntu
+        
+        updates = len(res.stdout.splitlines())
+        if updates > 0:
+            return f"Tienes {updates} paquetes pendientes de actualizar."
+        return "Tu sistema está al día."
+    except:
+        return "No pude verificar las actualizaciones."
+
+def toggle_night_mode(m, state="on"):
+    try:
+        if state == "on":
+            subprocess.Popen(["redshift", "-O", "3500"], stdout=subprocess.DEVNULL)
+        else:
+            subprocess.run(["redshift", "-x"])
+        return f"Modo noche {state}."
+    except:
+        return "Redshift no está instalado."
+
+def update_assistant_code(m, *args, **kwargs):
+    """Pull universal de cambios desde git"""
+    try:
+        speak("Buscando actualizaciones en el repositorio...", m)
+        res = subprocess.run(["git", "pull"], capture_output=True, text=True, timeout=30)
+        if "Already up to date" in res.stdout:
+            return "Fina ya está en su versión más reciente."
+        return "Actualización completada. Reinicia Fina para aplicar los cambios."
+    except:
+        return "Error al conectar con el servidor de actualizaciones."
+
+def get_weather_forecast(m, *args, **kwargs):
+    # Reutilizar lógica de get_weather pero para forecast
+    return "Función de pronóstico extendido en desarrollo."
+
+def scan_network_cmd(m):
+    """Llama al escáner de red y reporta dispositivos encontrados"""
+    try:
+        from iot.network_scan import scan_network
+        speak("Iniciando escaneo de red. Esto tomará unos segundos...", m)
+        devices = scan_network()
+        if not devices:
+            speak("No se detectaron dispositivos adicionales en la red.", m)
+            return
+        
+        # Filtrar conocidos (que no sean Desconocidos o ?)
+        conocidos = [d for d in devices if d['vendor'] != "Desconocido"]
+        if conocidos:
+            msg = f"He encontrado {len(conocidos)} dispositivos conocidos: "
+            vendors = list(set([d['vendor'] for d in conocidos]))
+            msg += ", ".join(vendors) + "."
+            speak(msg, m)
+        else:
+            speak(f"Escaneo finalizado. Detecté {len(devices)} dispositivos conectados, pero no pude identificar sus marcas.", m)
+    except Exception as e:
+        logger.error(f"Error en scan_network_cmd: {e}")
+        speak("Hubo un error al intentar escanear la red.", m)
+
+def robot_clean_cmd(m):
+    """Busca un plugin de categoría 'Robots' o 'Appliances'"""
+    # Lógica universal de plugins
+    plugin = _get_plugin_by_category("Robots") or _get_plugin_by_category("Appliances")
+    if plugin:
+        response = plugin.handle_intent("robot_clean", "limpiar")
+        if response: speak(response, m)
+    else:
+        speak("No encontré ningún robot aspirador vinculado.", m)
+
+def lights_on_cmd(m):
+    plugin = _get_plugin_by_category("Lights") or _get_plugin_by_category("SmartHome")
+    if plugin:
+        response = plugin.handle_intent("lights_on", "prender luces")
+        if response: speak(response, m)
+    else:
+        speak("No detecté luces inteligentes configuradas.", m)
+
+def lights_off_cmd(m):
+    plugin = _get_plugin_by_category("Lights") or _get_plugin_by_category("SmartHome")
+    if plugin:
+        response = plugin.handle_intent("lights_off", "apagar luces")
+        if response: speak(response, m)
+    else:
+        speak("No puedo apagar las luces si no hay un plugin activo.", m)
+
+def _get_plugin_by_category(category):
+    """Busca un plugin en el market que pertenezca a una categoría"""
+    import yaml
+    market_path = os.path.join(PROJECT_ROOT, ".local_lab", "Fina-Plugins-Market-Working")
+    for root, dirs, files in os.walk(market_path):
+        if "plugin.yaml" in files:
+            try:
+                with open(os.path.join(root, "plugin.yaml"), 'r') as f:
+                    data = yaml.safe_load(f)
+                    if data.get("category") == category:
+                        # Cargar el plugin (asumiendo que tiene plugin.py o similar)
+                        # Por ahora usamos la lógica de carga dinámica similar a TV/Deco
+                        # Pero simplificada para este caso
+                        return _load_dynamic_plugin(root)
+            except: pass
+    return None
+
+def _load_dynamic_plugin(path):
+    import importlib.util
+    # Buscar script principal (por ahora buscamos plugin.py)
+    script_path = os.path.join(path, "plugin.py")
+    if not os.path.exists(script_path): return None
+    try:
+        spec = importlib.util.spec_from_file_location("dynamic_plugin", script_path)
+        if spec and spec.loader:
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            # Buscar una clase que termine en Plugin
+            for item in dir(module):
+                if item.endswith("Plugin") and item != "BasePlugin":
+                    cls = getattr(module, item)
+                    return cls(None)
+    except: pass
+    return None
 
 
 def self_destruct(*args, **kwargs):

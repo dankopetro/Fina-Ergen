@@ -137,7 +137,7 @@ from utils import (
     deco_set_volume_cmd, deco_open_app_cmd, deco_exit_app_cmd, deco_set_input_cmd,
     ensure_tv_is_on, get_doorbell_status_cmd, show_doorbell_image, 
     show_doorbell_stream, send_ui_command, check_system_dependencies, is_code_worthy,
-    perform_ac_control,
+    perform_ac_control, scan_network_cmd, robot_clean_cmd, lights_on_cmd, lights_off_cmd,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config,
     get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine, i18n,
     get_unified_config, get_sys_lang, get_idiom
@@ -1662,6 +1662,18 @@ async def main():
             elif intent == "ac_control":
                 # Llama a la función asíncrona de control de aire universal
                 asyncio.create_task(perform_ac_control(selected_voice_model, commandFinal))
+
+            elif intent == "scan_iot":
+                scan_network_cmd(selected_voice_model)
+
+            elif intent == "robot_clean":
+                robot_clean_cmd(selected_voice_model)
+
+            elif intent == "lights_on":
+                lights_on_cmd(selected_voice_model)
+
+            elif intent == "lights_off":
+                lights_off_cmd(selected_voice_model)
                 
 # main entry point
 def handle_exit(signum, frame):
