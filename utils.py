@@ -2744,3 +2744,7 @@ def deco_set_channel_cmd(c, m):
         if resp: speak(resp, m)
 # --- END DECO PLUGIN FUNCS ---
 
+
+
+def is_code_worthy(*args, **kwargs): return False
+
