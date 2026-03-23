@@ -13,6 +13,7 @@
   "check_solar_production": ["how much solar power?", "solar production", "solar panel status"],
   "check_solar_battery": ["solar battery status", "how much energy stored?", "home battery"],
   "fridge_status": ["fridge status", "fridge temperature", "check refrigerator"],
+  "fridge_inventory": ["what is missing in the fridge?", "what do I need to buy?", "shopping list from fridge", "missing items in refrigerator", "create grocery list"],
   "about": [
     "about fina please",
     "please about fina",

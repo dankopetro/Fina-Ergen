@@ -2273,6 +2273,14 @@ def fridge_status_cmd(m):
     else:
         speak("No encontré una heladera inteligente vinculada.", m)
 
+def fridge_inventory_cmd(m):
+    plugin = _get_plugin_by_category("Refrigerators")
+    if plugin:
+        response = plugin.handle_intent("fridge_inventory", "que falta")
+        if response: speak(response, m)
+    else:
+        speak("Tu heladera actual no tiene funciones de inventario inteligente.", m)
+
 def _get_plugin_by_category(category):
     """Busca un plugin en el market que pertenezca a una categoría"""
     import yaml

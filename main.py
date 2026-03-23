@@ -139,7 +139,7 @@ from utils import (
     show_doorbell_stream, send_ui_command, check_system_dependencies, is_code_worthy,
     perform_ac_control, scan_network_cmd, robot_clean_cmd, lights_on_cmd, lights_off_cmd,
     lock_door_cmd, unlock_door_cmd, blinds_open_cmd, start_watering_cmd, check_solar_production_cmd,
-    fridge_status_cmd,
+    fridge_status_cmd, fridge_inventory_cmd,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config,
     get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine, i18n,
     get_unified_config, get_sys_lang, get_idiom
@@ -1694,6 +1694,9 @@ async def main():
 
             elif intent == "fridge_status":
                 fridge_status_cmd(selected_voice_model)
+
+            elif intent == "fridge_inventory":
+                fridge_inventory_cmd(selected_voice_model)
                 
 # main entry point
 def handle_exit(signum, frame):

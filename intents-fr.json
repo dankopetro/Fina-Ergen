@@ -13,6 +13,7 @@
   "check_solar_production": ["combien de solaire?", "production solaire"],
   "check_solar_battery": ["état de la batterie solaire", "stockage énergie"],
   "fridge_status": ["état du frigo", "température du réfrigérateur"],
+  "fridge_inventory": ["qu'est-ce qui manque dans le frigo?", "faire la liste de courses"],
   "about": [
     "pourrais-tu à propos de fina",
     "je veux à propos de fina",

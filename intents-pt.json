@@ -13,6 +13,7 @@
   "check_solar_production": ["produção solar", "quanto estamos gerando?"],
   "check_solar_battery": ["status da bateria solar", "carga da bateria"],
   "fridge_status": ["status da geladeira", "temperatura da geladeira"],
+  "fridge_inventory": ["o que falta na geladeira?", "fazer lista de compras"],
   "about": [
     "quién te creó"
   ],

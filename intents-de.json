@@ -13,6 +13,7 @@
   "check_solar_production": ["solarproduktion prüfen", "wie viel solarstrom?"],
   "check_solar_battery": ["solarbatterie status", "batteriespeicher prüfen"],
   "fridge_status": ["kühlschrank status", "kühlschrank temperatur"],
+  "fridge_inventory": ["was fehlt im kühlschrank?", "einkaufsliste erstellen"],
   "about": [
     "kannst du über fina für mich",
     "über fina jetzt",

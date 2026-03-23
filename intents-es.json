@@ -88,6 +88,14 @@
     "¿está fría la heladera?",
     "revisa el refrigerador"
   ],
+  "fridge_inventory": [
+    "¿qué falta en la heladera?",
+    "¿qué tengo que comprar?",
+    "lista de compras de la heladera",
+    "dime qué falta reponer",
+    "haz la lista del súper",
+    "¿qué cosas faltan comprar para la heladera?"
+  ],
   "lights_off": [
     "apaga la luz",
     "luces fuera",

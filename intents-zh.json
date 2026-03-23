@@ -13,6 +13,7 @@
   "check_solar_production": ["太阳能发电量", "查看太阳能状态"],
   "check_solar_battery": ["太阳能电池状态", "储能电量"],
   "fridge_status": ["冰箱状态", "冰箱温度"],
+  "fridge_inventory": ["冰箱里缺什么？", "生成购物清单"],
   "about": [
     "帮忙 关于fina 一下",
     "关于fina 请",

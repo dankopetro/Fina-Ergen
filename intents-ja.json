@@ -13,6 +13,7 @@
   "check_solar_production": ["太陽光発電の状況", "発電量は？"],
   "check_solar_battery": ["蓄電池の状態", "ソーラーバッテリー"],
   "fridge_status": ["冷蔵庫の状態", "冷蔵庫の温度"],
+  "fridge_inventory": ["冷蔵庫に何が足りない？", "買い物リストを作って"],
   "about": [
     "して フィナについて",
     "今すぐ フィナについて",
