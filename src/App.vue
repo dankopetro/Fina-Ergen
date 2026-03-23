@@ -1024,6 +1024,15 @@ const showMarket = ref(false);
 const marketPlugins = ref([]);
 const isMarketLoading = ref(false);
 
+const openPluginFolder = async () => {
+    try {
+        await invoke("execute_shell_command", { command: "xdg-open ~/.config/Fina/plugins" });
+        finaState.value.process = t("ui_opened_folder", "CARPETA DE PLUGINS ABIERTA");
+    } catch (e) {
+        console.error("Error opening folder:", e);
+    }
+};
+
 const openPluginStore = async () => {
     finaState.value.process = t("proc_open_market", "ABRIENDO MARKET DE PLUGINS");
     showMarket.value = true;
@@ -4441,10 +4450,15 @@ const selectFolder = async (settingKey) => {
                                                     class="p-8 bg-gradient-to-br from-indigo-900/20 to-slate-900/40 rounded-[40px] border border-white/10 relative overflow-hidden group">
                                                     <i
                                                         class="fa-solid fa-cloud-arrow-down absolute -right-4 -top-4 text-8xl text-indigo-500/10 group-hover:scale-110 transition-transform"></i>
-                                                    <h4
-                                                        class="text-sm font-black text-white uppercase tracking-widest mb-4">
-                                                        {{ t('ui_manual_install', 'Instalar Nuevos Plugins') }}
-                                                    </h4>
+                                                    <div class="flex items-center justify-between mb-4">
+                                                        <h4
+                                                            class="text-sm font-black text-white uppercase tracking-widest">
+                                                            {{ t('ui_manual_install', 'Instalar Nuevos Plugins') }}
+                                                        </h4>
+                                                        <button @click="openPluginFolder" class="px-4 py-2 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500 hover:text-white transition-all text-[10px] font-black uppercase flex items-center gap-2 border border-indigo-500/30 relative z-10">
+                                                            <i class="fa-solid fa-folder-open"></i> {{ t('ui_open_folder', 'Explorar') }}
+                                                        </button>
+                                                    </div>
                                                     <div class="relative">
                                                         <input type="text"
                                                             v-model="customPluginUrl"
