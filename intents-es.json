@@ -81,6 +81,13 @@
     "¿cuánta energía guardada hay?",
     "estado de la batería de la casa"
   ],
+  "fridge_status": [
+    "estado de la heladera",
+    "¿a qué temperatura está la heladera?",
+    "dime la temperatura del refrigerador",
+    "¿está fría la heladera?",
+    "revisa el refrigerador"
+  ],
   "lights_off": [
     "apaga la luz",
     "luces fuera",

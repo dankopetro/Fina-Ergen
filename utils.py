@@ -2265,6 +2265,14 @@ def check_solar_production_cmd(m):
     else:
         speak("Inversor solar no detectado.", m)
 
+def fridge_status_cmd(m):
+    plugin = _get_plugin_by_category("Refrigerators") or _get_plugin_by_category("Appliances")
+    if plugin:
+        response = plugin.handle_intent("fridge_status", "estado heladera")
+        if response: speak(response, m)
+    else:
+        speak("No encontré una heladera inteligente vinculada.", m)
+
 def _get_plugin_by_category(category):
     """Busca un plugin en el market que pertenezca a una categoría"""
     import yaml

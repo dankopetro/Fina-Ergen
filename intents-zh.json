@@ -1,4 +1,18 @@
 {
+  "scan_iot": ["扫描网络", "查找设备", "物联网扫描"],
+  "robot_clean": ["扫地", "启动扫地机器人", "清理房屋"],
+  "lights_on": ["开灯", "打开电灯"],
+  "lights_off": ["关灯", "全部关闭"],
+  "lock_door": ["锁门", "把门锁上"],
+  "unlock_door": ["开门", "打开门锁"],
+  "check_lock_status": ["门锁好了吗？", "查看门锁状态"],
+  "start_washing_machine": ["洗衣服", "启动洗衣机"],
+  "open_blinds": ["打开百叶窗", "拉开窗帘"],
+  "close_blinds": ["关闭百叶窗", "关上窗帘"],
+  "start_watering": ["开始浇水", "给植物浇水", "打开灌溉"],
+  "check_solar_production": ["太阳能发电量", "查看太阳能状态"],
+  "check_solar_battery": ["太阳能电池状态", "储能电量"],
+  "fridge_status": ["冰箱状态", "冰箱温度"],
   "about": [
     "帮忙 关于fina 一下",
     "关于fina 请",

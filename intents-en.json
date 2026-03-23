@@ -1,4 +1,18 @@
 {
+  "scan_iot": ["scan network", "find devices", "search for smart home", "who is connected", "network scan"],
+  "robot_clean": ["vacuum the floor", "start cleaning", "robot start cleaning", "clean the house"],
+  "lights_on": ["turn on lights", "lights on", "switch on the lamp"],
+  "lights_off": ["turn off lights", "lights off", "switch off everything"],
+  "lock_door": ["lock the door", "lock entry", "secure house"],
+  "unlock_door": ["unlock the door", "open door", "unlock entrance"],
+  "check_lock_status": ["is the door locked?", "check door status"],
+  "start_washing_machine": ["start laundry", "start washing machine", "wash clothes"],
+  "open_blinds": ["open blinds", "raise curtains", "open windows"],
+  "close_blinds": ["close blinds", "lower curtains", "close windows"],
+  "start_watering": ["water the garden", "start irrigation", "water plants"],
+  "check_solar_production": ["how much solar power?", "solar production", "solar panel status"],
+  "check_solar_battery": ["solar battery status", "how much energy stored?", "home battery"],
+  "fridge_status": ["fridge status", "fridge temperature", "check refrigerator"],
   "about": [
     "about fina please",
     "please about fina",

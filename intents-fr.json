@@ -1,4 +1,18 @@
 {
+  "scan_iot": ["scanner le réseau", "trouver des appareils", "recherche iot"],
+  "robot_clean": ["passer l'aspirateur", "lancer le nettoyage", "nettoyer la maison"],
+  "lights_on": ["allume la lumière", "allumer les lampes"],
+  "lights_off": ["éteindre la lumière", "éteindre tout", "tout éteindre"],
+  "lock_door": ["verrouiller la porte", "fermer à clé"],
+  "unlock_door": ["déverrouiller la porte", "ouvrir la porte"],
+  "check_lock_status": ["est-ce que la porte est fermée?", "état de la serrure"],
+  "start_washing_machine": ["lancer la machine", "faire la lessive"],
+  "open_blinds": ["ouvrir les volets", "ouvrir les stores"],
+  "close_blinds": ["fermer les volets", "fermer les stores"],
+  "start_watering": ["arroser le jardin", "lancer l'arrosage"],
+  "check_solar_production": ["combien de solaire?", "production solaire"],
+  "check_solar_battery": ["état de la batterie solaire", "stockage énergie"],
+  "fridge_status": ["état du frigo", "température du réfrigérateur"],
   "about": [
     "pourrais-tu à propos de fina",
     "je veux à propos de fina",

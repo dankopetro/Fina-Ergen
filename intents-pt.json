@@ -1,4 +1,18 @@
 {
+  "scan_iot": ["escanear rede", "procurar dispositivos"],
+  "robot_clean": ["aspirar o chão", "limpar a casa", "ligar robô aspirador"],
+  "lights_on": ["acender as luzes", "ligar a luz"],
+  "lights_off": ["apagar as luzes", "desligar tudo"],
+  "lock_door": ["trancar a porta", "fechar com chave"],
+  "unlock_door": ["abrir a porta", "destrancar porta"],
+  "check_lock_status": ["a porta está trancada?", "status da fechadura"],
+  "start_washing_machine": ["lavar roupa", "iniciar máquina de lavar"],
+  "open_blinds": ["abrir as persianas", "subir as cortinas"],
+  "close_blinds": ["fechar as persianas", "baixar as cortinas"],
+  "start_watering": ["regar o jardim", "ligar irrigação"],
+  "check_solar_production": ["produção solar", "quanto estamos gerando?"],
+  "check_solar_battery": ["status da bateria solar", "carga da bateria"],
+  "fridge_status": ["status da geladeira", "temperatura da geladeira"],
   "about": [
     "quién te creó"
   ],
