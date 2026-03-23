@@ -1408,6 +1408,60 @@ def _send_adb_key(k):
     if ip == "0.0.0.0": return
     subprocess.run(['adb', '-s', f'{ip}:5555', 'shell', 'input', 'keyevent', str(k)], timeout=2)
 
+# --- AIR CONDITIONING (UNIVERSAL) ---
+def _get_ac_plugin_path():
+    try:
+        from plugin_manager import PluginManager
+        from pathlib import Path
+        pm = PluginManager()
+        pm.discover_plugins()
+        for name, path in pm._plugins_paths.items():
+            if (Path(path) / "clima.py").exists():
+                return str(path)
+    except Exception as e:
+        print(f"Error buscando plugin de AC: {e}")
+    return None
+
+async def perform_ac_control(m, command):
+    path = _get_ac_plugin_path()
+    if not path:
+        speak("No encontré ningún plugin de aire acondicionado instalado.", m)
+        return
+
+    script = os.path.join(path, "clima.py")
+    cmd_lower = command.lower()
+    args = [sys.executable, script]
+
+    # Lógica de mapeo universal basada en MARKET_PLUGIN_STANDARDS
+    if "apaga" in cmd_lower or "off" in cmd_lower:
+        args += ["--power", "off"]
+        msg = "Apagando el aire acondicionado."
+    elif "encende" in cmd_lower or "enciende" in cmd_lower or "prende" in cmd_lower or "on" in cmd_lower:
+        args += ["--power", "on"]
+        msg = "Encendiendo el aire acondicionado."
+    
+    # Temperatura
+    nums = re.findall(r'\d+', cmd_lower)
+    if nums:
+        temp = nums[0]
+        args += ["--temp", temp]
+        if "--power" not in args: args += ["--power", "on"]
+        msg = f"Ajustando el aire a {temp} grados."
+    
+    # Modos
+    if "turbo" in cmd_lower: args += ["--turbo", "on"]
+    if "eco" in cmd_lower: args += ["--mode", "auto"]
+    if "frío" in cmd_lower or "frio" in cmd_lower: args += ["--mode", "cool"]
+    if "calor" in cmd_lower: args += ["--mode", "heat"]
+
+    try:
+        # Ejecutar en segundo plano
+        subprocess.Popen(args + ["--silent"], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+        speak(msg if 'msg' in locals() else "Comando de aire acondicionado enviado.", m)
+    except Exception as e:
+        print(f"Error ejecutando clima.py: {e}")
+        speak("Hubo un error al intentar controlar el aire acondicionado.", m)
+
 def turn_on_tv(m, command=""):
     if not _check_tv_deps(m): return
     plugin = _get_tv_plugin(m)
@@ -1549,6 +1603,12 @@ def tv_set_input_cmd(i, m):
     response = plugin.handle_intent("tv_set_input", f"pon la entrada {i}")
     if response: speak(response, m)
 
+def tv_set_volume_cmd(v, m):
+    plugin = _get_tv_plugin(m)
+    if not plugin: return
+    response = plugin.handle_intent("tv_set_volume", f"volumen {v}")
+    if response: speak(response, m)
+
 def tv_open_app_cmd(a, m): 
     plugin = _get_tv_plugin(m)
     if not plugin: return
@@ -1557,6 +1617,90 @@ def tv_open_app_cmd(a, m):
 def tv_exit_app_cmd(m): 
     if not _check_tv_deps(m): return
     _send_adb_key(3)
+
+# --- DECO (UNIVERSAL PLUGIN WRAPPER) ---
+def deco_set_channel_cmd(c, m):
+    plugin = _get_deco_plugin(m)
+    if not plugin: return
+    response = plugin.handle_intent("deco_set_channel", f"pon el canal {c}")
+    if response: speak(response, m)
+
+def deco_volume_up_cmd(m, steps=5):
+    plugin = _get_deco_plugin(m)
+    if not plugin: return
+    response = plugin.handle_intent("deco_volume_up", f"subir {steps}")
+    if response: speak(response, m)
+
+def deco_volume_down_cmd(m, steps=5):
+    plugin = _get_deco_plugin(m)
+    if not plugin: return
+    response = plugin.handle_intent("deco_volume_down", f"bajar {steps}")
+    if response: speak(response, m)
+
+def deco_mute_cmd(m):
+    plugin = _get_deco_plugin(m)
+    if not plugin: return
+    response = plugin.handle_intent("deco_mute", "silencio")
+    if response: speak(response, m)
+
+def deco_set_volume_cmd(vol, m):
+    plugin = _get_deco_plugin(m)
+    if not plugin: return
+    response = plugin.handle_intent("deco_set_volume", f"volumen {vol}")
+    if response: speak(response, m)
+
+def deco_open_app_cmd(app, m):
+    plugin = _get_deco_plugin(m)
+    if not plugin: return
+    response = plugin.handle_intent("deco_open_app", f"abrir {app}")
+    if response: speak(response, m)
+
+def deco_exit_app_cmd(m):
+    plugin = _get_deco_plugin(m)
+    if not plugin: return
+    response = plugin.handle_intent("deco_exit_app", "salir")
+    if response: speak(response, m)
+
+def deco_set_input_cmd(inp, m):
+    plugin = _get_deco_plugin(m)
+    if not plugin: return
+    response = plugin.handle_intent("deco_set_input", f"entrada {inp}")
+    if response: speak(response, m)
+
+def _get_deco_plugin_path():
+    try:
+        from plugin_manager import PluginManager
+        from pathlib import Path
+        import yaml
+        pm = PluginManager()
+        pm.discover_plugins()
+        for name, path in pm._plugins_paths.items():
+            yaml_path = Path(path) / "plugin.yaml"
+            if yaml_path.exists():
+                with open(yaml_path, "r") as f:
+                    conf = yaml.safe_load(f)
+                    if conf.get("category") == "Decos":
+                        return str(path)
+    except: pass
+    return None
+
+def _get_deco_plugin(m=None):
+    path = _get_deco_plugin_path()
+    if path:
+        import importlib.util
+        try:
+            script = os.path.join(path, "deco.py")
+            spec = importlib.util.spec_from_file_location("dynamic_deco_plugin", script)
+            if spec and spec.loader:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                for attr in dir(module):
+                    if attr.endswith("Plugin"):
+                        return getattr(module, attr)(None)
+        except Exception as e:
+            print(f"Error cargando plugin de Deco: {e}")
+    if m: speak("No se encontró el plugin de decodificador.", m)
+    return None
 def is_tv_on(): 
     """Verifica si la TV principal está conectada via ADB"""
     ip = get_unified_config("TV_IP")

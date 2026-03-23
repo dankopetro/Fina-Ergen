@@ -131,10 +131,13 @@ from utils import (
     translate_text, close_app, open_app, turn_on_tv, turn_off_tv, music_volume_up,
     tv_volume_up_cmd, tv_volume_down_cmd, tv_channel_up_cmd, tv_channel_down_cmd, 
     tv_open_app_cmd, tv_exit_app_cmd, tv_set_channel_cmd, tv_mute_cmd, is_tv_on, 
+    tv_set_volume_cmd, tv_set_input_cmd,
     turn_on_deco, turn_off_deco, deco_volume_up_cmd, deco_volume_down_cmd, 
     deco_channel_up_cmd, deco_channel_down_cmd, deco_set_channel_cmd, deco_mute_cmd,
-    ensure_tv_is_on, tv_set_input_cmd, get_doorbell_status_cmd, show_doorbell_image, 
+    deco_set_volume_cmd, deco_open_app_cmd, deco_exit_app_cmd, deco_set_input_cmd,
+    ensure_tv_is_on, get_doorbell_status_cmd, show_doorbell_image, 
     show_doorbell_stream, send_ui_command, check_system_dependencies, is_code_worthy,
+    perform_ac_control,
     CONFIG_DIR, SETTINGS_PATH, USER_DATA_PATH, CONTACTS_PATH, CONFIG_PY_PATH, load_config,
     get_proactive_briefing, text_to_number_es, suspend, stop_voice_engine, i18n,
     get_unified_config, get_sys_lang, get_idiom
@@ -1620,6 +1623,45 @@ async def main():
             
             elif intent == "tv_exit_app":
                 tv_exit_app_cmd(selected_voice_model)
+
+            elif intent == "tv_set_volume":
+                # Buscar número directo
+                numbers = re.findall(r'\d+', commandFinal)
+                if numbers:
+                    tv_set_volume_cmd(int(numbers[0]), selected_voice_model)
+                else:
+                    speak("¿A qué nivel de volumen quieres poner la tele?", selected_voice_model)
+            
+            elif intent == "deco_set_volume":
+                # Buscar número directo
+                numbers = re.findall(r'\d+', commandFinal)
+                if numbers:
+                    deco_set_volume_cmd(int(numbers[0]), selected_voice_model)
+                else:
+                    speak("¿A qué nivel quieres poner el volumen del deco?", selected_voice_model)
+
+            elif intent == "deco_open_app":
+                 # Extraer app
+                ignored_words = ["abre", "pon", "inicia", "ejecuta", "quiero", "ver", "en", "el", "deco", "decodificador", "aplicación"]
+                target = commandFinal
+                for word in ignored_words:
+                    target = target.replace(word, " ")
+                target = target.strip()
+                if target:
+                    deco_open_app_cmd(target, selected_voice_model)
+                else:
+                    speak("¿Qué aplicación quieres abrir en el decodificador?", selected_voice_model)
+
+            elif intent == "deco_exit_app":
+                deco_exit_app_cmd(selected_voice_model)
+
+            elif intent == "deco_set_input":
+                target_input = commandFinal.replace("pon el deco en", "").replace("pon la", "").replace("cambia a la entrada", "").replace("entrada", "").strip()
+                deco_set_input_cmd(target_input, selected_voice_model)
+
+            elif intent == "ac_control":
+                # Llama a la función asíncrona de control de aire universal
+                asyncio.create_task(perform_ac_control(selected_voice_model, commandFinal))
                 
 # main entry point
 def handle_exit(signum, frame):
