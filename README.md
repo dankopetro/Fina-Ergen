@@ -83,7 +83,7 @@ Hemos reestructurado toda la información técnica para ti:
 
 ## 💖 Apoya el Proyecto
 
-Si Fina Ergen te ha sido útil y quieres apoyar su continuo desarrollo, puedes invitarme un café o realizar una donación. ¡Toda ayuda es bienvenida para seguir mejorando el "hierro inteligente"!
+Si Fina Ergen te ha sido útil y quieres apoyar su continuo desarrollo, puedes invitarme un café o realizar una donación. ¡Toda ayuda es bienvenida para seguir mejorando el asistente!
 
 | Plataforma | Link |
 | :--- | :--- |
