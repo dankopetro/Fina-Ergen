@@ -8,10 +8,10 @@
 </p>
 
 <p align="center">
-  <a href="#-características">Características</a> •
-  <a href="#️-arquitectura-modular">Arquitectura Modular</a> •
+  <a href="#caracteristicas">Características</a> •
+  <a href="#arquitectura">Arquitectura Modular</a> •
   <a href="https://github.com/dankopetro/Fina-Ergen/wiki">📚 CÓDICE MAESTRO (Wiki)</a> •
-  <a href="#-instalación-rápida">Instalación Rápida</a>
+  <a href="#instalacion">Instalación Rápida</a>
 </p>
 
 <p align="center">
@@ -22,6 +22,7 @@
 
 **Fina Ergen** no es solo un script; es un cerebro avanzado que corre localmente en tu sistema Linux con una hermosa interfaz nativa de escritorio (Tauri/Vue). Diseñada para procesar lenguaje natural en español con extrema rapidez offline, Fina es capaz de todo: desde hablarte con voces hiperrealistas y autenticarte por biometría dual, hasta controlar toda la domótica de tu casa (Cámaras, Android TV, Aire Acondicionado) mediante su increíble arquitectura de plugins.
 
+<a id="caracteristicas"></a>
 ## ✨ Características Principales
 
 - ⚡ **Súper Procesamiento de Voz:** Usa Vosk para velocidad offline relámpago y Whisper como alternativa.
@@ -31,6 +32,7 @@
 - 📺 **Domótica Extrema (IoT):** Fina controla tu Smart TV, decodificadores, aires acondicionados y sistemas de videovigilancia Tuya/SmartLife sin pestañear.
 - 🔌 **Arquitectura 100% Modular:** Instala solo el motor base. Luego elige qué dependencias de IoT quieres integrar: tu computadora no colapsará instalando librerías que no usa.
 
+<a id="arquitectura"></a>
 ## ⚙️ Arquitectura Modular (Fina Plugins)
 
 Fina está dividida en un núcleo de IA liviano y una potente de capa externa comunitaria.
@@ -43,6 +45,7 @@ Fina está dividida en un núcleo de IA liviano y una potente de capa externa co
 | **Sistema** | `App Management`, `Brightnes`, `Xdotool`  | Minimizar, cerrar y suspender herramientas de escritorio linux. |
 | **Terceros**| `plugins/custom/`                         | Descarga automatizaciones de la comunidad sin editar el repo. |
 
+<a id="instalacion"></a>
 ## 🚀 Instalación (Universal)
 
 A partir de la versión v3.5.4, Fina Ergen es 100% modular y autodependiente. Ya no necesitas clonar el código fuente. Dirígete a la pestaña de **Releases** en GitHub y descarga el instalador que mejor se adapte a tu distribución Linux:
