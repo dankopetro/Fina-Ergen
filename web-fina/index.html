@@ -46,6 +46,7 @@
             </div>
             <ul class="nav-links">
                 <li><a href="#hero" data-i18n="nav_home">Home</a></li>
+                <li><a href="https://github.com/dankopetro/Fina-Ergen/wiki" target="_blank">Wiki (Docs)</a></li>
                 <li><a href="#showcase">Showcase</a></li>
                 <li><a href="#market">Fina Market</a></li>
                 <li><a href="#donar" data-i18n="nav_support">Support</a></li>
@@ -68,7 +69,7 @@
     <section id="hero" class="hero-section">
         <div class="container">
             <div class="hero-content">
-                <h1 class="gradient-text" data-i18n="hero_title">Your Smart Assistant on Linux.</h1>
+                <h1 class="gradient-text"><span data-i18n="hero_title">Your Smart Assistant on Linux.</span> <span class="badge" style="background:#58a6ff;color:black;">v3.6.0</span></h1>
                 <p data-i18n="hero_desc">Modular voice assistant with dual biometrics, offline AI, and extreme smart home control.</p>
                 <div class="hero-btns">
                     <a href="https://github.com/dankopetro/Fina-Ergen/releases/latest" class="btn-primary"
@@ -83,7 +84,7 @@
                         <span class="dot yellow"></span>
                         <span class="dot green"></span>
                     </div>
-                    <img src="assets/screenshot_new.png" alt="Fina View" class="main-screenshot">
+                    <img src="assets/showcase/1.png" alt="Fina View" class="main-screenshot">
                 </div>
             </div>
         </div>
@@ -413,8 +414,8 @@
 
         // IMAGE GALLERY LOGIC
         const track = document.getElementById('showcase-track');
-        // Correct order: 1, 2, 27, 3, 4, 5...26
-        const imgOrder = [1, 2, 27, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26];
+        // Load all 51 documentation images sequentially
+        const imgOrder = Array.from({length: 51}, (_, i) => i + 1);
         let currentIndex = 0;
 
         // Generate images
