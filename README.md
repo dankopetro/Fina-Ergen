@@ -81,7 +81,7 @@ Fina viene "pelada" de fábrica para ser rapidísima. Todo el control de aparato
 Toda la documentación técnica exhaustiva, guías de usuario y manuales del sistema han sido iterados y migrados al gigantesco **Códice Maestro** alojado directamente en nuestra Wiki. Es la fuente de verdad absoluta para domar al asistente:
 
 - 📖 [**Explorar la Wiki Oficial de Fina Ergen**](https://github.com/dankopetro/Fina-Ergen/wiki)
-- 🧩 **Guía de Creación de Plugins:** Próximamente dispondremos un bloque didáctico en la Wiki. Por el momento, ¡revisa el repositorio [Fina-Plugins-Market](https://github.com/dankopetro/Fina-Plugins-Market) e indaga en su código fuente vitalicio!
+- 🧩 [**Guía de Creación de Plugins (SDK)**](https://github.com/dankopetro/Fina-Plugins-Market): Aprende a desarrollar tus propios módulos y arquitecturas IoT leyendo los estándares oficiales directamente en el Market.
 
 ## 🔮 Roadmap v4.0 (El Futuro)
 
