@@ -1,6 +1,6 @@
 <h1 align="center">
   <img src="static/assets/avatar.png" width="120" alt="Fina AI">
-  <br>Fina Ergen v3.5
+  <br>Fina Ergen v3.6.0
 </h1>
 
 <p align="center">
@@ -10,8 +10,8 @@
 <p align="center">
   <a href="#-características">Características</a> •
   <a href="#️-arquitectura-modular">Arquitectura Modular</a> •
-  <a href="#-instalación-rápida">Instalación Rápida</a> •
-  <a href="./docs/MANUAL_DE_USUARIO_COMPLETO.md">📚 Manual Completo</a>
+  <a href="https://github.com/dankopetro/Fina-Ergen/wiki">📚 CÓDICE MAESTRO (Wiki)</a> •
+  <a href="#-instalación-rápida">Instalación Rápida</a>
 </p>
 
 <p align="center">
@@ -73,13 +73,20 @@ Fina viene "pelada" de fábrica para ser rapidísima. Todo el control de aparato
 3. Cópiala en la carpeta de configuraciones de tu usuario de Linux:
    `~/.config/Fina/plugins/` *(Ej: `~/.config/Fina/plugins/AirConditioning/Midea-Surrey/`)*
 4. Reinicia Fina Ergen para cargarla.
-## 📚 Documentación
+## 📚 Códice Maestro (Wiki Oficial)
 
-Hemos reestructurado toda la información técnica para ti:
+Toda la documentación técnica exhaustiva, guías de usuario y manuales del sistema han sido iterados y migrados al gigantesco **Códice Maestro** alojado directamente en nuestra Wiki. Es la fuente de verdad absoluta para domar al asistente:
 
-- 📖 [Manual del Usuario Completo](./docs/MANUAL_DE_USUARIO_COMPLETO.md) (Guía Definitiva)
-- 🧩 [Guía de Creación de Plugins](./docs/PLUGINS_GUIDE.md)
-- 🚀 [Roadmap de Desarrollo](./docs/ROADMAP.md)
+- 📖 [**Explorar la Wiki Oficial de Fina Ergen**](https://github.com/dankopetro/Fina-Ergen/wiki)
+- 🧩 **Guía de Creación de Plugins:** Próximamente dispondremos un bloque didáctico en la Wiki. Por el momento, ¡revisa el repositorio [Fina-Plugins-Market](https://github.com/dankopetro/Fina-Plugins-Market) e indaga en su código fuente vitalicio!
+
+## 🔮 Roadmap v4.0 (El Futuro)
+
+Fina no conoce techo. Hacia adelante, el vector principal de evolución se ancla en:
+- **Inteligencia Predictiva Proactiva (Ambient Computing):** Integración de radares mmWave para seguimiento espacial automático. Fina sabrá en qué habitación estás sin necesidad de cámaras, moviendo la música y las confirmaciones al altavoz más cercano a ti.
+- **Llama.cpp en VRAM:** LLLM corriendo nativamente (Mistral/Llama3) local para pulverizar en definitiva la dependencia a IA de emporios comerciales (OpenAI). 
+- **Hardware Libre (Proyecto Fina-Acoustics):** Diseños satelitales basados en arrays far-field y Raspberry Pi con *Edge-AI* para aniquilar tus Google Nest o Echo Dots dotando privacidad física del 100%.
+- **Voz VITS Emocional:** Un Motor TTS generativo y neural avanzado que cambiará su propia euforia o tono, pasando a un susurro si detecta que es de madrugada, y gritando frente a intrusos hostiles.
 
 ## 💖 Apoya el Proyecto
 
